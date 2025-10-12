@@ -39,6 +39,12 @@ add_executable (Network_Assistant
 "main_window.cpp"
 )
 
+# 显式将 CMake 自动生成文件的输出目录添加到包含路径
+# 这有助于 IDE (如 VS) 的 IntelliSense 找到 ui_*.h 和 moc_*.cpp
+target_include_directories(Network_Assistant PRIVATE
+    "${CMAKE_CURRENT_BINARY_DIR}"
+    "${CMAKE_BINARY_DIR}"
+)
 
 # =============== 启用 Qt 的自动处理（关键！） ===============
 # 这三行启用 Qt6 的自动 moc、uic、rcc 处理
