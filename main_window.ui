@@ -24,7 +24,7 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>211</width>
+      <width>177</width>
       <height>210</height>
      </rect>
     </property>
@@ -36,8 +36,8 @@
     <property name="title">
      <string>网络设置</string>
     </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
+    <layout class="QGridLayout" name="gridLayout_2">
+     <item row="0" column="0" colspan="2">
       <widget class="QLabel" name="label_ProtocolType">
        <property name="font">
         <font>
@@ -49,16 +49,7 @@
        </property>
       </widget>
      </item>
-     <item>
-      <widget class="QComboBox" name="comboBox_ProtocolType">
-       <property name="font">
-        <font>
-         <pointsize>10</pointsize>
-        </font>
-       </property>
-      </widget>
-     </item>
-     <item>
+     <item row="2" column="0">
       <widget class="QLabel" name="label_Address">
        <property name="font">
         <font>
@@ -70,7 +61,7 @@
        </property>
       </widget>
      </item>
-     <item>
+     <item row="3" column="0" colspan="3">
       <widget class="QLineEdit" name="lineEdit_Address">
        <property name="font">
         <font>
@@ -79,7 +70,7 @@
        </property>
       </widget>
      </item>
-     <item>
+     <item row="4" column="0">
       <widget class="QLabel" name="label_Port">
        <property name="font">
         <font>
@@ -91,7 +82,7 @@
        </property>
       </widget>
      </item>
-     <item>
+     <item row="5" column="0" colspan="3">
       <widget class="QLineEdit" name="lineEdit_Port">
        <property name="font">
         <font>
@@ -100,7 +91,7 @@
        </property>
       </widget>
      </item>
-     <item>
+     <item row="6" column="2">
       <widget class="QPushButton" name="pushButton_Start">
        <property name="font">
         <font>
@@ -109,6 +100,31 @@
        </property>
        <property name="text">
         <string>启动</string>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="1">
+      <widget class="LED_Widget" name="led" native="true">
+       <property name="minimumSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>24</width>
+         <height>24</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0" colspan="3">
+      <widget class="QComboBox" name="comboBox_ProtocolType">
+       <property name="font">
+        <font>
+         <pointsize>10</pointsize>
+        </font>
        </property>
       </widget>
      </item>
@@ -267,6 +283,14 @@
   <widget class="QStatusBar" name="statusBar"/>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
+ <customwidgets>
+  <customwidget>
+   <class>LED_Widget</class>
+   <extends>QWidget</extends>
+   <header>led_widget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

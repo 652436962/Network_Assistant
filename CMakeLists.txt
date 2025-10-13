@@ -37,7 +37,7 @@ add_executable (Network_Assistant
 "main_window.ui"
 "main_window.h"
 "main_window.cpp"
-)
+ "led_widget.h" "led_widget.cpp")
 
 # 显式将 CMake 自动生成文件的输出目录添加到包含路径
 # 这有助于 IDE (如 VS) 的 IntelliSense 找到 ui_*.h 和 moc_*.cpp
