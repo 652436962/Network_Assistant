@@ -25,6 +25,7 @@ find_package(Qt6 REQUIRED COMPONENTS
     Core
     Gui
     Widgets
+    Network
 )
 
 
@@ -61,6 +62,7 @@ target_link_libraries(Network_Assistant PRIVATE
     Qt6::Core
     Qt6::Gui
     Qt6::Widgets
+    Qt6::Network
 )
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
