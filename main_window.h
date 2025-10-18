@@ -17,4 +17,9 @@ public:
 
 private:
     Ui::MainWindow* ui;
+public:
+    /**
+     * @brief 创建对话框展示本机网络信息
+     */
+    void showLocalIPConfig(void);
 };

@@ -47,7 +47,7 @@ target_include_directories(Network_Assistant PRIVATE
     "${CMAKE_BINARY_DIR}"
 )
 
-# =============== 启用 Qt 的自动处理（关键！） ===============
+# =============== 启用 Qt 的自动处理 ===============
 # 这三行启用 Qt6 的自动 moc、uic、rcc 处理
 # CMake 会自动检测 .h 中的 Q_OBJECT、.ui 文件、.qrc 文件并调用相应工具
 set_target_properties(Network_Assistant PROPERTIES
