@@ -41,6 +41,10 @@ add_executable (Network_Assistant
  "sundry_qt.h" "sundry_qt.cpp"
  "network_settings_widget.ui" "network_settings_widget.h" "network_settings_widget.cpp"
  "receive_settings_widget.ui" "receive_settings_widget.h" "receive_settings_widget.cpp"
+ "receive_widget.h" "receive_widget.cpp"
+ "send_settings_widget.ui" "send_settings_widget.h" "send_settings_widget.cpp"
+ "single_send_widget.ui" "single_send_widget.h" "single_send_widget.cpp"
+ "multiple_send_widget.ui" "multiple_send_widget.h" "multiple_send_widget.cpp"
 )
 
 # 显式将 CMake 自动生成文件的输出目录添加到包含路径
