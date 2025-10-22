@@ -15,14 +15,14 @@ public:
     explicit NetworkSettingsWidget(QWidget *parent = nullptr);
     ~NetworkSettingsWidget();
 
-private:
-    /**
-     * @brief 重新绘图事件，以显示边框
-     * @param event 
-     */
-    void paintEvent(QPaintEvent* event) override;
+//private:
+//    /**
+//     * @brief 重新绘图事件，以显示边框
+//     * @param event 
+//     */
+//    void paintEvent(QPaintEvent* event) override;
 
-public:
+private:
     Ui::NetworkSettingsWidget *ui;
 };
 
