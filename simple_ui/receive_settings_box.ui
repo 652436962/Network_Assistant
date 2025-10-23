@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>ReceiveSettingsWidget</class>
- <widget class="QWidget" name="ReceiveSettingsWidget">
+ <class>ReceiveSettingsBox</class>
+ <widget class="QWidget" name="ReceiveSettingsBox">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -13,12 +13,6 @@
   <property name="minimumSize">
    <size>
     <width>175</width>
-    <height>125</height>
-   </size>
-  </property>
-  <property name="maximumSize">
-   <size>
-    <width>16777215</width>
     <height>125</height>
    </size>
   </property>
@@ -46,53 +40,6 @@
    <property name="bottomMargin">
     <number>8</number>
    </property>
-   <property name="spacing">
-    <number>4</number>
-   </property>
-   <item row="2" column="1">
-    <widget class="QComboBox" name="comboBox_Encoding">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="1">
-    <widget class="QCheckBox" name="checkBox_Timestamp">
-     <property name="layoutDirection">
-      <enum>Qt::LayoutDirection::RightToLeft</enum>
-     </property>
-     <property name="text">
-      <string>时间戳</string>
-     </property>
-    </widget>
-   </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_Encoding">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>编码</string>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0">
-    <widget class="QCheckBox" name="checkBox_ReceiveStopDisplay">
-     <property name="layoutDirection">
-      <enum>Qt::LayoutDirection::RightToLeft</enum>
-     </property>
-     <property name="text">
-      <string>停止显示</string>
-     </property>
-    </widget>
-   </item>
    <item row="0" column="0">
     <widget class="QRadioButton" name="radioButton_Text">
      <property name="font">
@@ -105,18 +52,6 @@
      </property>
      <property name="text">
       <string>文本</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="1">
-    <widget class="QPushButton" name="pushButton_Save">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>保存到文件</string>
      </property>
     </widget>
    </item>
@@ -135,7 +70,27 @@
      </property>
     </widget>
    </item>
-   <item row="3" column="0">
+   <item row="1" column="0">
+    <widget class="QCheckBox" name="checkBox_ReceiveStopDisplay">
+     <property name="layoutDirection">
+      <enum>Qt::LayoutDirection::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>停止显示</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1">
+    <widget class="QCheckBox" name="checkBox_Timestamp">
+     <property name="layoutDirection">
+      <enum>Qt::LayoutDirection::RightToLeft</enum>
+     </property>
+     <property name="text">
+      <string>时间戳</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="0">
     <widget class="QPushButton" name="pushButton_Clear">
      <property name="font">
       <font>
@@ -144,6 +99,18 @@
      </property>
      <property name="text">
       <string>清空接收区</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1">
+    <widget class="QPushButton" name="pushButton_Save">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>保存到文件</string>
      </property>
     </widget>
    </item>

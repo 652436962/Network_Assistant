@@ -39,10 +39,10 @@ add_executable (Network_Assistant
  "led_widget.h" "led_widget.cpp" 
  "sundry.h" "sundry.cpp" 
  "sundry_qt.h" "sundry_qt.cpp"
- "network_settings_widget.ui" "network_settings_widget.h" "network_settings_widget.cpp"
- "receive_settings_widget.ui" "receive_settings_widget.h" "receive_settings_widget.cpp"
+ "network_settings_box.h" "network_settings_box.cpp"
+ "receive_settings_box.h" "receive_settings_box.cpp"
  "receive_widget.h" "receive_widget.cpp"
- "send_settings_widget.ui" "send_settings_widget.h" "send_settings_widget.cpp"
+ "send_settings_box.h" "send_settings_box.cpp"
  "single_send_widget.ui" "single_send_widget.h" "single_send_widget.cpp"
  "multiple_send_widget.ui" "multiple_send_widget.h" "multiple_send_widget.cpp"
 )
