@@ -25,19 +25,7 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <property name="leftMargin">
-    <number>8</number>
-   </property>
-   <property name="topMargin">
-    <number>8</number>
-   </property>
-   <property name="rightMargin">
-    <number>8</number>
-   </property>
-   <property name="bottomMargin">
-    <number>8</number>
-   </property>
-   <item row="0" column="0">
+   <item row="0" column="0" colspan="2">
     <widget class="QLabel" name="label_ProtocolType">
      <property name="font">
       <font>
@@ -46,6 +34,15 @@
      </property>
      <property name="text">
       <string>协议类型</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="0" colspan="3">
+    <widget class="QComboBox" name="comboBox_ProtocolType">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
      </property>
     </widget>
    </item>
@@ -61,6 +58,15 @@
      </property>
     </widget>
    </item>
+   <item row="3" column="0" colspan="3">
+    <widget class="QLineEdit" name="lineEdit_Address">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+    </widget>
+   </item>
    <item row="4" column="0">
     <widget class="QLabel" name="label_Port">
      <property name="font">
@@ -73,20 +79,14 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
-    <spacer name="horizontalSpacer">
-     <property name="orientation">
-      <enum>Qt::Orientation::Horizontal</enum>
+   <item row="5" column="0" colspan="3">
+    <widget class="QSpinBox" name="spinBox_Port">
+     <property name="layoutDirection">
+      <enum>Qt::LayoutDirection::LeftToRight</enum>
      </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>51</width>
-       <height>20</height>
-      </size>
-     </property>
-    </spacer>
+    </widget>
    </item>
-   <item row="6" column="1">
+   <item row="6" column="0">
     <widget class="LED_Widget" name="led" native="true">
      <property name="minimumSize">
       <size>
@@ -102,7 +102,7 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="2">
+   <item row="6" column="1">
     <widget class="QPushButton" name="pushButton_Other">
      <property name="minimumSize">
       <size>
@@ -120,11 +120,11 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="3">
-    <widget class="QPushButton" name="pushButton_Start">
+   <item row="6" column="2">
+    <widget class="QPushButton" name="pushButton_Switch">
      <property name="minimumSize">
       <size>
-       <width>40</width>
+       <width>80</width>
        <height>0</height>
       </size>
      </property>
@@ -135,31 +135,6 @@
      </property>
      <property name="text">
       <string>启动</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="4">
-    <widget class="QLineEdit" name="lineEdit_Address">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0" colspan="4">
-    <widget class="QSpinBox" name="spinBox">
-     <property name="layoutDirection">
-      <enum>Qt::LayoutDirection::LeftToRight</enum>
-     </property>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="4">
-    <widget class="QComboBox" name="comboBox_ProtocolType">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
      </property>
     </widget>
    </item>

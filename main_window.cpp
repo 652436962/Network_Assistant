@@ -22,16 +22,36 @@ MainWindow::MainWindow(QWidget* parent)
     
     ui->setupUi(this);
 
+    tcpServer = new QTcpServer(this);
+
     
 
     //展示主机信息
     connect(ui->action_Info, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
 
+    connect(ui->network_settings, &NetworkSettingsBox::clicked, this, &MainWindow::do_connection);
+
     qDebug() << "主窗口建立";
+
+
 }
 
 MainWindow::~MainWindow()
 {
+    if (tcpSocket != nullptr)
+    {
+        if (tcpSocket->state() == QAbstractSocket::ConnectedState)
+        {
+            tcpSocket->disconnectFromHost();//断开连接
+        }
+    }
+    if (tcpServer != nullptr)
+    {
+        if (tcpServer->isListening())
+        {
+            tcpServer->close();//停止网络监听
+        }
+    }
     delete ui;
 }
 
@@ -145,4 +165,51 @@ void MainWindow::showLocalIPConfig(void)
     table->resizeColumnsToContents();
     
     
+}
+
+void MainWindow::do_TCP_newConnection(void)
+{
+
+}
+
+void MainWindow::do_connection(void)
+{
+    ProtocolType type = ui->network_settings->getProtocolType();
+    QString address = ui->network_settings->getAddress();
+    uint16_t port = ui->network_settings->getPortValue();
+    qDebug() << "选择的内容";
+    qDebug() << "type " << getProtocolTypeString(type);
+    qDebug() << "address " << address;
+    qDebug() << "port" << port;
+    if (type == ProtocolType::TCP_Server)//TCP 服务器
+    {
+        if (tcpServer->isListening()) 
+        {
+            if (tcpSocket != nullptr)
+            {
+                if (tcpSocket->state() == QAbstractSocket::ConnectedState)
+                {
+                    tcpSocket->disconnectFromHost();
+                }
+            }
+            tcpServer->close();//停止监听
+            emit this->connectionStatusChanged(false);
+        }
+        else
+        {
+            QHostAddress hostAddress(address);
+            tcpServer->listen(hostAddress, port); //开始监听
+
+            emit this->connectionStatusChanged(true);
+        }
+        
+    }
+    else if (type == ProtocolType::TCP_Client)
+    {
+    }
+    else if (type == ProtocolType::UDP)
+    {
+
+    }
+
 }

@@ -1,6 +1,9 @@
 #pragma once
 
-#include "qmainwindow.h"
+#include <QMainWindow>
+#include <QTcpServer>
+#include <QTcpSocket>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -22,4 +25,21 @@ public:
      * @brief 创建对话框展示本机网络信息
      */
     void showLocalIPConfig(void);
+
+private:
+    QTcpServer* tcpServer = nullptr;//TCP 服务器
+public:
+    void do_TCP_newConnection(void);
+
+    QTcpSocket* tcpSocket = nullptr; // TCP 通信的 socket
+
+public:
+    void do_connection(void);
+
+signals:
+    /**
+     * @brief 连接状态改变
+     * @note Qt 信号
+     */
+    void connectionStatusChanged(bool state);
 };

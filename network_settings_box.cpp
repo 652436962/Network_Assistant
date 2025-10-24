@@ -7,7 +7,14 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget *parent)
 {
     
     this->setupUi();
+   
+    this->comboBox_ProtocolType->addItem("TCP Server", QVariant::fromValue(ProtocolType::TCP_Server));
+    this->comboBox_ProtocolType->addItem("TCP Client", QVariant::fromValue(ProtocolType::TCP_Client));
+    this->comboBox_ProtocolType->addItem("TCP UDP", QVariant::fromValue(ProtocolType::UDP));
     
+    connect(this->pushButton_Switch, &QPushButton::clicked, this, &NetworkSettingsBox::clicked);
+
+    this->changeUI(false);
 }
 
 void NetworkSettingsBox::setupUi(void)
@@ -21,12 +28,17 @@ void NetworkSettingsBox::setupUi(void)
     this->setFont(font);
     gridLayout = new QGridLayout(this);
     gridLayout->setObjectName("gridLayout");
-    gridLayout->setContentsMargins(8, 8, 8, 8);
     label_ProtocolType = new QLabel(this);
     label_ProtocolType->setObjectName("label_ProtocolType");
     label_ProtocolType->setFont(font);
 
-    gridLayout->addWidget(label_ProtocolType, 0, 0, 1, 1);
+    gridLayout->addWidget(label_ProtocolType, 0, 0, 1, 2);
+
+    comboBox_ProtocolType = new QComboBox(this);
+    comboBox_ProtocolType->setObjectName("comboBox_ProtocolType");
+    comboBox_ProtocolType->setFont(font);
+
+    gridLayout->addWidget(comboBox_ProtocolType, 1, 0, 1, 3);
 
     label_Address = new QLabel(this);
     label_Address->setObjectName("label_Address");
@@ -34,57 +46,47 @@ void NetworkSettingsBox::setupUi(void)
 
     gridLayout->addWidget(label_Address, 2, 0, 1, 1);
 
+    lineEdit_Address = new QLineEdit(this);
+    lineEdit_Address->setObjectName("lineEdit_Address");
+    lineEdit_Address->setFont(font);
+
+    gridLayout->addWidget(lineEdit_Address, 3, 0, 1, 3);
+
     label_Port = new QLabel(this);
     label_Port->setObjectName("label_Port");
     label_Port->setFont(font);
 
     gridLayout->addWidget(label_Port, 4, 0, 1, 1);
 
-    horizontalSpacer = new QSpacerItem(51, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+    spinBox_Port = new QSpinBox(this);
+    spinBox_Port->setObjectName("spinBox_Port");
+    spinBox_Port->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
 
-    gridLayout->addItem(horizontalSpacer, 6, 0, 1, 1);
+    gridLayout->addWidget(spinBox_Port, 5, 0, 1, 3);
 
     led = new LED_Widget(this);
     led->setObjectName("led");
     led->setMinimumSize(QSize(24, 24));
     led->setMaximumSize(QSize(24, 24));
 
-    gridLayout->addWidget(led, 6, 1, 1, 1);
+    gridLayout->addWidget(led, 6, 0, 1, 1);
 
     pushButton_Other = new QPushButton(this);
     pushButton_Other->setObjectName("pushButton_Other");
     pushButton_Other->setMinimumSize(QSize(40, 0));
     pushButton_Other->setFont(font);
 
-    gridLayout->addWidget(pushButton_Other, 6, 2, 1, 1);
+    gridLayout->addWidget(pushButton_Other, 6, 1, 1, 1);
 
-    pushButton_Start = new QPushButton(this);
-    pushButton_Start->setObjectName("pushButton_Start");
-    pushButton_Start->setMinimumSize(QSize(40, 0));
-    pushButton_Start->setFont(font);
+    pushButton_Switch = new QPushButton(this);
+    pushButton_Switch->setObjectName("pushButton_Switch");
+    pushButton_Switch->setMinimumSize(QSize(80, 0));
+    pushButton_Switch->setFont(font);
 
-    gridLayout->addWidget(pushButton_Start, 6, 3, 1, 1);
-
-    lineEdit_Address = new QLineEdit(this);
-    lineEdit_Address->setObjectName("lineEdit_Address");
-    lineEdit_Address->setFont(font);
-
-    gridLayout->addWidget(lineEdit_Address, 3, 0, 1, 4);
-
-    spinBox = new QSpinBox(this);
-    spinBox->setObjectName("spinBox");
-    spinBox->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
-
-    gridLayout->addWidget(spinBox, 5, 0, 1, 4);
-
-    comboBox_ProtocolType = new QComboBox(this);
-    comboBox_ProtocolType->setObjectName("comboBox_ProtocolType");
-    comboBox_ProtocolType->setFont(font);
-
-    gridLayout->addWidget(comboBox_ProtocolType, 1, 0, 1, 4);
+    gridLayout->addWidget(pushButton_Switch, 6, 2, 1, 1);
 
 
-    this->retranslateUi();
+    retranslateUi();
 
     QMetaObject::connectSlotsByName(this);
 }
@@ -96,7 +98,49 @@ void NetworkSettingsBox::retranslateUi(void)
     label_Address->setText(QCoreApplication::translate("NetworkSettingsBox", "\345\234\260\345\235\200", nullptr));
     label_Port->setText(QCoreApplication::translate("NetworkSettingsBox", "\347\253\257\345\217\243", nullptr));
     pushButton_Other->setText(QCoreApplication::translate("NetworkSettingsBox", "\345\205\266\345\256\203", nullptr));
-    pushButton_Start->setText(QCoreApplication::translate("NetworkSettingsBox", "\345\220\257\345\212\250", nullptr));
+    pushButton_Switch->setText(QCoreApplication::translate("NetworkSettingsBox", "\345\220\257\345\212\250", nullptr));
+}
+
+ProtocolType NetworkSettingsBox::getProtocolType(void)
+{
+    return this->comboBox_ProtocolType->currentData().value<ProtocolType>();
+}
+
+QString NetworkSettingsBox::getAddress(void)
+{
+    return this->lineEdit_Address->text();
+}
+
+uint16_t NetworkSettingsBox::getPortValue(void)
+{
+    return this->spinBox_Port->value();
+}
+
+void NetworkSettingsBox::changeUI(bool state)
+{
+    this->led->setState(state);
+    ProtocolType type = this->getProtocolType();
+    QString switchString = "";
+    switch (type)
+    {
+    case ProtocolType::TCP_Server:
+        if (state) switchString = "停止监听";
+        else switchString = "启动监听";
+        break;
+    case ProtocolType::TCP_Client:
+        if (state) switchString = "断开连接";
+        else switchString = "建立连接";
+        break;
+    case ProtocolType::UDP:
+        if (state) switchString = "关闭";
+        else switchString = "打开";
+        break;
+    default: break;
+    }
+    this->pushButton_Switch->setText(switchString);
+    this->comboBox_ProtocolType->setEnabled(!state);
+    this->lineEdit_Address->setEnabled(!state);
+    this->spinBox_Port->setEnabled(!state);
 }
 
 //NetworkSettingsBox::~NetworkSettingsBox()

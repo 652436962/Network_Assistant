@@ -15,6 +15,9 @@
 
 #include "led_widget.h"
 
+
+#include "sundry.h"
+
 class NetworkSettingsBox : public QGroupBox
 {
     Q_OBJECT
@@ -28,12 +31,11 @@ public:
     QLabel* label_ProtocolType;
     QLabel* label_Address;
     QLabel* label_Port;
-    QSpacerItem* horizontalSpacer;
     LED_Widget* led;
     QPushButton* pushButton_Other;
-    QPushButton* pushButton_Start;
+    QPushButton* pushButton_Switch;//开关
     QLineEdit* lineEdit_Address;
-    QSpinBox* spinBox;
+    QSpinBox* spinBox_Port;
     QComboBox* comboBox_ProtocolType;
 
     /**
@@ -46,6 +48,40 @@ public:
      * @param  
      */
     void retranslateUi(void);
+
+public:
+    /**
+     * @brief 获取选择的网络协议类型
+     * @param  
+     * @return 选择的网络协议类型
+     */
+    ProtocolType getProtocolType(void);
+
+    /**
+     * @brief 获取输入的地址
+     * @return 输入的地址
+     */
+    QString getAddress(void);
+
+    /**
+     * @brief 获取端口号
+     * @return 选择的端口号
+     */
+    uint16_t getPortValue(void);
+
+    /**
+     * @brief 根据网络的连接情况改变UI
+     * @param state 网络链接情况
+     */
+    void changeUI(bool state);
+
+signals:
+    /**
+     * @brief 点击
+     * @note Qt 信号  
+     */
+    void clicked(void);
+
 
 //private:
 //    /**

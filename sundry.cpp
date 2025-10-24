@@ -11,6 +11,26 @@
 #include <cctype>
 #include <algorithm>
 
+std::string getProtocolTypeString(ProtocolType type)
+{
+    std::string typeString = "";
+    switch (type)
+    {
+    case ProtocolType::TCP_Server:
+        typeString = "TCP Server";
+        break;
+    case ProtocolType::TCP_Client:
+        typeString = "TCP Client";
+        break;
+    case ProtocolType::UDP:
+        typeString = "UDP";
+        break;
+    default:
+        break;
+    }
+    return typeString;
+}
+
 EncodingEnum getLocalEncoding()
 {
     EncodingEnum encoding = EncodingEnum::UTF8;

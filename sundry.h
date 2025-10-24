@@ -4,6 +4,24 @@
 #include <string>
 
 /**
+ * @brief 网络协议类型
+ */
+enum class ProtocolType
+{
+    TCP_Server,
+    TCP_Client,
+    UDP
+};
+
+/**
+ * @brief 得到网络协议类型对应的字符串
+ * @param type 网络协议类型
+ * @return 对应的字符串
+ */
+std::string getProtocolTypeString(ProtocolType type);
+
+
+/**
  * @brief 编码枚举
  * @note 我这里数值为 Windows 对应代码页的数
  */
