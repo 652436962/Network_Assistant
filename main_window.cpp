@@ -15,6 +15,7 @@
 
 #include "sundry_qt.h"
 
+
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -26,14 +27,27 @@ MainWindow::MainWindow(QWidget* parent)
 
     
 
-    //展示主机信息
+    //配置连接 展示主机信息
     connect(ui->action_Info, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
 
-    connect(ui->network_settings, &NetworkSettingsBox::clicked, this, &MainWindow::do_connection);
+    //配置连接 按钮被点击
+    connect(ui->network_settings, &NetworkSettingsBox::clicked, this, &MainWindow::do_clicked);
 
+    //配置连接 
+    connect(this, &MainWindow::connectionStatusChanged, ui->network_settings, &NetworkSettingsBox::changeUI);
+
+    //配置连接 有新的客户端连接
+    connect(this->tcpServer, &QTcpServer::newConnection, this, &MainWindow::do_TCP_newConnection);
+
+    //配置连接 接收设置 -> 接收区 各种链接
+    {
+        connect(ui->receive_settings, &ReceiveSettingsBox::clear, ui->receive_area, &ReceiveWidget::clear);
+        connect(ui->receive_settings, &ReceiveSettingsBox::setText, ui->receive_area, &ReceiveWidget::setText);
+        connect(ui->receive_settings, &ReceiveSettingsBox::setStopDispalying, ui->receive_area, &ReceiveWidget::setStopDisplaying);
+        connect(ui->receive_settings, &ReceiveSettingsBox::setTimestamp, ui->receive_area, &ReceiveWidget::setTimestamp);
+    }
+    
     qDebug() << "主窗口建立";
-
-
 }
 
 MainWindow::~MainWindow()
@@ -169,10 +183,44 @@ void MainWindow::showLocalIPConfig(void)
 
 void MainWindow::do_TCP_newConnection(void)
 {
+    this->tcpSocket = this->tcpServer->nextPendingConnection();//创建与客户端通信的 socket
 
+    ui->receive_area->appendPlainText("客户端接入");
+    ui->receive_area->appendPlainText("地址 " + tcpSocket->peerAddress().toString());
+    ui->receive_area->appendPlainText("端口 " + QString::number(tcpSocket->peerPort()));
+    qDebug() << "有客户端接入";
+    qDebug() << "地址 " << tcpSocket->peerAddress();
+    qDebug() << "端口 " << tcpSocket->peerPort();
+
+    //配置连接 客户端断开
+    connect(this->tcpSocket, &QTcpSocket::disconnected, this, &MainWindow::do_TCP_clientDisconnected);
+
+    //配置连接 展示客户端发来的数据
+    connect(this->tcpSocket, &QTcpSocket::readyRead, this, &MainWindow::do_TCP_clientReadyRead);
 }
 
-void MainWindow::do_connection(void)
+
+
+void MainWindow::do_TCP_clientDisconnected(void)
+{
+    ui->receive_area->appendPlainText("客户端断开");
+    ui->receive_area->appendPlainText("地址 " + tcpSocket->peerAddress().toString());
+    ui->receive_area->appendPlainText("端口 " + QString::number(tcpSocket->peerPort()) + '\n');
+    qDebug() << "客户端断开";
+    qDebug() << "地址 " << tcpSocket->peerAddress();
+    qDebug() << "端口 " << tcpSocket->peerPort();
+    this->tcpSocket->deleteLater();
+    this->tcpSocket = nullptr;
+}
+
+void MainWindow::do_TCP_clientReadyRead(void)
+{
+    qDebug() << "收到了客户端的数据";
+    QByteArray byteArray = tcpSocket->readAll();
+    ui->receive_area->showData(byteArray);    
+}
+
+void MainWindow::do_clicked(void)
 {
     ProtocolType type = ui->network_settings->getProtocolType();
     QString address = ui->network_settings->getAddress();
@@ -193,14 +241,24 @@ void MainWindow::do_connection(void)
                 }
             }
             tcpServer->close();//停止监听
+            qDebug() << "停止监听";
             emit this->connectionStatusChanged(false);
         }
         else
         {
             QHostAddress hostAddress(address);
-            tcpServer->listen(hostAddress, port); //开始监听
+            bool result = tcpServer->listen(hostAddress, port); //开始监听
+            if (result)
+            {
+                qDebug() << "开始监听  地址" << hostAddress << " 端口 " << port;
+                emit this->connectionStatusChanged(true);
+            }
+            else
+            {
+                qDebug() << "监听启动失败！";
+            }
 
-            emit this->connectionStatusChanged(true);
+            
         }
         
     }

@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <cctype>
 #include <algorithm>
+#include <chrono>
 
 std::string getProtocolTypeString(ProtocolType type)
 {
@@ -201,4 +202,22 @@ std::string vectorToHexString(const std::vector<uint8_t>& data)
             << std::hex << static_cast<int>(data[i]);
     }
     return oss.str();
+}
+
+std::string getTimestamp(void)
+{
+    using namespace std::chrono;
+    // 获取当前时间点
+    auto now = system_clock::now();
+
+    // 转换为本地时间并格式化
+    auto time_t = system_clock::to_time_t(now);
+    auto ms = duration_cast<milliseconds>(now.time_since_epoch()) % 1000;
+    std::tm tm = *std::localtime(&time_t);
+
+    std::string result = "";
+    char buffer[16];
+    std::strftime(buffer, sizeof(buffer), "%H:%M:%S", &tm);
+    result = std::string(buffer) + '.' + std::to_string(ms.count());
+    return result;
 }

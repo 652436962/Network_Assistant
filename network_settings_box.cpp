@@ -12,6 +12,7 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget *parent)
     this->comboBox_ProtocolType->addItem("TCP Client", QVariant::fromValue(ProtocolType::TCP_Client));
     this->comboBox_ProtocolType->addItem("TCP UDP", QVariant::fromValue(ProtocolType::UDP));
     
+    //按钮按下
     connect(this->pushButton_Switch, &QPushButton::clicked, this, &NetworkSettingsBox::clicked);
 
     this->changeUI(false);
@@ -21,8 +22,8 @@ void NetworkSettingsBox::setupUi(void)
 {
     if (this->objectName().isEmpty())
         this->setObjectName("NetworkSettingsBox");
-    this->resize(175, 180);
-    this->setMinimumSize(QSize(175, 180));
+    this->resize(175, 225);
+    this->setMinimumSize(QSize(175, 225));
     QFont font;
     font.setPointSize(10);
     this->setFont(font);
@@ -61,6 +62,9 @@ void NetworkSettingsBox::setupUi(void)
     spinBox_Port = new QSpinBox(this);
     spinBox_Port->setObjectName("spinBox_Port");
     spinBox_Port->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
+    spinBox_Port->setMaximum(65535);
+    spinBox_Port->setValue(8080);
+
 
     gridLayout->addWidget(spinBox_Port, 5, 0, 1, 3);
 

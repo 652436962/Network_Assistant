@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>793</width>
-    <height>710</height>
+    <width>746</width>
+    <height>707</height>
    </rect>
   </property>
   <property name="font">
@@ -19,106 +19,127 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralWidget">
-   <widget class="ReceiveWidget" name="receive_area">
-    <property name="geometry">
-     <rect>
-      <x>270</x>
-      <y>10</y>
-      <width>461</width>
-      <height>241</height>
-     </rect>
-    </property>
-   </widget>
-   <widget class="QWidget" name="widget" native="true">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>10</y>
-      <width>223</width>
-      <height>625</height>
-     </rect>
-    </property>
-    <property name="maximumSize">
-     <size>
-      <width>250</width>
-      <height>16777215</height>
-     </size>
-    </property>
-    <layout class="QVBoxLayout" name="verticalLayout">
-     <item>
-      <widget class="NetworkSettingsBox" name="network_settings">
-       <property name="minimumSize">
-        <size>
-         <width>175</width>
-         <height>180</height>
-        </size>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0" rowspan="2">
+     <widget class="QWidget" name="widget" native="true">
+      <property name="maximumSize">
+       <size>
+        <width>250</width>
+        <height>16777215</height>
+       </size>
+      </property>
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>4</number>
        </property>
-       <property name="title">
-        <string>网络设置</string>
+       <property name="leftMargin">
+        <number>4</number>
        </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Orientation::Vertical</enum>
+       <property name="topMargin">
+        <number>4</number>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>31</height>
-        </size>
+       <property name="rightMargin">
+        <number>4</number>
        </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="ReceiveSettingsBox" name="groupBox">
-       <property name="minimumSize">
-        <size>
-         <width>175</width>
-         <height>125</height>
-        </size>
+       <property name="bottomMargin">
+        <number>4</number>
        </property>
-       <property name="title">
-        <string>接收设置</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <spacer name="verticalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Orientation::Vertical</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>32</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="SendSettingsBox" name="send_settings">
-       <property name="minimumSize">
-        <size>
-         <width>200</width>
-         <height>180</height>
-        </size>
-       </property>
-       <property name="title">
-        <string>发送设置</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </widget>
+       <item>
+        <widget class="NetworkSettingsBox" name="network_settings">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>225</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>网络设置</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>31</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="ReceiveSettingsBox" name="receive_settings">
+         <property name="minimumSize">
+          <size>
+           <width>175</width>
+           <height>125</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>接收设置</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="verticalSpacer_2">
+         <property name="orientation">
+          <enum>Qt::Orientation::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>32</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="SendSettingsBox" name="send_settings">
+         <property name="minimumSize">
+          <size>
+           <width>200</width>
+           <height>180</height>
+          </size>
+         </property>
+         <property name="title">
+          <string>发送设置</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="ReceiveWidget" name="receive_area">
+      <property name="minimumSize">
+       <size>
+        <width>300</width>
+        <height>250</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QWidget" name="widget_Send" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>300</width>
+        <height>250</height>
+       </size>
+      </property>
+     </widget>
+    </item>
+   </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>793</width>
+     <width>746</width>
      <height>22</height>
     </rect>
    </property>

@@ -6,6 +6,8 @@ SendSettingsBox::SendSettingsBox(QWidget *parent)
     : QGroupBox(parent)
 {
     this->setupUi();
+
+    
 }
 
 

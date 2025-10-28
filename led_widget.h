@@ -17,6 +17,14 @@ private:
     bool state = false;//是否打开
 public:
     /**
+     * @brief 打开
+     */
+    void open(void);
+    /**
+     * @brief 关闭
+     */
+    void close(void);
+    /**
      * @brief 设置打开或关闭
      * @param state true 打开 false 关闭
      */

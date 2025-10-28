@@ -66,3 +66,9 @@ std::vector<uint8_t> hex_string_to_bytes(const std::string& hex_str);
  * @return 对应 Hex 字符串
  */
 std::string vectorToHexString(const std::vector<uint8_t>& data);
+
+/**
+* @brief 获取 hh:mm:ss.zzz 格式的时间戳字符串
+* @return hh:mm:ss.zzz
+*/
+std::string getTimestamp(void);

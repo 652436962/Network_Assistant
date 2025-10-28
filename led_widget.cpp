@@ -8,6 +8,16 @@ LED_Widget::LED_Widget(QWidget* parent):QWidget(parent)
 	setMinimumSize(16, 16);
 }
 
+void LED_Widget::open(void)
+{
+	this->setState(true);
+}
+
+void LED_Widget::close(void)
+{
+	this->setState(false);
+}
+
 
 void LED_Widget::setState(bool state)
 {
