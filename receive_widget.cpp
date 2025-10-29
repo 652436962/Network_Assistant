@@ -11,6 +11,11 @@ ReceiveWidget::ReceiveWidget(QWidget* parent)
     qDebug() << "接收窗口建立";
 }
 
+ReceiveWidget::~ReceiveWidget()
+{
+    qDebug() << "接收窗口关闭";
+}
+
 void ReceiveWidget::setStopDisplaying(bool state)
 {
     this->stopDisplaying = state;

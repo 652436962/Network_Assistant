@@ -12,10 +12,11 @@ class ReceiveWidget : public QPlainTextEdit
     Q_OBJECT
 public:
     explicit ReceiveWidget(QWidget* parent = nullptr);
+    ~ReceiveWidget();
 private:
     bool stopDisplaying = false;//停止显示
     bool timestamp = false;//显示时间戳
-    bool text = true;//显示文本
+    bool text = true;//是否将数据作为文本显示
     EncodingEnum encoding = EncodingEnum::UTF8;//要显示的编码
 public:
     /**

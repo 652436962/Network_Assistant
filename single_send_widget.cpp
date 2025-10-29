@@ -14,7 +14,7 @@ SingleSendWidget::SingleSendWidget(QWidget* parent)
 		{
 			return;
 		}
-		emit this->requestToSend(dataString);
+		emit this->requestToSend(dataString.toUtf8());
 		});
 
 	//清理按钮

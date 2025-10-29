@@ -4,6 +4,15 @@
 #include <string>
 
 /**
+ * @brief 支持的发送区类型
+ */
+enum class SendOptions
+{
+    single,//单项发送
+    multiple//多项发送
+};
+
+/**
  * @brief 网络协议类型
  */
 enum class ProtocolType

@@ -25,8 +25,37 @@ MainWindow::MainWindow(QWidget* parent)
 
     tcpServer = new QTcpServer(this);
 
-    //右侧窗口
-    {        
+    
+    
+
+    //配置连接 展示主机信息
+    connect(ui->action_Info, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
+
+    //左侧窗口相关配置
+    {
+        //配置连接 按钮被点击
+        connect(ui->network_settings, &NetworkSettingsBox::clicked, this, &MainWindow::do_clicked);
+
+        //配置连接 
+        connect(this, &MainWindow::connectionStatusChanged, ui->network_settings, &NetworkSettingsBox::changeUI);
+
+        //配置连接 有新的客户端连接
+        connect(this->tcpServer, &QTcpServer::newConnection, this, &MainWindow::do_TCP_newConnection);
+
+        //配置连接 接收设置 -> 接收区 各种链接
+        {
+            connect(ui->receive_settings, &ReceiveSettingsBox::clear, ui->receive_area, &ReceiveWidget::clear);
+            connect(ui->receive_settings, &ReceiveSettingsBox::setText, ui->receive_area, &ReceiveWidget::setText);
+            connect(ui->receive_settings, &ReceiveSettingsBox::setStopDispalying, ui->receive_area, &ReceiveWidget::setStopDisplaying);
+            connect(ui->receive_settings, &ReceiveSettingsBox::setTimestamp, ui->receive_area, &ReceiveWidget::setTimestamp);
+        }
+
+        //配置连接 发送设置 -> 发送区
+
+    }
+
+    //右侧窗口相关配置
+    {
         QVBoxLayout* verticalLayout = qobject_cast<QVBoxLayout*>(ui->widget_Right->layout());
         if (verticalLayout == nullptr)
         {
@@ -37,27 +66,9 @@ MainWindow::MainWindow(QWidget* parent)
 
     }
     
-
-    //配置连接 展示主机信息
-    connect(ui->action_Info, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
-
-    //配置连接 按钮被点击
-    connect(ui->network_settings, &NetworkSettingsBox::clicked, this, &MainWindow::do_clicked);
-
-    //配置连接 
-    connect(this, &MainWindow::connectionStatusChanged, ui->network_settings, &NetworkSettingsBox::changeUI);
-
-    //配置连接 有新的客户端连接
-    connect(this->tcpServer, &QTcpServer::newConnection, this, &MainWindow::do_TCP_newConnection);
-
-    //配置连接 接收设置 -> 接收区 各种链接
-    {
-        connect(ui->receive_settings, &ReceiveSettingsBox::clear, ui->receive_area, &ReceiveWidget::clear);
-        connect(ui->receive_settings, &ReceiveSettingsBox::setText, ui->receive_area, &ReceiveWidget::setText);
-        connect(ui->receive_settings, &ReceiveSettingsBox::setStopDispalying, ui->receive_area, &ReceiveWidget::setStopDisplaying);
-        connect(ui->receive_settings, &ReceiveSettingsBox::setTimestamp, ui->receive_area, &ReceiveWidget::setTimestamp);
-    }
     
+
+
     qDebug() << "主窗口建立";
 }
 
@@ -333,6 +344,15 @@ void MainWindow::AsTcpClientOperation(void)
             }
             QByteArray byteArray = clientTcpSocket->readAll();
             ui->receive_area->showData(byteArray);//在接收区中展示数据
+            });
+        //配置连接 单项发送
+        connect(this->singleSend, &SingleSendWidget::requestToSend, this, [this](QByteArray byteArray) {
+            if (clientTcpSocket == nullptr)
+            {
+                qDebug() << "错误 " << __FILE__ << __LINE__;
+                return;
+            }
+            this->clientTcpSocket->write(byteArray);
             });
     }
     else//断开连接

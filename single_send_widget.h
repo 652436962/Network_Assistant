@@ -2,6 +2,8 @@
 
 #include <QWidget>
 
+#include "sundry.h"
+
 namespace Ui {
 	class SingleSendWidget;
 }
@@ -16,14 +18,16 @@ public:
 
 private:
 	Ui::SingleSendWidget* ui;
-
+private:
+	bool text = true;//要发送的是否是文本字符串
+	EncodingEnum encoding = EncodingEnum::UTF8;//要发送的文本编码
 signals:
 	/**
 	 * @brief 请求发送
-	 * @param data 要传递的字符串
+	 * @param data 要发送的数据
 	 * @note Qt信号
 	 */
-	void requestToSend(QString data);
+	void requestToSend(QByteArray data);
 };
 
 

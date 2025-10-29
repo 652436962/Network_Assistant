@@ -24,7 +24,7 @@ class NetworkSettingsBox : public QGroupBox
 
 public:
     explicit NetworkSettingsBox(QWidget *parent = nullptr);
-    /*~NetworkSettingsBox();*/
+    ~NetworkSettingsBox();
 
 private:
     QGridLayout* gridLayout;
@@ -49,6 +49,8 @@ private:
      */
     void retranslateUi(void);
 
+
+
 public:
     /**
      * @brief 获取选择的网络协议类型
@@ -69,9 +71,12 @@ public:
      */
     uint16_t getPortValue(void);
 
+private:
+    bool networkActive = false;//是否正在进行网络活动
+public:
     /**
      * @brief 根据网络的连接情况改变UI
-     * @param state 网络链接情况
+     * @param state 是否正在进行网络活动
      */
     void changeUI(bool state);
 

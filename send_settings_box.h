@@ -19,8 +19,8 @@ class SendSettingsBox : public QGroupBox
 
 public:
     explicit SendSettingsBox(QWidget *parent = nullptr);
-    /*~SendSettingsWidget();*/
-public:
+    ~SendSettingsBox();
+private:
     QGridLayout* gridLayout;
     QLabel* label_Option;
     QComboBox* comboBox_Option;
