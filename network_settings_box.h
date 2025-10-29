@@ -26,7 +26,7 @@ public:
     explicit NetworkSettingsBox(QWidget *parent = nullptr);
     /*~NetworkSettingsBox();*/
 
-public:
+private:
     QGridLayout* gridLayout;
     QLabel* label_ProtocolType;
     QLabel* label_Address;

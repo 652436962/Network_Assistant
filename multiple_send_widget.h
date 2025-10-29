@@ -4,19 +4,19 @@
 #include <QWidget>
 
 namespace Ui {
-class MUltipleSendWidget;
+class MultipleSendWidget;
 }
 
-class MUltipleSendWidget : public QWidget
+class MultipleSendWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit MUltipleSendWidget(QWidget *parent = nullptr);
-    ~MUltipleSendWidget();
+    explicit MultipleSendWidget(QWidget *parent = nullptr);
+    ~MultipleSendWidget();
 
 private:
-    Ui::MUltipleSendWidget *ui;
+    Ui::MultipleSendWidget *ui;
 };
 
 #endif // MULTIPLE_SEND_WIDGET_H

@@ -21,9 +21,11 @@ SingleSendWidget::SingleSendWidget(QWidget* parent)
 	connect(ui->pushButton_Clear, &QPushButton::clicked, this, [this]() {
 		ui->plainTextEdit->clear(); });
 
+	qDebug() << "单项发送窗口建立";
 }
 
 SingleSendWidget::~SingleSendWidget()
 {
 	delete ui;
+	qDebug() << "单项发送窗口删除";
 }

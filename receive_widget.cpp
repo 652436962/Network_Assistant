@@ -6,7 +6,9 @@
 ReceiveWidget::ReceiveWidget(QWidget* parent)
     : QPlainTextEdit{parent}
 {
-    
+    this->setReadOnly(true);
+
+    qDebug() << "接收窗口建立";
 }
 
 void ReceiveWidget::setStopDisplaying(bool state)

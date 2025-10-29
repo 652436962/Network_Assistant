@@ -1,14 +1,14 @@
 #include "multiple_send_widget.h"
 #include "ui_multiple_send_widget.h"
 
-MUltipleSendWidget::MUltipleSendWidget(QWidget *parent)
+MultipleSendWidget::MultipleSendWidget(QWidget *parent)
     : QWidget(parent)
-    , ui(new Ui::MUltipleSendWidget)
+    , ui(new Ui::MultipleSendWidget)
 {
     ui->setupUi(this);
 }
 
-MUltipleSendWidget::~MUltipleSendWidget()
+MultipleSendWidget::~MultipleSendWidget()
 {
     delete ui;
 }
