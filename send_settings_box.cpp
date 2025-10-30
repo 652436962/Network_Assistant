@@ -2,18 +2,52 @@
 
 #include <QPainter>
 
-#include "sundry.h"
+
 
 SendSettingsBox::SendSettingsBox(QWidget* parent)
 	: QGroupBox(parent)
 {
 	this->setupUi();
 
+	//文本 或 HEX
+	connect(radioButton_Text, &QRadioButton::toggled, this, [this](bool checked) {
+		emit this->setText(checked);
+	});
+
+	//自动发送
+	connect(checkBox_AutoSend, &QCheckBox::toggled, this, [this](bool checked) {
+		int cycle = spinBox_AutoSendCycle->value();
+		emit this->setAutoSend(checked, cycle);
+	});
+
 	// 添加发送区选项
 	comboBox_Option->addItem("单项发送", QVariant::fromValue<SendOptions>(SendOptions::single));
 	comboBox_Option->addItem("多项发送", QVariant::fromValue<SendOptions>(SendOptions::multiple));
-	int optionIndex = this->comboBox_Option->findData(QVariant::fromValue<SendOptions>(SendOptions::single)); // 默认单项发送
-	this->comboBox_Option->setCurrentIndex(optionIndex);
+	//int optionIndex = this->comboBox_Option->findData(QVariant::fromValue<SendOptions>(SendOptions::single)); // 默认单项发送
+	//this->comboBox_Option->setCurrentIndex(optionIndex);
+	connect(comboBox_Option, &QComboBox::currentIndexChanged, this, [this]() {
+		SendOptions option = comboBox_Option->currentData().value<SendOptions>();
+		emit this->changeSendArray(option);
+	});
+
+	//追加选项
+	QByteArray item1("\r\n", 2);
+	comboBox_Append->addItem("'\\r''\\n'", item1);
+	QByteArray item2("\n", 1);
+	comboBox_Append->addItem("'\\n'", item2);
+	QByteArray item3("\0", 1);
+	comboBox_Append->addItem("'\\0'", item3);
+	connect(checkBox_Append, &QCheckBox::toggled, this, [this](bool checked) {
+		QByteArray data = comboBox_Append->currentData().value<QByteArray>();
+		emit this->setAppend(checked, data);
+		});
+	connect(comboBox_Append, &QComboBox::currentIndexChanged, this, [this]() {
+		bool append = this->checkBox_Append->isChecked();
+		QByteArray data = comboBox_Append->currentData().value<QByteArray>();
+		emit this->setAppend(append, data); 
+	});
+
+	qDebug() << "发送设置窗口建立";
 }
 
 SendSettingsBox::~SendSettingsBox()
@@ -70,9 +104,6 @@ void SendSettingsBox::setupUi(void)
 	gridLayout->addWidget(checkBox_Append, 2, 0, 1, 1);
 
 	comboBox_Append = new QComboBox(this);
-	comboBox_Append->addItem(QString());
-	comboBox_Append->addItem(QString());
-	comboBox_Append->addItem(QString());
 	comboBox_Append->setObjectName("comboBox_Append");
 	comboBox_Append->setMaximumSize(QSize(150, 24));
 
@@ -126,9 +157,6 @@ void SendSettingsBox::retranslateUi(void)
 	radioButton_Text->setText(QCoreApplication::translate("SendSettingsBox", "\345\217\221\351\200\201\346\226\207\346\234\254", nullptr));
 	radioButton_HEX->setText(QCoreApplication::translate("SendSettingsBox", "\345\217\221\351\200\201HEX", nullptr));
 	checkBox_Append->setText(QCoreApplication::translate("SendSettingsBox", "\350\207\252\345\212\250\350\277\275\345\212\240", nullptr));
-	comboBox_Append->setItemText(0, QCoreApplication::translate("SendSettingsBox", "\346\215\242\350\241\214 \"\\r\\n\"", nullptr));
-	comboBox_Append->setItemText(1, QCoreApplication::translate("SendSettingsBox", "\346\215\242\350\241\214 \"\\n\"", nullptr));
-	comboBox_Append->setItemText(2, QCoreApplication::translate("SendSettingsBox", "\347\251\272\345\255\227\347\254\246 \"\\0\"", nullptr));
 
 	checkBox_AutoSend->setText(QCoreApplication::translate("SendSettingsBox", "\350\207\252\345\212\250\345\217\221\351\200\201", nullptr));
 	label_AutoSendCycle->setText(QCoreApplication::translate("SendSettingsBox", "\350\207\252\345\212\250\345\217\221\351\200\201\345\221\250\346\234\237", nullptr));

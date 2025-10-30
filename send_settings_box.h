@@ -13,6 +13,9 @@
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QSpinBox>
 
+
+#include "sundry.h"
+
 class SendSettingsBox : public QGroupBox
 {
     Q_OBJECT
@@ -48,25 +51,35 @@ private:
 
 signals:
     /**
+     * @brief 切换发送区
+     * @param option 发送区选项
+     * @note Qt 信号
+     */
+    void changeSendArray(SendOptions option);
+
+signals:
+    /**
      * @brief 设置显示文本
      * @param state 是否
      * @note Qt 信号
      */
     void setText(bool state);
-
+signals:
     /**
-     * @brief 设置停止显示
-     * @param state 是否
+     * @brief 设置自动发送
+     * @param open 是否开启
+     * @param cycle 自动发送周期 单位 毫秒
      * @note Qt 信号
      */
-    void setStopDispalying(bool state);
-
+    void setAutoSend(bool open, int cycle);
+signals:
     /**
-     * @brief 设置是否显示时间戳
-     * @param state 是否
+     * @brief 设置追加
+     * @param checked 是否追加
+     * @param content 要追加的数据
      * @note Qt 信号
      */
-    void setTimestamp(bool state);
+    void setAppend(bool checked, QByteArray content);
 
 
 //private:

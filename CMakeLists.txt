@@ -20,7 +20,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # 告诉 CMake 在 D:\Qt\6.9.3\msvc2022_64 下查找 Qt6
 set(CMAKE_PREFIX_PATH "D:/Qt/6.9.3/msvc2022_64" CACHE PATH "Qt6 安装路径")
 
-# 查找 Qt6，需要 Core, Gui, Widgets 模块
+# 查找 Qt6，需要 Core, Gui, Widgets 等模块
 find_package(Qt6 REQUIRED COMPONENTS
     Core
     Gui
@@ -65,7 +65,7 @@ set_target_properties(Network_Assistant PROPERTIES
 )
 
 # =============== 链接 Qt 库 ===============
-# 将 Qt6 的 Core, Gui, Widgets 链接到你的可执行文件
+# 将 Qt6 的 Core, Gui, Widgets 等链接到可执行文件
 target_link_libraries(Network_Assistant PRIVATE
     Qt6::Core
     Qt6::Gui
