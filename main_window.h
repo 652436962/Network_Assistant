@@ -47,6 +47,10 @@ private:
      * @note 内部有个socket负责
      */
     QTcpServer* tcpServer = nullptr;
+    /**
+     * @brief 所有连接到的客户端
+     */
+    QList<QTcpSocket*> tcpSockets;
 
     QTcpSocket* tcpSocket = nullptr; // TCP 通信的 socket 负责“实际通信”
     QList<QTcpSocket*> socketsList;//所有的客户端 socket
