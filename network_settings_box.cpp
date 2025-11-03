@@ -9,9 +9,9 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 	this->setupUi();
 
 	//添加相关选项
-	this->comboBox_ProtocolType->addItem("TCP Server", QVariant::fromValue(ProtocolType::TCP_Server));
-	this->comboBox_ProtocolType->addItem("TCP Client", QVariant::fromValue(ProtocolType::TCP_Client));
-	this->comboBox_ProtocolType->addItem("TCP UDP", QVariant::fromValue(ProtocolType::UDP));
+	this->comboBox_ProtocolType->addItem("TCP 服务器", QVariant::fromValue(WorkMode::TCP_Server));
+	this->comboBox_ProtocolType->addItem("TCP 客户端", QVariant::fromValue(WorkMode::TCP_Client));
+	this->comboBox_ProtocolType->addItem("UDP", QVariant::fromValue(WorkMode::UDP));
 	//配置连接 选项变化
 	connect(this->comboBox_ProtocolType, &QComboBox::currentIndexChanged, this, [this]() {
 		if (this->networkActive == true)
@@ -19,17 +19,17 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 			qDebug() << "错误，网络正在活动时文本不应当变化";
 			return;
 		}
-		ProtocolType type = this->getProtocolType();
+		WorkMode type = this->getSelectedMode();
 		QString switchString = "";
 		switch (type)
 		{
-		case ProtocolType::TCP_Server:
+		case WorkMode::TCP_Server:
 			switchString = "启动监听";
 			break;
-		case ProtocolType::TCP_Client:
+		case WorkMode::TCP_Client:
 			switchString = "建立连接";
 			break;
-		case ProtocolType::UDP:
+		case WorkMode::UDP:
 			switchString = "打开";
 			break;
 		default: break;
@@ -132,9 +132,9 @@ void NetworkSettingsBox::retranslateUi(void)
 	pushButton_Switch->setText(QCoreApplication::translate("NetworkSettingsBox", "\345\220\257\345\212\250", nullptr));
 }
 
-ProtocolType NetworkSettingsBox::getProtocolType(void)
+WorkMode NetworkSettingsBox::getSelectedMode(void)
 {
-	return this->comboBox_ProtocolType->currentData().value<ProtocolType>();
+	return this->comboBox_ProtocolType->currentData().value<WorkMode>();
 }
 
 QString NetworkSettingsBox::getAddress(void)
@@ -152,19 +152,19 @@ void NetworkSettingsBox::changeUI(bool state)
 	this->networkActive = state;
 
 	this->led->setState(state);
-	ProtocolType type = this->getProtocolType();
+	WorkMode type = this->getSelectedMode();
 	QString switchString = "";
 	switch (type)
 	{
-	case ProtocolType::TCP_Server:
+	case WorkMode::TCP_Server:
 		if (state) switchString = "停止监听";
 		else switchString = "启动监听";
 		break;
-	case ProtocolType::TCP_Client:
+	case WorkMode::TCP_Client:
 		if (state) switchString = "断开连接";
 		else switchString = "建立连接";
 		break;
-	case ProtocolType::UDP:
+	case WorkMode::UDP:
 		if (state) switchString = "关闭";
 		else switchString = "打开";
 		break;

@@ -13,9 +13,9 @@ enum class SendOptions
 };
 
 /**
- * @brief 网络协议类型
+ * @brief 工作模式
  */
-enum class ProtocolType
+enum class WorkMode
 {
     TCP_Server,
     TCP_Client,
@@ -23,11 +23,11 @@ enum class ProtocolType
 };
 
 /**
- * @brief 得到网络协议类型对应的字符串
- * @param type 网络协议类型
+ * @brief 得到工作模式对应的字符串
+ * @param mode 工作模式
  * @return 对应的字符串
  */
-std::string getProtocolTypeString(ProtocolType type);
+std::string getWorkModeString(WorkMode mode);
 
 
 /**

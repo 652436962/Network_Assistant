@@ -12,18 +12,18 @@
 #include <algorithm>
 #include <chrono>
 
-std::string getProtocolTypeString(ProtocolType type)
+std::string getWorkModeString(WorkMode mode)
 {
     std::string typeString = "";
-    switch (type)
+    switch (mode)
     {
-    case ProtocolType::TCP_Server:
+    case WorkMode::TCP_Server:
         typeString = "TCP Server";
         break;
-    case ProtocolType::TCP_Client:
+    case WorkMode::TCP_Client:
         typeString = "TCP Client";
         break;
-    case ProtocolType::UDP:
+    case WorkMode::UDP:
         typeString = "UDP";
         break;
     default:

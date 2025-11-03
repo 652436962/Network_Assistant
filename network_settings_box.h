@@ -57,7 +57,7 @@ public:
      * @param  
      * @return 选择的网络协议类型
      */
-    ProtocolType getProtocolType(void);
+    WorkMode getSelectedMode(void);
 
     /**
      * @brief 获取输入的地址

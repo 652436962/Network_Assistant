@@ -5,6 +5,8 @@
 #include <QTcpSocket>
 #include "single_send_widget.h"
 #include "multiple_send_widget.h"
+#include <list>
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -38,6 +40,14 @@ private:
      * @brief 创建对话框展示本机网络信息
      */
     void showLocalIPConfig(void);
+
+private:
+    /**
+     * @brief 网络设置中的按钮被按下
+     * @param
+     */
+    void do_clicked(void);
+
 /**
  * 作为 TCP 服务器时的相关功能
  */
@@ -49,36 +59,16 @@ private:
     QTcpServer* tcpServer = nullptr;
     /**
      * @brief 所有连接到的客户端
+     * @note TCP 通信的 socket 负责“实际通信”
      */
-    QList<QTcpSocket*> tcpSockets;
+    std::list<QTcpSocket*> tcpSocketsList;
+     
+    /**
+     * @brief 作为 TCP 服务器 工作
+     * @param  
+     */
+    void AsTcpServerOperation(void);
 
-    QTcpSocket* tcpSocket = nullptr; // TCP 通信的 socket 负责“实际通信”
-    QList<QTcpSocket*> socketsList;//所有的客户端 socket
-    /**
-     * @brief 有客户端成功接入
-     * @param  
-     */
-    void do_TCP_newConnection(void);
-    
-    /**
-     * @brief TCP 客户端断开连接
-     * @param  
-     */
-    void do_TCP_clientDisconnected(void);
-
-    /**
-     * @brief TCP 客户端可以读取
-     * @param  
-     */
-    void do_TCP_clientReadyRead(void);
-    
-
-private:
-    /**
-     * @brief 网络设置中的按钮被按下
-     * @param  
-     */
-    void do_clicked(void);
 
 /**
  * 作为 TCP 客户端时的相关功能 
