@@ -57,11 +57,12 @@ private:
      * @note 内部有个socket负责
      */
     QTcpServer* tcpServer = nullptr;
-    /**
-     * @brief 所有连接到的客户端
-     * @note TCP 通信的 socket 负责“实际通信”
-     */
-    std::list<QTcpSocket*> tcpSocketsList;
+    ///**
+    // * @brief 所有连接到的客户端
+    // * @note TCP 通信的 socket 负责“实际通信”
+    // */
+    //std::list<QTcpSocket*> tcpSocketsList;
+    QTcpSocket* tcpSocket = nullptr;
      
     /**
      * @brief 作为 TCP 服务器 工作
