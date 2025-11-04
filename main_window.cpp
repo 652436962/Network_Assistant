@@ -70,15 +70,15 @@ MainWindow::MainWindow(QWidget* parent)
 MainWindow::~MainWindow()
 {
 	//关闭 Tcp 服务器	
-	// 1. 先断开所有客户端连接
-	if (this->tcpSocket != nullptr)
-	{
-		if (this->tcpSocket->state() == QAbstractSocket::ConnectedState)
-		{
-			this->tcpSocket->disconnectFromHost();//正常 TCP 4次挥手
-			//在 disconnected 槽函数中清理
-		}
-	}
+	//// 1. 先断开所有客户端连接
+	//if (this->tcpSocket != nullptr)
+	//{
+	//	if (this->tcpSocket->state() == QAbstractSocket::ConnectedState)
+	//	{
+	//		this->tcpSocket->disconnectFromHost();//正常 TCP 4次挥手
+	//		//在 disconnected 槽函数中清理
+	//	}
+	//}
 
 	// 2. 关闭服务器
 	if (this->tcpServer != nullptr)//关闭服务器
@@ -219,10 +219,15 @@ void MainWindow::showLocalIPConfig(void)
 
 
 void MainWindow::AsTcpServerOperation(void)
-{
+{	
+	//服务器还没有创建
 	if (this->tcpServer == nullptr)
 	{
-		this->tcpServer = new QTcpServer(this);
+		if (this->tcpSocketsList.empty() != true)
+		{
+			qDebug() << "错误 服务器创建前客户端链表非空" << __FILE__ << __LINE__;
+		}
+		this->tcpServer = new QTcpServer(this);//创建TCP服务器
 
 		QString address = ui->network_settings->getAddress();//获取地址
 		uint16_t port = ui->network_settings->getPortValue();//获取端口
@@ -243,23 +248,27 @@ void MainWindow::AsTcpServerOperation(void)
 
 		//配置连接 有新的客户端连接
 		connect(this->tcpServer, &QTcpServer::newConnection, this, [this]() {
-			if (this->tcpSocket != nullptr)
-			{
-				qDebug() << "错误 只允许一个客户端连接";
-				return;
-			}
-			this->tcpSocket = this->tcpServer->nextPendingConnection();//创建与客户端通信的 socket			
+			
+			QTcpSocket* tcpSocket = this->tcpServer->nextPendingConnection();//创建与客户端通信的 socket
+			this->tcpSocketsList.push_back(tcpSocket);//加入到队列末尾
+			std::list<QTcpSocket*>::iterator it = --this->tcpSocketsList.end();//迭代器指向对应节点
 
 			ui->receive_area->appendPlainText("客户端接入");
 			ui->receive_area->appendPlainText("地址 " + tcpSocket->peerAddress().toString());
 			ui->receive_area->appendPlainText("端口 " + QString::number(tcpSocket->peerPort()));
 			qDebug() << "有客户端接入";
-			qDebug() << "地址 " << this->tcpSocket->peerAddress();
-			qDebug() << "端口 " << this->tcpSocket->peerPort();
+			qDebug() << "地址 " << tcpSocket->peerAddress();
+			qDebug() << "端口 " << tcpSocket->peerPort();
+			qDebug() << "当前连接客户端总数" << this->tcpSocketsList.size();
 
 			//配置连接 客户端断开
-			connect(this->tcpSocket, &QTcpSocket::disconnected, this, [this]() {
-				if (this->tcpSocket == nullptr)
+			connect(tcpSocket, &QTcpSocket::disconnected, this, [this, it]() {
+				if (this->tcpSocketsList.empty() == true)
+				{
+					qDebug() << "错误 链表为空" << __FILE__ << __LINE__;
+				}
+				QTcpSocket* tcpSocket = *it;
+				if (tcpSocket == nullptr)
 				{
 					qDebug() << "错误 空指针" << __FILE__ << __LINE__;
 					return;
@@ -272,47 +281,52 @@ void MainWindow::AsTcpServerOperation(void)
 				qDebug() << "端口 " << tcpSocket->peerPort();
 				tcpSocket->deleteLater();
 				tcpSocket = nullptr;
+				this->tcpSocketsList.erase(it);
+				qDebug() << "当前连接客户端总数" << this->tcpSocketsList.size();
 				});
 
-			//配置连接 展示客户端发来的数据
-			connect(this->tcpSocket, &QTcpSocket::readyRead, this, [this]() {
-				if (tcpSocket == nullptr)
-				{
-					qDebug() << "错误 空指针" << __FILE__ << __LINE__;
-					return;
-				}
-				qDebug() << "收到了客户端的数据";
-				QString string;
-				QTextStream ts(&string);
-				ts << "\n[Tcp client " << tcpSocket->peerAddress().toString() << ' ' << tcpSocket->peerPort() << "]\n";
-				ui->receive_area->insertPlainText(string);
-				QByteArray byteArray = tcpSocket->readAll();
-				ui->receive_area->showData(byteArray);
-				});
+			////配置连接 展示客户端发来的数据
+			//connect(this->tcpSocket, &QTcpSocket::readyRead, this, [this]() {
+			//	if (tcpSocket == nullptr)
+			//	{
+			//		qDebug() << "错误 空指针" << __FILE__ << __LINE__;
+			//		return;
+			//	}
+			//	qDebug() << "收到了客户端的数据";
+			//	QString string;
+			//	QTextStream ts(&string);
+			//	ts << "\n[Tcp client " << tcpSocket->peerAddress().toString() << ' ' << tcpSocket->peerPort() << "]\n";
+			//	ui->receive_area->insertPlainText(string);
+			//	QByteArray byteArray = tcpSocket->readAll();
+			//	ui->receive_area->showData(byteArray);
+			//	});
 
-			//配置连接 向客户端发送数据
-			connect(this->singleSend, &SingleSendWidget::requestToSend, this->tcpSocket,
-				static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
+			////配置连接 向客户端发送数据
+			//connect(this->singleSend, &SingleSendWidget::requestToSend, this->tcpSocket,
+			//	static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
+
 			});
 		
 	}
+	//服务器已经创建
 	else
 	{
-		if (tcpSocket != nullptr)
+		//if (tcpSocket != nullptr)
+		//{
+		//	if (tcpSocket->state() == QAbstractSocket::ConnectedState)
+		//	{
+		//		tcpSocket->disconnectFromHost();
+		//		//在 disconnected 中清理
+		//	}
+		//}
+		//else
+		//{
+		//	qDebug() << "错误 空指针 " << __FILE__ << __LINE__;
+		//}
+		//服务器正在监听
+		if (this->tcpServer->isListening())
 		{
-			if (tcpSocket->state() == QAbstractSocket::ConnectedState)
-			{
-				tcpSocket->disconnectFromHost();
-				//在 disconnected 中清理
-			}
-		}
-		else
-		{
-			qDebug() << "错误 空指针 " << __FILE__ << __LINE__;
-		}
-		if (tcpServer->isListening())
-		{
-			tcpServer->close();//停止监听
+			this->tcpServer->close();//停止监听
 			this->tcpServer->deleteLater();
 			this->tcpServer = nullptr;
 			emit this->connectionStatusChanged(false);
