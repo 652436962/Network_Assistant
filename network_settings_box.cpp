@@ -56,11 +56,11 @@ void NetworkSettingsBox::setupUi(void)
 	this->setFont(font);
 	gridLayout = new QGridLayout(this);
 	gridLayout->setObjectName("gridLayout");
-	label_ProtocolType = new QLabel(this);
-	label_ProtocolType->setObjectName("label_ProtocolType");
-	label_ProtocolType->setFont(font);
+	label_WorkMode = new QLabel(this);
+	label_WorkMode->setObjectName("label_WorkMode");
+	label_WorkMode->setFont(font);
 
-	gridLayout->addWidget(label_ProtocolType, 0, 0, 1, 2);
+	gridLayout->addWidget(label_WorkMode, 0, 0, 1, 2);
 
 	comboBox_ProtocolType = new QComboBox(this);
 	comboBox_ProtocolType->setObjectName("comboBox_ProtocolType");
@@ -125,9 +125,9 @@ void NetworkSettingsBox::setupUi(void)
 void NetworkSettingsBox::retranslateUi(void)
 {
 	this->setWindowTitle(QCoreApplication::translate("NetworkSettingsBox", "Form", nullptr));
-	label_ProtocolType->setText(QCoreApplication::translate("NetworkSettingsBox", "\345\215\217\350\256\256\347\261\273\345\236\213", nullptr));
-	label_Address->setText(QCoreApplication::translate("NetworkSettingsBox", "\345\234\260\345\235\200", nullptr));
-	label_Port->setText(QCoreApplication::translate("NetworkSettingsBox", "\347\253\257\345\217\243", nullptr));
+	label_WorkMode->setText(QCoreApplication::translate("NetworkSettingsBox", reinterpret_cast<const char*>(u8"工作模式"), nullptr));
+	label_Address->setText(QCoreApplication::translate("NetworkSettingsBox", reinterpret_cast<const char*>(u8"地址"), nullptr));
+	label_Port->setText(QCoreApplication::translate("NetworkSettingsBox", reinterpret_cast<const char*>(u8"端口"), nullptr));
 	pushButton_Other->setText(QCoreApplication::translate("NetworkSettingsBox", "\345\205\266\345\256\203", nullptr));
 	pushButton_Switch->setText(QCoreApplication::translate("NetworkSettingsBox", "\345\220\257\345\212\250", nullptr));
 }

@@ -21,9 +21,10 @@ MainWindow::MainWindow(QWidget* parent)
 	: QMainWindow(parent)
 	, ui(new Ui::MainWindow)
 {
+	ui->setupUi(this);//配置UI
 
-	ui->setupUi(this);
-
+	this->notification = new NotificationManager(this);
+	this->notification->showNotification("测试信息");
 
 	//配置连接 展示主机信息
 	connect(ui->action_Info, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
@@ -219,8 +220,6 @@ void MainWindow::showLocalIPConfig(void)
 
 
 	table->resizeColumnsToContents();
-
-
 }
 
 
@@ -301,25 +300,26 @@ void MainWindow::AsTcpServerOperation(void)
 				qDebug() << "当前连接客户端总数" << this->tcpSocketsList.size();
 				});
 
-			////配置连接 展示客户端发来的数据
-			//connect(this->tcpSocket, &QTcpSocket::readyRead, this, [this]() {
-			//	if (tcpSocket == nullptr)
-			//	{
-			//		qDebug() << "错误 空指针" << __FILE__ << __LINE__;
-			//		return;
-			//	}
-			//	qDebug() << "收到了客户端的数据";
-			//	QString string;
-			//	QTextStream ts(&string);
-			//	ts << "\n[Tcp client " << tcpSocket->peerAddress().toString() << ' ' << tcpSocket->peerPort() << "]\n";
-			//	ui->receive_area->insertPlainText(string);
-			//	QByteArray byteArray = tcpSocket->readAll();
-			//	ui->receive_area->showData(byteArray);
-			//	});
+			//配置连接 展示新连接的客户端发来的数据
+			connect(tcpSocket, &QTcpSocket::readyRead, this, [this, it]() {
+				QTcpSocket* tcpSocket = *it;
+				if (tcpSocket == nullptr)
+				{
+					qDebug() << "错误 空指针" << __FILE__ << __LINE__;
+					return;
+				}
+				qDebug() << "收到了客户端的数据";
+				QString string;
+				QTextStream ts(&string);
+				ts << "\n[Tcp client " << tcpSocket->peerAddress().toString() << ' ' << tcpSocket->peerPort() << "]\n";
+				ui->receive_area->insertPlainText(string);
+				QByteArray byteArray = tcpSocket->readAll();
+				ui->receive_area->showData(byteArray);
+				});
 
-			////配置连接 向客户端发送数据
-			//connect(this->singleSend, &SingleSendWidget::requestToSend, this->tcpSocket,
-			//	static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
+			//配置连接 向新连接的客户端发送数据
+			connect(this->singleSend, &SingleSendWidget::requestToSend, tcpSocket,
+				static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
 
 			});
 		
@@ -409,6 +409,7 @@ void MainWindow::AsTcpClientOperation(void)
 			emit this->connectionStatusChanged(true);
 			qDebug() << "已连接到服务器";
 			qDebug() << "地址 " << clientTcpSocket->peerAddress() << " 端口 " << clientTcpSocket->peerPort();
+			
 			});
 		//与服务器断开了连接
 		connect(this->clientTcpSocket, &QTcpSocket::disconnected, this, [this]() {

@@ -28,7 +28,7 @@ public:
 
 private:
     QGridLayout* gridLayout;
-    QLabel* label_ProtocolType;
+    QLabel* label_WorkMode;
     QLabel* label_Address;
     QLabel* label_Port;
     LED_Widget* led;

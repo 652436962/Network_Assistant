@@ -3,8 +3,11 @@
 #include <QMainWindow>
 #include <QTcpServer>
 #include <QTcpSocket>
+
 #include "single_send_widget.h"
 #include "multiple_send_widget.h"
+#include "notification_manager.h"
+
 #include <list>
 
 
@@ -35,6 +38,7 @@ private:
 private:
     SingleSendWidget* singleSend = nullptr;//单项发送区
     MultipleSendWidget* multipleSend = nullptr;//多项发送区
+    NotificationManager* notification = nullptr;//通知气泡管理
 private:
     /**
      * @brief 创建对话框展示本机网络信息
