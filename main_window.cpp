@@ -70,17 +70,24 @@ MainWindow::MainWindow(QWidget* parent)
 MainWindow::~MainWindow()
 {
 	//关闭 Tcp 服务器	
-	//// 1. 先断开所有客户端连接
-	//if (this->tcpSocket != nullptr)
-	//{
-	//	if (this->tcpSocket->state() == QAbstractSocket::ConnectedState)
-	//	{
-	//		this->tcpSocket->disconnectFromHost();//正常 TCP 4次挥手
-	//		//在 disconnected 槽函数中清理
-	//	}
-	//}
-
-	// 2. 关闭服务器
+	//断开所有客户端连接
+	std::list<QTcpSocket*> socketsList = this->tcpSocketsList;// 复制一份指针列表（浅拷贝，安全）
+	for (auto it = socketsList.begin(); it != socketsList.end(); it++)//遍历指针列表
+	{
+		QTcpSocket* tcpSocket = *it;
+		if (tcpSocket == nullptr)
+		{
+			qDebug() << "错误 空指针" << __FILE__ << __LINE__;
+			continue;
+		}
+		if (tcpSocket->state() == QAbstractSocket::ConnectedState)
+		{
+			tcpSocket->disconnectFromHost();
+		}
+		//会在 tcpSocket 的 disconnected 信号对应的槽函数中清理
+	}
+	//注意，在清理时会删除链表节点，因此，如果遍历原本的链表会错！！
+	// 关闭服务器
 	if (this->tcpServer != nullptr)//关闭服务器
 	{
 		if (tcpServer->isListening())
@@ -95,7 +102,7 @@ MainWindow::~MainWindow()
 		if (clientTcpSocket->state() == QAbstractSocket::ConnectedState)
 		{
 			clientTcpSocket->disconnectFromHost();//正常 TCP 4次挥手
-			//在 disconnected 槽函数中清理
+			//在 disconnected 对应的槽函数中清理
 		}
 	}
 
@@ -228,6 +235,7 @@ void MainWindow::AsTcpServerOperation(void)
 			qDebug() << "错误 服务器创建前客户端链表非空" << __FILE__ << __LINE__;
 		}
 		this->tcpServer = new QTcpServer(this);//创建TCP服务器
+		this->tcpServer->setObjectName("TCP Server");
 
 		QString address = ui->network_settings->getAddress();//获取地址
 		uint16_t port = ui->network_settings->getPortValue();//获取端口
@@ -248,8 +256,16 @@ void MainWindow::AsTcpServerOperation(void)
 
 		//配置连接 有新的客户端连接
 		connect(this->tcpServer, &QTcpServer::newConnection, this, [this]() {
-			
-			QTcpSocket* tcpSocket = this->tcpServer->nextPendingConnection();//创建与客户端通信的 socket
+			/*创建与客户端通信的 socket
+			* 自 Qt 6.4 起，创建的 socket 默认父对象为 对应的 QTcpServer 实例
+			*/
+			QTcpSocket* tcpSocket = this->tcpServer->nextPendingConnection();
+			qDebug() << tcpSocket->parent()->objectName();			
+			tcpSocket->setParent(this);//设置父对象，由我管理它
+			qDebug() << "改变tcpSocket父对象";
+			qDebug() << tcpSocket->parent()->objectName();
+
+
 			this->tcpSocketsList.push_back(tcpSocket);//加入到队列末尾
 			std::list<QTcpSocket*>::iterator it = --this->tcpSocketsList.end();//迭代器指向对应节点
 
@@ -261,7 +277,7 @@ void MainWindow::AsTcpServerOperation(void)
 			qDebug() << "端口 " << tcpSocket->peerPort();
 			qDebug() << "当前连接客户端总数" << this->tcpSocketsList.size();
 
-			//配置连接 客户端断开
+			//配置连接 有客户端断开
 			connect(tcpSocket, &QTcpSocket::disconnected, this, [this, it]() {
 				if (this->tcpSocketsList.empty() == true)
 				{
@@ -281,7 +297,7 @@ void MainWindow::AsTcpServerOperation(void)
 				qDebug() << "端口 " << tcpSocket->peerPort();
 				tcpSocket->deleteLater();
 				tcpSocket = nullptr;
-				this->tcpSocketsList.erase(it);
+				this->tcpSocketsList.erase(it);//移除链表中对应节点
 				qDebug() << "当前连接客户端总数" << this->tcpSocketsList.size();
 				});
 
@@ -311,18 +327,25 @@ void MainWindow::AsTcpServerOperation(void)
 	//服务器已经创建
 	else
 	{
-		//if (tcpSocket != nullptr)
-		//{
-		//	if (tcpSocket->state() == QAbstractSocket::ConnectedState)
-		//	{
-		//		tcpSocket->disconnectFromHost();
-		//		//在 disconnected 中清理
-		//	}
-		//}
-		//else
-		//{
-		//	qDebug() << "错误 空指针 " << __FILE__ << __LINE__;
-		//}
+		//断开所有客户端连接
+		std::list<QTcpSocket*> socketsList = this->tcpSocketsList;// 复制一份指针列表（浅拷贝，安全）
+		for (auto it = socketsList.begin(); it != socketsList.end(); it++)//遍历指针列表
+		{
+			QTcpSocket* tcpSocket = *it;
+			if (tcpSocket == nullptr)
+			{
+				qDebug() << "错误 空指针" << __FILE__ << __LINE__;
+				continue;
+			}
+			if (tcpSocket->state() == QAbstractSocket::ConnectedState)
+			{
+				tcpSocket->disconnectFromHost();
+			}			
+			//会在 tcpSocket 的 disconnected 信号对应的槽函数中清理
+		}
+		//注意，在清理时会删除链表节点，因此，如果遍历原本的链表会错！！
+		
+		
 		//服务器正在监听
 		if (this->tcpServer->isListening())
 		{
