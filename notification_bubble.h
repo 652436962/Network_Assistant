@@ -4,6 +4,7 @@
 #include <QTimer>
 #include <QLabel>
 #include <QToolButton>
+#include <QPropertyAnimation>
 
 /**
  * @brief 单个通知气泡组件
@@ -17,54 +18,44 @@ class NotificationBubble: public QFrame
 
 private:
     QLabel* label_Text;          // 显示文本内容的标签
-    QToolButton* toolButton_Close; // 关闭按钮（×）
-    QTimer* m_timer;          // 自动消失计时器
-    int m_duration;           // 倒计时时长（毫秒）
-
+    QToolButton* toolButton_Close; // 关闭按钮
+    
+    QTimer* timer_Close;//本窗口关闭定时器
 public:
     /**
      * @brief 构造一个通知气泡
+     * @param parent 父窗口
      * @param text 显示的文本内容
-     * @param durationMs 自动消失的毫秒数，默认 5000（5秒）
-     * @param parent 父窗口，通常为 NotificationManager
+     * @param duration 持续时间 毫秒
+     * @note 本身默认隐藏，以配合后面的动画
      */
-    explicit NotificationBubble(const QString& text, int durationMs = 5000, QWidget* parent = nullptr);
+    explicit NotificationBubble(const QString& text, QWidget* parent, int duration = 5000);
+    ~NotificationBubble();
 
     /**
-     * @brief 启动自动消失计时器
-     *
-     * 调用后，气泡将在设定的 durationMs 后自动关闭。
+     * @brief 在主窗口右上方播放滑入动画以显示
      */
-    void startTimer();
+    void startSlideInAnimation();
+
+    
+protected:
+    /**
+     * @brief 重写绘图事件
+     * @param event 
+     */
+    void paintEvent(QPaintEvent* event) override;
 
     /**
-     * @brief 暂停自动消失计时器
-     *
-     * 通常在鼠标悬停时调用，防止用户阅读时气泡突然消失。
+     * @brief 重写关闭事件
+     * @param event 
      */
-    void pauseTimer();
-
-    /**
-     * @brief 恢复自动消失计时器
-     *
-     * 通常在鼠标离开时调用，继续倒计时。
-     */
-    void resumeTimer();
+    void closeEvent(QCloseEvent* event) override;
 
 signals:
     /**
-     * @brief 气泡已过期或被用户关闭，应从管理器中移除
-     *
-     * 此信号由内部自动触发（超时或点击关闭按钮），外部不应手动发射。
+     * @brief 泡泡已关闭
+     * @param 关闭的泡泡指针
+     * @note Qt 信号
      */
-    void expired();
-
-private:
-    /**
-     * @brief 计时器超时槽函数
-     *
-     * 触发 expired() 信号并安排自身删除。
-     */
-    void onTimeout();
-
+    void bubbleColsed(NotificationBubble* bubble);
 };

@@ -34,10 +34,16 @@
     </property>
     <item>
      <widget class="QWidget" name="widget_Left" native="true">
+      <property name="minimumSize">
+       <size>
+        <width>256</width>
+        <height>512</height>
+       </size>
+      </property>
       <property name="maximumSize">
        <size>
-        <width>250</width>
-        <height>16777215</height>
+        <width>256</width>
+        <height>1024</height>
        </size>
       </property>
       <layout class="QVBoxLayout" name="verticalLayout">
@@ -86,7 +92,7 @@
         <widget class="ReceiveSettingsBox" name="receive_settings">
          <property name="minimumSize">
           <size>
-           <width>175</width>
+           <width>200</width>
            <height>125</height>
           </size>
          </property>

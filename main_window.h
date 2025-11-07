@@ -3,10 +3,12 @@
 #include <QMainWindow>
 #include <QTcpServer>
 #include <QTcpSocket>
+#include <QTableWidget>
+
 
 #include "single_send_widget.h"
 #include "multiple_send_widget.h"
-#include "notification_manager.h"
+#include "notification_bubble.h"
 
 #include <list>
 
@@ -38,7 +40,6 @@ private:
 private:
     SingleSendWidget* singleSend = nullptr;//单项发送区
     MultipleSendWidget* multipleSend = nullptr;//多项发送区
-    NotificationManager* notification = nullptr;//通知气泡管理
 private:
     /**
      * @brief 创建对话框展示本机网络信息
@@ -66,7 +67,10 @@ private:
      * @note TCP 通信的 socket 负责“实际通信”
      */
     std::list<QTcpSocket*> tcpSocketsList;
-    /*QTcpSocket* tcpSocket = nullptr;*/
+    /**
+     * @brief 展示所有连接到的客户端的表格
+     */
+    QTableWidget* clientTable = nullptr;
      
     /**
      * @brief 作为 TCP 服务器 工作

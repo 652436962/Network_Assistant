@@ -23,8 +23,7 @@ MainWindow::MainWindow(QWidget* parent)
 {
 	ui->setupUi(this);//配置UI
 
-	this->notification = new NotificationManager(this);
-	this->notification->showNotification("测试信息");
+	NotificationBubble* bubble = new NotificationBubble("abcdefg", this);
 
 	//配置连接 展示主机信息
 	connect(ui->action_Info, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
@@ -251,6 +250,11 @@ void MainWindow::AsTcpServerOperation(void)
 			this->tcpServer = nullptr;
 			qDebug() << "监听启动失败！";
 		}
+
+		//创建客户端展示表格
+		this->clientTable = new QTableWidget(this);
+		QVBoxLayout* layout = static_cast<QVBoxLayout*>(ui->widget_Left->layout());
+		layout->insertWidget(1, this->clientTable);
 
 
 		//配置连接 有新的客户端连接
