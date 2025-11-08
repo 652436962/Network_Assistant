@@ -7,7 +7,7 @@
 #include <QPainter>
 #include <QPainterPath>
 
-NotificationBubble::NotificationBubble(const QString& text, QWidget* parent, int duration)
+NotificationBubble::NotificationBubble(const QString& text, int duration, QWidget* parent)
     : QFrame(parent)
 {   
     if (this->objectName().isEmpty()) this->setObjectName("notification_bubble");
@@ -37,23 +37,24 @@ NotificationBubble::NotificationBubble(const QString& text, QWidget* parent, int
 
     this->setLayout(layout);
 
-    this->setMinimumSize(196, 48);
-    this->setMaximumSize(196, 48);
+    this->setMinimumSize(WIDTH, HEIGHT);
+    this->setMaximumSize(WIDTH, HEIGHT);
 
     this->timer_Close = new QTimer(this);
     this->timer_Close->setTimerType(Qt::TimerType::CoarseTimer);
     this->timer_Close->setSingleShot(true);//只触发一次
+    this->timer_Close->setInterval(duration);//设置时间
     //配置连接 定时结束关闭本窗口
     connect(this->timer_Close, &QTimer::timeout, this, &NotificationBubble::close);
 
 
     this->hide();// 隐藏窗口
 
-    this->startSlideInAnimation();//滑入
+    //this->startSlideInAnimation();//滑入
 
-    this->timer_Close->start(duration);//启动定时器
+    //this->timer_Close->start(duration);//启动定时器
 
-    qDebug() << "NotificationBubble 建立";
+    qDebug() << "有气泡建立";
 }
 
 void NotificationBubble::startSlideInAnimation()
@@ -80,6 +81,38 @@ void NotificationBubble::startSlideInAnimation()
     slideIn->setEasingCurve(QEasingCurve::OutCubic); // 缓动效果更自然
 
     slideIn->start();
+}
+
+void NotificationBubble::movePositionLeft(void)
+{    
+    QPoint startPoint = this->pos();
+    QPoint endPoint = startPoint - QPoint(this->width(), 0);
+    
+    // 设置动画
+    QPropertyAnimation* slideLift = new QPropertyAnimation(this, "pos", this);
+    slideLift->setDuration(1000);//1000ms
+    slideLift->setStartValue(startPoint);
+    slideLift->setEndValue(endPoint);
+    slideLift->setEasingCurve(QEasingCurve::OutCubic);// 缓动效果更自然
+
+    this->show();//显示窗口
+    slideLift->start();//播放动画
+    
+}
+
+void NotificationBubble::movePositionUp(void)
+{
+    QPoint startPoint = this->pos();
+    QPoint endPoint = startPoint - QPoint(0, this->height() + 8);
+    // 设置动画
+    QPropertyAnimation* slideUP = new QPropertyAnimation(this, "pos", this);
+    slideUP->setDuration(1000);//1000ms
+    slideUP->setStartValue(startPoint);
+    slideUP->setEndValue(endPoint);
+    slideUP->setEasingCurve(QEasingCurve::OutCubic);// 缓动效果更自然
+
+    this->show();//显示窗口
+    slideUP->start();//播放动画
 }
 
 void NotificationBubble::paintEvent(QPaintEvent* event)
@@ -114,5 +147,10 @@ void NotificationBubble::closeEvent(QCloseEvent* event)
 NotificationBubble::~NotificationBubble()
 {
     qDebug() << "通知气泡关闭";
+}
+
+void NotificationBubble::startTimer(void)
+{
+    this->timer_Close->start();
 }
 

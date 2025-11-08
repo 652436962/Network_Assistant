@@ -23,7 +23,13 @@ MainWindow::MainWindow(QWidget* parent)
 {
 	ui->setupUi(this);//配置UI
 
-	NotificationBubble* bubble = new NotificationBubble("abcdefg", this);
+	this->notificationManager = new NotificationManager(this, this);
+	/*NotificationBubble* bubble = new NotificationBubble("abcdefg",5000, this);*/
+	this->notificationManager->newBubble("aaa", 5000);
+	this->notificationManager->newBubble("bbb", 7000);
+	this->notificationManager->newBubble("ccc", 9000);
+	this->notificationManager->newBubble("ddd", 11000);
+	this->notificationManager->newBubble("eee", 13000);
 
 	//配置连接 展示主机信息
 	connect(ui->action_Info, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
@@ -349,6 +355,7 @@ void MainWindow::AsTcpServerOperation(void)
 		}
 		//注意，在清理时会删除链表节点，因此，如果遍历原本的链表会错！！
 		
+		this->clientTable->deleteLater();//删除客户端表格
 		
 		//服务器正在监听
 		if (this->tcpServer->isListening())

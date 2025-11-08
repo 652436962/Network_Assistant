@@ -8,7 +8,7 @@
 
 #include "single_send_widget.h"
 #include "multiple_send_widget.h"
-#include "notification_bubble.h"
+#include "notification_manager.h"
 
 #include <list>
 
@@ -36,7 +36,8 @@ public:
 
 private:
     Ui::MainWindow* ui;
-
+private:
+    NotificationManager* notificationManager;//通知管理
 private:
     SingleSendWidget* singleSend = nullptr;//单项发送区
     MultipleSendWidget* multipleSend = nullptr;//多项发送区
