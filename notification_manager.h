@@ -2,6 +2,9 @@
 #include "notification_bubble.h"
 #include <list>
 
+/**
+ * @brief 通知气泡管理
+ */
 class NotificationManager : public QObject
 {
 	Q_OBJECT
@@ -30,7 +33,7 @@ public:
 	 * @param str 要展示的消息
 	 * @param duration 持续时间 毫秒
 	 */
-	void newBubble(const QString& str, int duration);
+	void newBubble(const QString str="", int duration=5000);
 
 	/**
 	 * @brief 某个气泡关闭了

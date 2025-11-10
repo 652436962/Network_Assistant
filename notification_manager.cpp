@@ -2,13 +2,13 @@
 
 
 
-NotificationManager::NotificationManager(QObject* parent, QWidget* widget):QObject(parent)
+NotificationManager::NotificationManager(QObject* parent, QWidget* widget) :QObject(parent)
 {
 	this->m_widget = widget;
 	qDebug() << "通知管理建立";
 }
 
-void NotificationManager::newBubble(const QString& str, int duration)
+void NotificationManager::newBubble(const QString str, int duration)
 {
 	if (this->m_widget == nullptr)
 	{
@@ -22,11 +22,12 @@ void NotificationManager::newBubble(const QString& str, int duration)
 
 	//确定位置，准备弹出动画
 	int x = this->m_widget->x() + this->m_widget->width() - 8;
-	int y = this->m_widget->y() + this->bubblesList.size() * (bubble->height()+8);
+	int y = this->m_widget->y() + this->bubblesList.size() * (bubble->height() + 8);
 	QPoint point(x, y);
 	bubble->move(point);
-	bubble->movePositionLeft();
-	bubble->startTimer();
+	bubble->show();//取消隐藏
+	bubble->movePositionLeft();//左移动画
+	bubble->startTimer();//启动定时器
 }
 
 void NotificationManager::aBubbleClose(NotificationBubble* bubble)
@@ -36,13 +37,19 @@ void NotificationManager::aBubbleClose(NotificationBubble* bubble)
 	if (it_target == this->bubblesList.end())
 	{
 		qDebug() << "错误，找不到对应气泡" << __FILE__ << __LINE__;
+		return;
 	}
-	auto it = it_target++;//目标的后一个
-	this->bubblesList.erase(it_target);//在链表中移除目标
+	std::list<NotificationBubble*>::iterator it = std::next(it_target);//目标的后一个
 	//后面的上移
 	for (; it != this->bubblesList.end(); it++)
 	{
-		(*it)->movePositionUp();
+		if (*it == nullptr)
+		{
+			qDebug() << "错误，空指针" << __FILE__ << __LINE__;
+			continue;
+		}
+		(*it)->movePositionUp();//上移
 	}
+	this->bubblesList.erase(it_target);//在链表中移除目标
 }
 

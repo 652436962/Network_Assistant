@@ -23,13 +23,9 @@ MainWindow::MainWindow(QWidget* parent)
 {
 	ui->setupUi(this);//配置UI
 
-	this->notificationManager = new NotificationManager(this, this);
-	/*NotificationBubble* bubble = new NotificationBubble("abcdefg",5000, this);*/
-	this->notificationManager->newBubble("aaa", 5000);
-	this->notificationManager->newBubble("bbb", 7000);
-	this->notificationManager->newBubble("ccc", 9000);
-	this->notificationManager->newBubble("ddd", 11000);
-	this->notificationManager->newBubble("eee", 13000);
+
+	this->notificationManager = new NotificationManager(this, this);//通知气泡管理
+	this->notificationManager->newBubble("欢迎使用");
 
 	//配置连接 展示主机信息
 	connect(ui->action_Info, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
@@ -248,12 +244,14 @@ void MainWindow::AsTcpServerOperation(void)
 		if (result)
 		{
 			emit this->connectionStatusChanged(true);
+			this->notificationManager->newBubble("TCP服务器开始监听");
 			qDebug() << "开始监听  地址" << hostAddress << " 端口 " << port;
 		}
 		else
 		{
 			this->tcpServer->deleteLater();
 			this->tcpServer = nullptr;
+			this->notificationManager->newBubble("TCP服务器监听启动失败");
 			qDebug() << "监听启动失败！";
 		}
 
@@ -278,12 +276,11 @@ void MainWindow::AsTcpServerOperation(void)
 			this->tcpSocketsList.push_back(tcpSocket);//加入到队列末尾
 			std::list<QTcpSocket*>::iterator it = --this->tcpSocketsList.end();//迭代器指向对应节点
 
-			ui->receive_area->appendPlainText("客户端接入");
-			ui->receive_area->appendPlainText("地址 " + tcpSocket->peerAddress().toString());
-			ui->receive_area->appendPlainText("端口 " + QString::number(tcpSocket->peerPort()));
-			qDebug() << "有客户端接入";
-			qDebug() << "地址 " << tcpSocket->peerAddress();
-			qDebug() << "端口 " << tcpSocket->peerPort();
+			QString connectString = "";
+			QTextStream text(&connectString);
+			text << "客户端  " << tcpSocket->peerAddress().toString()<<" " << tcpSocket->peerPort() << "  接入";
+			this->notificationManager->newBubble(connectString);
+			qDebug() << connectString;
 			qDebug() << "当前连接客户端总数" << this->tcpSocketsList.size();
 
 			//配置连接 有客户端断开
@@ -298,12 +295,11 @@ void MainWindow::AsTcpServerOperation(void)
 					qDebug() << "错误 空指针" << __FILE__ << __LINE__;
 					return;
 				}
-				ui->receive_area->appendPlainText("客户端断开");
-				ui->receive_area->appendPlainText("地址 " + tcpSocket->peerAddress().toString());
-				ui->receive_area->appendPlainText("端口 " + QString::number(tcpSocket->peerPort()) + '\n');
-				qDebug() << "客户端断开";
-				qDebug() << "地址 " << tcpSocket->peerAddress();
-				qDebug() << "端口 " << tcpSocket->peerPort();
+				QString disconnectString = "";
+				QTextStream stream(&disconnectString);
+				stream << "客户端  " << tcpSocket->peerAddress().toString() << " " << tcpSocket->peerPort() << "  已断开";
+				this->notificationManager->newBubble(disconnectString);
+				qDebug() << disconnectString;
 				tcpSocket->deleteLater();
 				tcpSocket = nullptr;
 				this->tcpSocketsList.erase(it);//移除链表中对应节点
@@ -364,6 +360,7 @@ void MainWindow::AsTcpServerOperation(void)
 			this->tcpServer->deleteLater();
 			this->tcpServer = nullptr;
 			emit this->connectionStatusChanged(false);
+			this->notificationManager->newBubble("服务器停止监听");
 			qDebug() << "停止监听";
 		}
 		else//正常情况下不应该执行到这里
@@ -415,11 +412,12 @@ void MainWindow::AsTcpClientOperation(void)
 				qDebug() << "错误 " << __FILE__ << __LINE__;
 				return;
 			}
-			ui->receive_area->appendPlainText("已连接到服务器");
-			ui->receive_area->appendPlainText("地址 " + clientTcpSocket->peerAddress().toString() + " 端口 " + QString::number(clientTcpSocket->peerPort()) + '\n');
+			QString connectString = "";
+			QTextStream connectStream(&connectString);
+			connectStream << "已连接到服务器  " << clientTcpSocket->peerAddress().toString() << " " << clientTcpSocket->peerPort();
+			this->notificationManager->newBubble(connectString);
 			emit this->connectionStatusChanged(true);
-			qDebug() << "已连接到服务器";
-			qDebug() << "地址 " << clientTcpSocket->peerAddress() << " 端口 " << clientTcpSocket->peerPort();
+			qDebug() << connectString;
 			
 			});
 		//与服务器断开了连接
@@ -429,11 +427,14 @@ void MainWindow::AsTcpClientOperation(void)
 				qDebug() << "错误 " << __FILE__ << __LINE__;
 				return;
 			}
-			ui->receive_area->appendPlainText("与服务器断开了连接");
-			clientTcpSocket->deleteLater();
+			QString disconnectString = "";
+			QTextStream disconnectStream(&disconnectString);
+			disconnectStream << "已断开与服务器  " << clientTcpSocket->peerAddress().toString() << " " << clientTcpSocket->peerPort()<<"  的连接";
+			this->notificationManager->newBubble(disconnectString);
+			clientTcpSocket->deleteLater();//删除 Socket
 			clientTcpSocket = nullptr;
 			emit this->connectionStatusChanged(false);
-			qDebug() << "与服务器断开了连接";
+			qDebug() << disconnectString;
 			});
 		//发生错误
 		connect(this->clientTcpSocket, &QTcpSocket::errorOccurred, this, [this](QAbstractSocket::SocketError error) {

@@ -8,15 +8,12 @@
 
 /**
  * @brief 单个通知气泡组件
- *
- * 用于在屏幕右上角显示短暂提示信息，支持自动消失、手动关闭、
- * 鼠标悬停暂停等功能。通常由 NotificationManager 管理。
  */
 class NotificationBubble: public QFrame
 {
     Q_OBJECT
 private:
-    static constexpr int WIDTH = 196;//窗口宽
+    static constexpr int WIDTH = 256;//窗口宽
     static constexpr int HEIGHT = 48;//窗口高
 private:
     QLabel* label_Text;          // 显示文本内容的标签
@@ -31,7 +28,7 @@ public:
      * @param parent 父窗口
      * @note 本身默认隐藏，以配合后面的动画
      */
-    explicit NotificationBubble(const QString& text, int duration = 5000, QWidget* parent = nullptr);
+    explicit NotificationBubble(const QString text="", int duration = 5000, QWidget* parent = nullptr);
 
     /**
      * @brief 析构函数
@@ -42,11 +39,6 @@ public:
      * @brief 启动气泡的定时器
      */
     void startTimer(void);
-
-    /**
-     * @brief 在主窗口右上方播放滑入动画以显示
-     */
-    void startSlideInAnimation();
 
     /**
      * @brief 左移一个身位，有动画

@@ -7,7 +7,7 @@
 #include <QPainter>
 #include <QPainterPath>
 
-NotificationBubble::NotificationBubble(const QString& text, int duration, QWidget* parent)
+NotificationBubble::NotificationBubble(const QString text, int duration, QWidget* parent)
     : QFrame(parent)
 {   
     if (this->objectName().isEmpty()) this->setObjectName("notification_bubble");
@@ -50,37 +50,7 @@ NotificationBubble::NotificationBubble(const QString& text, int duration, QWidge
 
     this->hide();// 隐藏窗口
 
-    //this->startSlideInAnimation();//滑入
-
-    //this->timer_Close->start(duration);//启动定时器
-
     qDebug() << "有气泡建立";
-}
-
-void NotificationBubble::startSlideInAnimation()
-{
-    QWidget* mainWindow = window(); // 获取顶层窗口（通常是主窗口）
-    if (!mainWindow) return;
-
-    // 计算目标位置：主窗口右上角内侧（留 12px 边距）
-    int x = mainWindow->x() + mainWindow->width() - this->width() - 12;
-    int y = mainWindow->y() + 32; // 从顶部下方 32px 开始（避开标题栏）
-
-    // 将窗口移动到初始位置：从右方滑入（X 在窗口外）
-    this->move(x+this->width()+12, y); // 起点在目标位置右方
-
-    // 显示窗口（但还在外面）
-    this->show();
-
-    // 设置动画
-    //滑入动画
-    QPropertyAnimation* slideIn = new QPropertyAnimation(this, "pos", this);
-    slideIn->setDuration(1000); // 1000ms
-    slideIn->setStartValue(QPoint(x + this->width() + 12, y));
-    slideIn->setEndValue(QPoint(x, y));// 目标位置
-    slideIn->setEasingCurve(QEasingCurve::OutCubic); // 缓动效果更自然
-
-    slideIn->start();
 }
 
 void NotificationBubble::movePositionLeft(void)
@@ -95,9 +65,7 @@ void NotificationBubble::movePositionLeft(void)
     slideLift->setEndValue(endPoint);
     slideLift->setEasingCurve(QEasingCurve::OutCubic);// 缓动效果更自然
 
-    this->show();//显示窗口
-    slideLift->start();//播放动画
-    
+    slideLift->start();//播放动画    
 }
 
 void NotificationBubble::movePositionUp(void)
@@ -111,7 +79,6 @@ void NotificationBubble::movePositionUp(void)
     slideUP->setEndValue(endPoint);
     slideUP->setEasingCurve(QEasingCurve::OutCubic);// 缓动效果更自然
 
-    this->show();//显示窗口
     slideUP->start();//播放动画
 }
 
@@ -146,7 +113,7 @@ void NotificationBubble::closeEvent(QCloseEvent* event)
 
 NotificationBubble::~NotificationBubble()
 {
-    qDebug() << "通知气泡关闭";
+    qDebug() << "有气泡关闭";
 }
 
 void NotificationBubble::startTimer(void)
