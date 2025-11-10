@@ -20,11 +20,14 @@ void NotificationManager::newBubble(const QString str, int duration)
 	//配置连接，气泡关闭
 	connect(bubble, &NotificationBubble::bubbleColsed, this, &NotificationManager::aBubbleClose);
 
+
 	//确定位置，准备弹出动画
-	int x = this->m_widget->x() + this->m_widget->width() - 8;
-	int y = this->m_widget->y() + this->bubblesList.size() * (bubble->height() + 8);
-	QPoint point(x, y);
-	bubble->move(point);
+	//计算相对于 m_widget 的坐标（不是屏幕坐标！）
+	int spacing = 8;
+	int x_rel = this->m_widget->width() - 8; // 右侧内边距
+	int y_rel = bubblesList.size() * (bubble->height() + 8); // 从顶部开始堆叠
+
+	bubble->move(x_rel, y_rel); // ← 相对于 m_widget
 	bubble->show();//取消隐藏
 	bubble->movePositionLeft();//左移动画
 	bubble->startTimer();//启动定时器

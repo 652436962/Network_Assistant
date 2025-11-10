@@ -1,3 +1,154 @@
+# 关于坐标系统
+
+非常好的问题！你已经触及了 Qt 坐标系统的核心概念。我们来彻底讲清楚：
+
+---
+
+## 🧭 一、Qt 的坐标系统：**父子相对，层层嵌套**
+
+在 Qt 中，**每个 QWidget 的坐标都是相对于其 parent（父窗口）的左上角 (0, 0)**。
+
+### ✅ 核心原则：
+> **`widget->pos()` 返回的是它在其 parent 中的位置。**  
+> **`widget->move(x, y)` 设置的是它相对于 parent 的位置。**
+
+---
+
+## 📐 举个具体例子
+
+假设你的程序结构如下：
+
+```
+屏幕 (Screen)
+└── MainWindow（主窗口）
+    └── NotificationBubble（气泡，parent = MainWindow）
+```
+
+- 屏幕分辨率：1920×1080
+- 用户把 `MainWindow` 拖到了屏幕 `(300, 200)` 处
+- `MainWindow` 客户区大小：800×600
+
+那么：
+
+| 对象                 | `x()` / `y()` 值         | 含义                                                     |
+| -------------------- | ------------------------ | -------------------------------------------------------- |
+| `MainWindow`         | `x() = 300`, `y() = 200` | **相对于屏幕** 的位置（因为它的 parent 是桌面/操作系统） |
+| `NotificationBubble` | `x() = 600`, `y() = 50`  | **相对于 MainWindow 左上角** 的位置                      |
+
+所以气泡在**屏幕上的绝对位置**是：
+```
+屏幕X = MainWindow.x() + bubble.x() = 300 + 600 = 900
+屏幕Y = MainWindow.y() + bubble.y() = 200 + 50 = 250
+```
+
+---
+
+## ❌ 你原来代码的问题
+
+```cpp
+int x = this->m_widget->x() + this->m_widget->width() - 8;
+int y = this->m_widget->y() + ...;
+bubble->move(x, y);
+```
+
+### 分析：
+- `m_widget` 是 `MainWindow`
+- `m_widget->x()` 和 `m_widget->y()` 返回的是 **MainWindow 在屏幕上的绝对坐标**（比如 300, 200）
+- 你把这个**屏幕坐标**传给了 `bubble->move(...)`
+
+但 `bubble` 的 parent 是 `MainWindow`，所以 Qt 认为：
+> “你要我把气泡放在 MainWindow 内部的 (300+800-8, 200+...) = (1092, 256) 位置”
+
+而 MainWindow 客户区只有 800 宽，所以：
+- 气泡被放在 **MainWindow 内部的 x=1092 处**
+- 这超出了 MainWindow 的可视区域 → **你看不到它！**
+
+👉 **本质错误：混淆了“屏幕坐标”和“父窗口相对坐标”**
+
+---
+
+## ✅ 为什么修改后的代码正确？
+
+```cpp
+int x_rel = m_widget->width() - spacing; // 例如 800 - 8 = 792
+int y_rel = spacing + ...;               // 例如 8 + 0*56 = 8
+bubble->move(x_rel, y_rel);
+```
+
+- `x_rel = 792`：表示“从 MainWindow 左边往右 792 像素”
+- `y_rel = 8`：表示“从 MainWindow 顶部往下 8 像素”
+- 因为气泡宽 196，所以它的**右边距离 MainWindow 右边正好 8 像素**（800 - 792 = 8）
+
+✅ 这正是你想要的：**气泡始终贴在 MainWindow 右上角内侧**
+
+而且无论 MainWindow 被拖到屏幕哪里（x=0 或 x=1000），气泡都在它**内部右上角**，不会跑出视野。
+
+---
+
+## 🔍 补充：`x()`, `y()`, `pos()` 到底返回什么？
+
+| 函数            | 返回值含义                               |
+| --------------- | ---------------------------------------- |
+| `widget->x()`   | 等价于 `widget->pos().x()`               |
+| `widget->y()`   | 等价于 `widget->pos().y()`               |
+| `widget->pos()` | **该 widget 在其 parent 坐标系中的位置** |
+
+> ⚠️ 只有 **顶层窗口**（如 `QMainWindow`、`QDialog`，没有 parent 或 parent 是 `nullptr`）的 `x()/y()` 才表示 **屏幕坐标**。
+
+---
+
+## 🔄 如何在不同坐标系之间转换？
+
+Qt 提供了工具函数：
+
+```cpp
+// 将子控件的局部坐标转为屏幕绝对坐标
+QPoint screenPos = bubble->mapToGlobal(QPoint(0, 0));
+
+// 将屏幕坐标转为某个 widget 的局部坐标
+QPoint localPos = mainWindow->mapFromGlobal(screenPos);
+
+// 将 A 控件的坐标转为 B 控件的坐标
+QPoint posInB = widgetA->mapTo(widgetB, localPointInA);
+```
+
+但在你的场景中，**根本不需要屏幕坐标**，因为气泡是 MainWindow 的子控件，直接用相对坐标最简单。
+
+---
+
+## 🎯 总结：关键记忆点
+
+| 问题                                           | 答案                                                         |
+| ---------------------------------------------- | ------------------------------------------------------------ |
+| `widget->x()` 是屏幕坐标吗？                   | ❌ **不是！** 是相对于 **parent** 的坐标<br>✅ **只有顶层窗口** 的 `x()/y()` 才是屏幕坐标 |
+| `bubble->move(x, y)` 中的 `(x,y)` 是什么坐标？ | ✅ **相对于 bubble 的 parent（即 MainWindow）的坐标**         |
+| 为什么原来代码气泡“消失”了？                   | ❌ 把 **屏幕坐标** 当成 **相对坐标** 传给 `move()`，导致气泡被放到 MainWindow 外面 |
+| 正确做法是什么？                               | ✅ 直接用 `m_widget->width()` 计算 **相对于 MainWindow 的位置**，不要加 `m_widget->x()` |
+
+---
+
+## 💡 类比理解
+
+想象你在一张纸上画一个盒子（MainWindow），然后在盒子里贴便利贴（气泡）：
+
+- 盒子在桌子上的位置 = `MainWindow->x(), y()`（屏幕坐标）
+- 便利贴在盒子内的位置 = `bubble->x(), y()`（相对坐标）
+
+你想让便利贴贴在盒子右上角，你应该说：
+> “从盒子左边量 18cm，从盒子顶边量 1cm” → **相对坐标**
+
+而不是说：
+> “从桌子左边量 50cm，从桌子顶边量 30cm” → **绝对坐标（会错！）**
+
+---
+
+现在你应该完全明白为什么修改后能工作了！👏  
+Qt 的坐标系统一旦搞清“相对谁”，就非常清晰可靠。
+
+
+
+
+
 # 关于 deleteLater
 
 `QTcpSocket::deleteLater()` 是 Qt 网络编程中**非常重要且必须掌握**的机制。我们来深入讲解它，以及为什么**不能直接 `delete`**。

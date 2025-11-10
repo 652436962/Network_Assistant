@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget* parent)
 
 	this->notificationManager = new NotificationManager(this, this);//通知气泡管理
 	this->notificationManager->newBubble("欢迎使用");
+	this->notificationManager->newBubble("测试1");
 
 	//配置连接 展示主机信息
 	connect(ui->action_Info, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
@@ -241,25 +242,31 @@ void MainWindow::AsTcpServerOperation(void)
 		uint16_t port = ui->network_settings->getPortValue();//获取端口
 		QHostAddress hostAddress(address);
 		bool result = tcpServer->listen(hostAddress, port); //开始监听
-		if (result)
+		if (result)//监听启动成功
 		{
 			emit this->connectionStatusChanged(true);
 			this->notificationManager->newBubble("TCP服务器开始监听");
 			qDebug() << "开始监听  地址" << hostAddress << " 端口 " << port;
+
+			//创建客户端展示表格
+			if (this->clientTable != nullptr)
+			{
+				qDebug() << "错误原本存在表格" << __FILE__ << __LINE__;
+			}
+			else
+			{
+				this->clientTable = new QTableWidget(this);
+				QVBoxLayout* layout = static_cast<QVBoxLayout*>(ui->widget_Left->layout());
+				layout->insertWidget(1, this->clientTable);
+			}			
 		}
-		else
+		else//监听启动失败
 		{
 			this->tcpServer->deleteLater();
 			this->tcpServer = nullptr;
 			this->notificationManager->newBubble("TCP服务器监听启动失败");
 			qDebug() << "监听启动失败！";
 		}
-
-		//创建客户端展示表格
-		this->clientTable = new QTableWidget(this);
-		QVBoxLayout* layout = static_cast<QVBoxLayout*>(ui->widget_Left->layout());
-		layout->insertWidget(1, this->clientTable);
-
 
 		//配置连接 有新的客户端连接
 		connect(this->tcpServer, &QTcpServer::newConnection, this, [this]() {
@@ -274,8 +281,8 @@ void MainWindow::AsTcpServerOperation(void)
 
 
 			this->tcpSocketsList.push_back(tcpSocket);//加入到队列末尾
-			std::list<QTcpSocket*>::iterator it = --this->tcpSocketsList.end();//迭代器指向对应节点
-
+			std::list<QTcpSocket*>::iterator it = std::prev(this->tcpSocketsList.end());//迭代器指向对应节点
+			
 			QString connectString = "";
 			QTextStream text(&connectString);
 			text << "客户端  " << tcpSocket->peerAddress().toString()<<" " << tcpSocket->peerPort() << "  接入";
@@ -351,7 +358,17 @@ void MainWindow::AsTcpServerOperation(void)
 		}
 		//注意，在清理时会删除链表节点，因此，如果遍历原本的链表会错！！
 		
-		this->clientTable->deleteLater();//删除客户端表格
+		//删除客户端表格
+		if (this->clientTable == nullptr)
+		{
+			qDebug() << "错误 空指针" << __FILE__ << __LINE__;
+		}
+		else
+		{
+			this->clientTable->deleteLater();//删除客户端表格
+			this->clientTable = nullptr;
+		}
+		
 		
 		//服务器正在监听
 		if (this->tcpServer->isListening())

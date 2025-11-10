@@ -13,7 +13,7 @@ class NotificationBubble: public QFrame
 {
     Q_OBJECT
 private:
-    static constexpr int WIDTH = 512;//窗口宽
+    static constexpr int WIDTH = 256;//窗口宽
     static constexpr int HEIGHT = 48;//窗口高
 private:
     QLabel* label_Text;          // 显示文本内容的标签
