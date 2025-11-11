@@ -23,10 +23,8 @@ MainWindow::MainWindow(QWidget* parent)
 {
 	ui->setupUi(this);//配置UI
 
-
 	this->notificationManager = new NotificationManager(this, this);//通知气泡管理
 	this->notificationManager->newBubble("欢迎使用");
-	this->notificationManager->newBubble("测试1");
 
 	//配置连接 展示主机信息
 	connect(ui->action_Info, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
@@ -54,7 +52,7 @@ MainWindow::MainWindow(QWidget* parent)
 	QVBoxLayout* verticalLayout = qobject_cast<QVBoxLayout*>(ui->widget_Right->layout());
 	if (verticalLayout == nullptr)
 	{
-		qDebug() << "错误" << __FILE__ << __LINE__;
+		qDebug() << "错误 空指针" << __FILE__ << __LINE__;
 	}
 	this->singleSend = new SingleSendWidget(this);//创建单项发送窗口
 	verticalLayout->addWidget(singleSend);//添加到布局
@@ -255,9 +253,11 @@ void MainWindow::AsTcpServerOperation(void)
 			}
 			else
 			{
-				this->clientTable = new QTableWidget(this);
+				this->clientTable = new QTableWidget(this);//创建表格
 				QVBoxLayout* layout = static_cast<QVBoxLayout*>(ui->widget_Left->layout());
 				layout->insertWidget(1, this->clientTable);
+				clientTable->setColumnCount(4);
+				clientTable->setHorizontalHeaderLabels({ "客户端","接收","发送","断开"});
 			}			
 		}
 		else//监听启动失败
@@ -274,54 +274,119 @@ void MainWindow::AsTcpServerOperation(void)
 			* 自 Qt 6.4 起，创建的 socket 默认父对象为 对应的 QTcpServer 实例
 			*/
 			QTcpSocket* tcpSocket = this->tcpServer->nextPendingConnection();
-			qDebug() << tcpSocket->parent()->objectName();			
 			tcpSocket->setParent(this);//设置父对象，由我管理它
-			qDebug() << "改变tcpSocket父对象";
-			qDebug() << tcpSocket->parent()->objectName();
 
+			QString address = tcpSocket->peerAddress().toString();
+			uint16_t port = tcpSocket->peerPort();
 
 			this->tcpSocketsList.push_back(tcpSocket);//加入到队列末尾
-			std::list<QTcpSocket*>::iterator it = std::prev(this->tcpSocketsList.end());//迭代器指向对应节点
+
+			//在表格中展示
+			{
+				// 插入新行
+				int row = clientTable->rowCount();
+				clientTable->insertRow(row);
+				// 第0列：地址文本
+				QTableWidgetItem* item_info = new QTableWidgetItem(address + " " + QString::number(port));
+				item_info->setData(Qt::UserRole, QVariant::fromValue(tcpSocket));//在 item_info 中保存 tcpSocket 
+				clientTable->setItem(row, 0, item_info);
+
+				// 第1列：“接收”复选框
+				QCheckBox* receiveBox = new QCheckBox(this->clientTable);
+				receiveBox->setChecked(true);
+				clientTable->setCellWidget(row, 1, receiveBox);
+				// 第2列：“发送”复选框
+				QCheckBox* sendBox = new QCheckBox(this->clientTable);
+				sendBox->setChecked(true);
+				clientTable->setCellWidget(row, 2, sendBox);
+				// 第3列：“断开”按钮
+				QPushButton* pushButton_disconnect = new QPushButton(this->clientTable);
+				clientTable->setCellWidget(row, 3, pushButton_disconnect);
+				connect(pushButton_disconnect, &QPushButton::clicked,this, [tcpSocket]() {
+					if (tcpSocket == nullptr)
+					{
+						qDebug() << "错误 空指针" << __FILE__ << __LINE__;
+						return;
+					}
+					if (tcpSocket->state() != QAbstractSocket::ConnectedState)
+					{
+						qDebug() << "错误 socket 没有连接" << __FILE__ << __LINE__;
+						return;
+					}
+					tcpSocket->disconnectFromHost();//开始四次挥手断开连接
+					});
+				
+			}
 			
 			QString connectString = "";
 			QTextStream text(&connectString);
-			text << "客户端  " << tcpSocket->peerAddress().toString()<<" " << tcpSocket->peerPort() << "  接入";
-			this->notificationManager->newBubble(connectString);
-			qDebug() << connectString;
-			qDebug() << "当前连接客户端总数" << this->tcpSocketsList.size();
+			text << "客户端  " << address<<" " << port << "  接入";
+			this->notificationManager->newBubble(connectString);//通知气泡
+			qDebug() << connectString;			
 
 			//配置连接 有客户端断开
-			connect(tcpSocket, &QTcpSocket::disconnected, this, [this, it]() {
-				if (this->tcpSocketsList.empty() == true)
-				{
-					qDebug() << "错误 链表为空" << __FILE__ << __LINE__;
-				}
-				QTcpSocket* tcpSocket = *it;
+			connect(tcpSocket, &QTcpSocket::disconnected, this, [this, tcpSocket]() {
 				if (tcpSocket == nullptr)
 				{
 					qDebug() << "错误 空指针" << __FILE__ << __LINE__;
 					return;
 				}
+				//在链表中查找
+				std::list<QTcpSocket*>::iterator it = std::find(this->tcpSocketsList.begin(), this->tcpSocketsList.end(), tcpSocket);
+				if (it == this->tcpSocketsList.end())
+				{
+					qDebug() << "错误 在链表中找不到目标" << __FILE__ << __LINE__;
+					return;
+				}
+
+				//在表格中删除
+				{
+					if (this->clientTable == nullptr)
+					{
+						qDebug() << "错误 空指针" << __FILE__ << __LINE__;
+					}
+					int row = -1;
+					//查找
+					for (int i = 0; i < this->clientTable->rowCount(); i++)
+					{
+						QTableWidgetItem* item = this->clientTable->item(i, 0);
+						if (!item) continue;
+						if (tcpSocket == item->data(Qt::UserRole).value<QTcpSocket*>())
+						{
+							row = i;
+							break;
+						}
+					}
+					//没有找到
+					if (row == -1)
+					{
+						qDebug() << "错误 在表格中找不到目标" << __FILE__ << __LINE__;
+					}
+					else
+					{
+						this->clientTable->removeRow(row);
+					}
+				}
+
 				QString disconnectString = "";
 				QTextStream stream(&disconnectString);
 				stream << "客户端  " << tcpSocket->peerAddress().toString() << " " << tcpSocket->peerPort() << "  已断开";
+				
+				tcpSocket->deleteLater();
+				this->tcpSocketsList.erase(it);//移除链表中对应节点
+				
 				this->notificationManager->newBubble(disconnectString);
 				qDebug() << disconnectString;
-				tcpSocket->deleteLater();
-				tcpSocket = nullptr;
-				this->tcpSocketsList.erase(it);//移除链表中对应节点
-				qDebug() << "当前连接客户端总数" << this->tcpSocketsList.size();
 				});
 
 			//配置连接 展示新连接的客户端发来的数据
-			connect(tcpSocket, &QTcpSocket::readyRead, this, [this, it]() {
-				QTcpSocket* tcpSocket = *it;
+			connect(tcpSocket, &QTcpSocket::readyRead, this, [this, tcpSocket]() {
 				if (tcpSocket == nullptr)
 				{
 					qDebug() << "错误 空指针" << __FILE__ << __LINE__;
 					return;
 				}
-				qDebug() << "收到了客户端的数据";
+				/*qDebug() << "收到了客户端的数据";*/
 				QString string;
 				QTextStream ts(&string);
 				ts << "\n[Tcp client " << tcpSocket->peerAddress().toString() << ' ' << tcpSocket->peerPort() << "]\n";
@@ -333,7 +398,6 @@ void MainWindow::AsTcpServerOperation(void)
 			//配置连接 向新连接的客户端发送数据
 			connect(this->singleSend, &SingleSendWidget::requestToSend, tcpSocket,
 				static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
-
 			});
 		
 	}

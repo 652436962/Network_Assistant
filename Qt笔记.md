@@ -611,3 +611,133 @@ connect(button, &QPushButton::clicked, this, [=]() { ... });
 - **不确定时，拷贝比引用更安全**
 
 遵循这些原则，你的 Qt 程序将远离悬空指针和内存错误！
+
+
+
+# 关于 sender
+
+在 Qt 中，`QObject::sender()` 是一个非常有用但**有严格使用条件**的函数。理解它的行为边界对避免 bug 至关重要。
+
+---
+
+## ✅ 正确使用场景：槽函数由信号触发时
+
+当一个**槽函数是通过信号-槽机制被调用**（即由 `emit someSignal()` 触发），那么在该槽函数内部调用 `sender()` 会返回 **发出该信号的对象指针**（`QObject*`）。
+
+```cpp
+connect(button, &QPushButton::clicked, this, &MyWindow::onButtonClicked);
+
+void MyWindow::onButtonClicked()
+{
+    QObject* s = sender(); // 返回 button 指针（即 QPushButton*）
+    qDebug() << "Sender:" << s->objectName();
+}
+```
+
+✅ 这是 `sender()` 的**唯一合法且可靠**的使用场景。
+
+---
+
+## ❌ 错误使用：直接调用槽函数（非信号触发）
+
+如果你**手动直接调用**这个函数（比如 `onButtonClicked();`），那么：
+
+> **`sender()` 返回 `nullptr`**
+
+### 示例：
+```cpp
+void MyWindow::test()
+{
+    onButtonClicked(); // 直接调用，不是由信号触发
+}
+
+void MyWindow::onButtonClicked()
+{
+    QObject* s = sender();
+    if (s) {
+        qDebug() << "Called by signal from:" << s;
+    } else {
+        qDebug() << "Called directly! sender() is nullptr.";
+    }
+}
+```
+
+输出：
+```
+Called directly! sender() is nullptr.
+```
+
+这是完全符合预期的行为。
+
+---
+
+## ⚠️ 更危险的情况：嵌套调用或间接调用
+
+即使最初是由信号触发的，**如果在槽函数中又调用了另一个也使用 `sender()` 的函数**，那么内层函数的 `sender()` 可能不符合预期。
+
+```cpp
+void A::slot1() {
+    qDebug() << "slot1 sender:" << sender(); // 正确：返回信号发送者
+    slot2(); // 手动调用
+}
+
+void A::slot2() {
+    qDebug() << "slot2 sender:" << sender(); // ❌ 仍然是同一个 sender！
+}
+```
+
+虽然这里 `slot2` 的 `sender()` 仍然返回最初的信号发送者（因为 Qt 内部用栈保存了 sender 信息），但**这种依赖非常脆弱且易混淆**，应避免。
+
+> 📌 Qt 文档明确指出：`sender()` 只应在**直接由信号调用的槽函数**中使用。
+
+---
+
+## 🔒 线程安全警告
+
+- `sender()` **不是线程安全的**。
+- 如果信号跨线程（`Qt::QueuedConnection`），在槽函数中调用 `sender()` **仍然有效**（Qt 会正确传递 sender 信息）。
+- 但如果你在非槽函数、或非主线程中滥用 `sender()`，可能导致未定义行为。
+
+---
+
+## ✅ 安全使用建议
+
+1. **只在槽函数中使用 `sender()`**
+2. **确保该槽函数仅通过信号调用**（不要手动调用）
+3. **总是检查 `sender()` 是否为 `nullptr`**
+   ```cpp
+   void MyClass::onDisconnected()
+   {
+       QTcpSocket* sock = qobject_cast<QTcpSocket*>(sender());
+       if (!sock) {
+           qWarning() << "onDisconnected called without sender!";
+           return;
+       }
+       // 安全使用 sock
+   }
+   ```
+4. **优先考虑 Lambda 捕获替代 `sender()`**（更现代、更安全）
+
+---
+
+## 🆚 `sender()` vs Lambda 捕获对比
+
+| 特性             | `sender()`             | Lambda 捕获            |
+| ---------------- | ---------------------- | ---------------------- |
+| 是否需要类型转换 | 是（`qobject_cast`）   | 否（直接捕获具体类型） |
+| 能否手动调用槽   | 不能（否则 `nullptr`） | 可以（逻辑独立）       |
+| 可读性           | 较差（隐式依赖）       | 高（显式绑定）         |
+| Qt6 推荐度       | ⭐⭐                     | ⭐⭐⭐⭐                   |
+
+---
+
+## 总结
+
+- ✅ **`sender()` 在信号触发的槽中返回发送者**
+- ❌ **直接调用槽函数 → `sender()` 返回 `nullptr`**
+- ⚠️ **不要在非槽函数、或嵌套调用中依赖 `sender()`**
+- ✅ **现代 Qt 开发推荐用 Lambda 捕获替代 `sender()`**
+
+如果你正在开发网络助手这类需要管理多个 socket 的应用，**Lambda 方式几乎总是更好的选择**，避免了 `sender()` 的不确定性。
+
+需要我帮你把 `disconnected` 处理改成纯 Lambda 无 `sender()` 的版本吗？

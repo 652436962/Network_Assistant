@@ -50,7 +50,7 @@ NotificationBubble::NotificationBubble(const QString text, int duration, QWidget
 
     this->hide();// 隐藏窗口
 
-    qDebug() << "有气泡建立";
+    /*qDebug() << "有气泡建立";*/
 }
 
 void NotificationBubble::movePositionLeft(void)
@@ -113,7 +113,7 @@ void NotificationBubble::closeEvent(QCloseEvent* event)
 
 NotificationBubble::~NotificationBubble()
 {
-    qDebug() << "有气泡关闭";
+    /*qDebug() << "有气泡关闭";*/
 }
 
 void NotificationBubble::startTimer(void)

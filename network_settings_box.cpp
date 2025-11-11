@@ -5,7 +5,6 @@
 NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 	: QGroupBox(parent)
 {
-
 	this->setupUi();
 
 	//添加相关选项
@@ -150,7 +149,6 @@ uint16_t NetworkSettingsBox::getPortValue(void)
 void NetworkSettingsBox::changeUI(bool state)
 {
 	this->networkActive = state;
-
 	this->led->setState(state);
 	WorkMode type = this->getSelectedMode();
 	QString switchString = "";
@@ -172,8 +170,8 @@ void NetworkSettingsBox::changeUI(bool state)
 	}
 	this->pushButton_Switch->setText(switchString);
 	this->comboBox_ProtocolType->setEnabled(!state);
-	this->lineEdit_Address->setEnabled(!state);
-	this->spinBox_Port->setEnabled(!state);
+	this->lineEdit_Address->setReadOnly(state);
+	this->spinBox_Port->setReadOnly(state);
 }
 
 NetworkSettingsBox::~NetworkSettingsBox()
