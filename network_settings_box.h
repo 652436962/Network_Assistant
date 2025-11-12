@@ -36,7 +36,7 @@ private:
     QPushButton* pushButton_Switch;//开关
     QLineEdit* lineEdit_Address;
     QSpinBox* spinBox_Port;
-    QComboBox* comboBox_ProtocolType;
+    QComboBox* comboBox_WorkMode;
 
     /**
      * @brief 设置 UI

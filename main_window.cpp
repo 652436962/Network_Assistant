@@ -32,7 +32,21 @@ MainWindow::MainWindow(QWidget* parent)
 	//左侧窗口相关配置
 
 	//配置连接 按钮被点击
-	connect(ui->network_settings, &NetworkSettingsBox::clicked, this, &MainWindow::do_clicked);
+	connect(ui->network_settings, &NetworkSettingsBox::clicked, this, [this]() {
+		WorkMode mode = ui->network_settings->getSelectedMode();
+		if (mode == WorkMode::TCP_Server)//作为 TCP 服务器工作
+		{
+			this->asTcpServerOperation();
+		}
+		else if (mode == WorkMode::TCP_Client)//作为 TCP 客户端工作
+		{
+			this->asTcpClientOperation();
+		}
+		else if (mode == WorkMode::UDP)//作为 UDP 工作
+		{
+			this->asUdpOperation();
+		}
+		});
 
 	//配置连接 网络设置改变 UI
 	connect(this, &MainWindow::connectionStatusChanged, ui->network_settings, &NetworkSettingsBox::changeUI);
@@ -106,6 +120,8 @@ MainWindow::~MainWindow()
 			//在 disconnected 对应的槽函数中清理
 		}
 	}
+
+	//udp 没有四次挥手  parent 是 mainwindow 自动释放，不需要额外处理
 
 	delete ui;
 
@@ -222,9 +238,7 @@ void MainWindow::showLocalIPConfig(void)
 	table->resizeColumnsToContents();
 }
 
-
-
-void MainWindow::AsTcpServerOperation(void)
+void MainWindow::asTcpServerOperation(void)
 {	
 	//服务器还没有创建
 	if (this->tcpServer == nullptr)
@@ -232,19 +246,28 @@ void MainWindow::AsTcpServerOperation(void)
 		if (this->tcpSocketsList.empty() != true)
 		{
 			qDebug() << "错误 服务器创建前客户端链表非空" << __FILE__ << __LINE__;
+			return;
 		}
+		QString addressString = ui->network_settings->getAddress();//获取地址
+		uint16_t port = ui->network_settings->getPortValue();//获取端口
+		QHostAddress address(addressString);
+		if (address.isNull())
+		{
+			this->notificationManager->newBubble("地址无效");
+			qDebug() << "地址无效" << __FILE__ << __LINE__;
+			return;
+		}
+
 		this->tcpServer = new QTcpServer(this);//创建TCP服务器
 		this->tcpServer->setObjectName("TCP Server");
 
-		QString address = ui->network_settings->getAddress();//获取地址
-		uint16_t port = ui->network_settings->getPortValue();//获取端口
-		QHostAddress hostAddress(address);
-		bool result = tcpServer->listen(hostAddress, port); //开始监听
+		
+		bool result = tcpServer->listen(address, port); //开始监听
 		if (result)//监听启动成功
 		{
 			emit this->connectionStatusChanged(true);
 			this->notificationManager->newBubble("TCP服务器开始监听");
-			qDebug() << "开始监听  地址" << hostAddress << " 端口 " << port;
+			qDebug() << "开始监听  地址" << address << " 端口 " << port;
 
 			//创建客户端展示表格
 			if (this->clientTable != nullptr)
@@ -454,37 +477,23 @@ void MainWindow::AsTcpServerOperation(void)
 
 }
 
-void MainWindow::do_clicked(void)
-{
-	WorkMode mode = ui->network_settings->getSelectedMode();
-	/*qDebug() << "选择的内容";
-	qDebug() << "type " << getProtocolTypeString(type);
-	qDebug() << "address " << address;
-	qDebug() << "port" << port;*/
-	if (mode == WorkMode::TCP_Server)//作为 TCP 服务器工作
-	{
-		this->AsTcpServerOperation();
-	}
-	else if (mode == WorkMode::TCP_Client)//作为 TCP 客户端工作
-	{
-		this->AsTcpClientOperation();
-	}
-	else if (mode == WorkMode::UDP)
-	{
-
-	}
-
-}
-
-void MainWindow::AsTcpClientOperation(void)
+void MainWindow::asTcpClientOperation(void)
 {
 	if (this->clientTcpSocket == nullptr)//客户端 TcpSocket 未创建
-	{
-		this->clientTcpSocket = new QTcpSocket(this);//创建 TcpSocket 变量
-		QString address = ui->network_settings->getAddress();//获取 IP 地址
+	{		
+		QString addressString = ui->network_settings->getAddress();//获取 IP 地址
 		uint16_t port = ui->network_settings->getPortValue();//获取端口
-		this->clientTcpSocket->connectToHost(address, port);//尝试连接服务器
+		QHostAddress address(addressString);
+		if (address.isNull())
+		{
+			this->notificationManager->newBubble("地址无效");
+			qDebug() << "地址无效" << __FILE__ << __LINE__;
+			return;
+		}
 
+		this->clientTcpSocket = new QTcpSocket(this);//创建 TcpSocket 变量
+		this->clientTcpSocket->connectToHost(address, port);//尝试连接服务器
+		
 		/*配置相关链接*/
 		//与服务器建立了连接
 		connect(this->clientTcpSocket, &QTcpSocket::connected, this, [this]() {
@@ -587,7 +596,8 @@ void MainWindow::AsTcpClientOperation(void)
 		connect(this->singleSend, &SingleSendWidget::requestToSend, this->clientTcpSocket,
 			static_cast<qint64(QTcpSocket::*)(const QByteArray& data)>(&QTcpSocket::write));
 	}
-	else//客户端 TcpSocket 已创建
+	//客户端 TcpSocket 已创建
+	else
 	{
 		if (clientTcpSocket->state() == QAbstractSocket::ConnectedState)
 		{
@@ -602,5 +612,67 @@ void MainWindow::AsTcpClientOperation(void)
 	}
 
 
+}
+
+void MainWindow::asUdpOperation(void)
+{
+	if (this->udpSocket == nullptr)
+	{
+		QString address_str = ui->network_settings->getAddress();
+		QHostAddress address(address_str);
+		if (address.isNull())
+		{
+			this->notificationManager->newBubble("地址无效");
+			qDebug() << "地址无效" << __FILE__ << __LINE__;
+			return;
+		}
+		uint16_t port = ui->network_settings->getPortValue();
+		this->udpSocket = new QUdpSocket(this);
+		bool result = this->udpSocket->bind(address, port);//UDP 绑定
+		if (!result)
+		{
+			qDebug() << "UDP 绑定失败" << __FILE__ << __LINE__;
+			this->notificationManager->newBubble("UDP 绑定失败");
+			this->udpSocket->deleteLater();
+			this->udpSocket = nullptr;
+		}
+		QString message = "";
+		QTextStream stream(&message);
+		stream << "UDP 绑定成功" << address.toString() << " " << port;
+		this->notificationManager->newBubble(message);
+		qDebug() << message;
+
+		//配置连接 接收 UDP 套接字数据
+		connect(this->udpSocket, &QUdpSocket::readyRead, this, [this]() {
+			/*QUdpSocket 是 数据报（Datagram）套接字，不是流式套接字！
+			* TCP (QTcpSocket) 是流式的 → 可以用 readAll()、read() 等 QIODevice 方法
+			* UDP (QUdpSocket) 是基于数据包（Datagram） 的 → 必须用 readDatagram()
+			*/			
+			// 是否有待读取的数据报
+			while (this->udpSocket->hasPendingDatagrams())
+			{
+				QByteArray data;
+				data.resize(this->udpSocket->pendingDatagramSize());
+				QHostAddress senderAddress;
+				uint16_t senderPort;
+				//读取数据，并记录发送者的地址和端口
+				this->udpSocket->readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
+				QString senderString = QString("[UDP from %1:%2]\n").arg(senderAddress.toString()).arg(senderPort);
+				ui->receive_area->appendPlainText(senderString);
+				ui->receive_area->showData(data);
+			}
+			});
+
+		emit this->connectionStatusChanged(true);
+	}
+	else
+	{
+		//UDP 是无连接协议，没有“连接状态”，自然也没有“断开连接”或“解绑”操作。
+		this->udpSocket->deleteLater();
+		this->udpSocket = nullptr;
+		emit this->connectionStatusChanged(false);
+		this->notificationManager->newBubble("UDP 已关闭");
+		qDebug() << "UDP 已关闭";
+	}
 }
 

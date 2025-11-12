@@ -8,11 +8,11 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 	this->setupUi();
 
 	//添加相关选项
-	this->comboBox_ProtocolType->addItem("TCP 服务器", QVariant::fromValue(WorkMode::TCP_Server));
-	this->comboBox_ProtocolType->addItem("TCP 客户端", QVariant::fromValue(WorkMode::TCP_Client));
-	this->comboBox_ProtocolType->addItem("UDP", QVariant::fromValue(WorkMode::UDP));
+	this->comboBox_WorkMode->addItem("TCP 服务器", QVariant::fromValue(WorkMode::TCP_Server));
+	this->comboBox_WorkMode->addItem("TCP 客户端", QVariant::fromValue(WorkMode::TCP_Client));
+	this->comboBox_WorkMode->addItem("UDP", QVariant::fromValue(WorkMode::UDP));
 	//配置连接 选项变化
-	connect(this->comboBox_ProtocolType, &QComboBox::currentIndexChanged, this, [this]() {
+	connect(this->comboBox_WorkMode, &QComboBox::currentIndexChanged, this, [this]() {
 		if (this->networkActive == true)
 		{
 			qDebug() << "错误，网络正在活动时文本不应当变化";
@@ -61,11 +61,11 @@ void NetworkSettingsBox::setupUi(void)
 
 	gridLayout->addWidget(label_WorkMode, 0, 0, 1, 2);
 
-	comboBox_ProtocolType = new QComboBox(this);
-	comboBox_ProtocolType->setObjectName("comboBox_ProtocolType");
-	comboBox_ProtocolType->setFont(font);
+	comboBox_WorkMode = new QComboBox(this);
+	comboBox_WorkMode->setObjectName("comboBox_ProtocolType");
+	comboBox_WorkMode->setFont(font);
 
-	gridLayout->addWidget(comboBox_ProtocolType, 1, 0, 1, 3);
+	gridLayout->addWidget(comboBox_WorkMode, 1, 0, 1, 3);
 
 	label_Address = new QLabel(this);
 	label_Address->setObjectName("label_Address");
@@ -133,7 +133,7 @@ void NetworkSettingsBox::retranslateUi(void)
 
 WorkMode NetworkSettingsBox::getSelectedMode(void)
 {
-	return this->comboBox_ProtocolType->currentData().value<WorkMode>();
+	return this->comboBox_WorkMode->currentData().value<WorkMode>();
 }
 
 QString NetworkSettingsBox::getAddress(void)
@@ -169,7 +169,7 @@ void NetworkSettingsBox::changeUI(bool state)
 	default: break;
 	}
 	this->pushButton_Switch->setText(switchString);
-	this->comboBox_ProtocolType->setEnabled(!state);
+	this->comboBox_WorkMode->setEnabled(!state);
 	this->lineEdit_Address->setReadOnly(state);
 	this->spinBox_Port->setReadOnly(state);
 }
