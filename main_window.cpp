@@ -642,6 +642,19 @@ void MainWindow::asUdpOperation(void)
 		this->notificationManager->newBubble(message);
 		qDebug() << message;
 
+		//创建或显示 UDP 发送目标窗口，用户在此窗口中填入地址和端口		
+		if (this->udpTargetBox == nullptr)
+		{
+			this->udpTargetBox = new TargetBox(this);
+			QVBoxLayout* vBoxLayout = static_cast<QVBoxLayout*>(ui->widget_Left->layout());
+			vBoxLayout->addWidget(udpTargetBox, 1);
+		}
+		else
+		{
+			this->udpTargetBox->show();
+		}
+		
+		
 		//配置连接 接收 UDP 套接字数据
 		connect(this->udpSocket, &QUdpSocket::readyRead, this, [this]() {
 			/*QUdpSocket 是 数据报（Datagram）套接字，不是流式套接字！
@@ -662,6 +675,11 @@ void MainWindow::asUdpOperation(void)
 				ui->receive_area->showData(data);
 			}
 			});
+		
+		//配置连接 通过 UDP 发送数据
+		connect(this->singleSend, &SingleSendWidget::requestToSend, this->udpSocket, [this]() {
+			QString targetAddress = this->udpTargetBox->getAddress();
+			});
 
 		emit this->connectionStatusChanged(true);
 	}
@@ -672,6 +690,7 @@ void MainWindow::asUdpOperation(void)
 		this->udpSocket = nullptr;
 		emit this->connectionStatusChanged(false);
 		this->notificationManager->newBubble("UDP 已关闭");
+		this->udpTargetBox->hide();//隐藏 UDP 目标窗口
 		qDebug() << "UDP 已关闭";
 	}
 }
