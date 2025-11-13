@@ -17,8 +17,8 @@ enum class SendOptions
  */
 enum class WorkMode
 {
-    TCP_Server,
     TCP_Client,
+    TCP_Server,
     UDP
 };
 

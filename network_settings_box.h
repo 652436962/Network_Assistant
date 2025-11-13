@@ -13,6 +13,8 @@
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QSpinBox>
 
+#include <QHostAddress>
+
 #include "led_widget.h"
 
 
@@ -37,18 +39,12 @@ private:
     QLineEdit* lineEdit_Address;
     QSpinBox* spinBox_Port;
     QComboBox* comboBox_WorkMode;
+    QComboBox* comboBox_Address;
 
     /**
      * @brief 设置 UI
      */
     void setupUi(void);
-
-    /**
-     * @brief 设置 UI 中的文本
-     * @param  
-     */
-    void retranslateUi(void);
-
 
 
 public:
@@ -59,11 +55,17 @@ public:
      */
     WorkMode getSelectedMode(void);
 
+    ///**
+    // * @brief 获取输入的地址
+    // * @return 输入的地址
+    // */
+    //QString getAddress(void);
+
     /**
-     * @brief 获取输入的地址
-     * @return 输入的地址
+     * @brief 获取IP地址
+     * @return 选择或输入的IP地址
      */
-    QString getAddress(void);
+    QHostAddress getAddress(void);
 
     /**
      * @brief 获取端口号
@@ -73,30 +75,38 @@ public:
 
 private:
     bool networkActive = false;//是否正在进行网络活动
+private:
+
+
+    /**
+     * @brief 根据选项改变 UI
+     */
+    void changeUiAccordingOption(void);
+
+    /**
+     * @brief 获取本地所有可用 IP 地址并刷新下拉框
+     */
+    void getLocalAddress(void);
 public:
     /**
      * @brief 根据网络的连接情况改变UI
      * @param state 是否正在进行网络活动
      */
-    void changeUI(bool state);
-
+    void changeUiAccordingState(bool state);
 signals:
     /**
      * @brief 点击
      * @note Qt 信号  
      */
     void clicked(void);
+signals:
+    /**
+     * @brief 模式选项改变
+     * @param 工作模式
+     * @note Qt 信号  
+     */
+    void modeOptionChanged(WorkMode mode);
 
-
-//private:
-//    /**
-//     * @brief 重新绘图事件，以显示边框
-//     * @param event 
-//     */
-//    void paintEvent(QPaintEvent* event) override;
-
-//private:
-//    Ui::NetworkSettingsWidget *ui;
 };
 
 

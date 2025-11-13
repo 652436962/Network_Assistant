@@ -32,24 +32,27 @@ MainWindow::MainWindow(QWidget* parent)
 	//左侧窗口相关配置
 
 	//配置连接 按钮被点击
-	connect(ui->network_settings, &NetworkSettingsBox::clicked, this, [this]() {
+	connect(ui->network_settings, &NetworkSettingsBox::clicked, [this]() {
 		WorkMode mode = ui->network_settings->getSelectedMode();
-		if (mode == WorkMode::TCP_Server)//作为 TCP 服务器工作
-		{
-			this->asTcpServerOperation();
-		}
-		else if (mode == WorkMode::TCP_Client)//作为 TCP 客户端工作
+		//作为 TCP 客户端工作
+		if (mode == WorkMode::TCP_Client)
 		{
 			this->asTcpClientOperation();
 		}
-		else if (mode == WorkMode::UDP)//作为 UDP 工作
+		//作为 TCP 服务器工作
+		else if (mode == WorkMode::TCP_Server)
+		{
+			this->asTcpServerOperation();
+		}
+		//作为 UDP 工作
+		else if (mode == WorkMode::UDP)
 		{
 			this->asUdpOperation();
 		}
 		});
 
 	//配置连接 网络设置改变 UI
-	connect(this, &MainWindow::connectionStatusChanged, ui->network_settings, &NetworkSettingsBox::changeUI);
+	connect(this, &MainWindow::connectionStatusChanged, ui->network_settings, &NetworkSettingsBox::changeUiAccordingState);
 
 
 	//配置连接 接收设置 -> 接收区 各种链接
@@ -248,9 +251,8 @@ void MainWindow::asTcpServerOperation(void)
 			qDebug() << "错误 服务器创建前客户端链表非空" << __FILE__ << __LINE__;
 			return;
 		}
-		QString addressString = ui->network_settings->getAddress();//获取地址
 		uint16_t port = ui->network_settings->getPortValue();//获取端口
-		QHostAddress address(addressString);
+		QHostAddress address =ui->network_settings->getAddress();//获取地址
 		if (address.isNull())
 		{
 			this->notificationManager->newBubble("地址无效");
@@ -480,10 +482,9 @@ void MainWindow::asTcpServerOperation(void)
 void MainWindow::asTcpClientOperation(void)
 {
 	if (this->clientTcpSocket == nullptr)//客户端 TcpSocket 未创建
-	{		
-		QString addressString = ui->network_settings->getAddress();//获取 IP 地址
+	{
 		uint16_t port = ui->network_settings->getPortValue();//获取端口
-		QHostAddress address(addressString);
+		QHostAddress address = ui->network_settings->getAddress();//获取 IP 地址
 		if (address.isNull())
 		{
 			this->notificationManager->newBubble("地址无效");
@@ -581,20 +582,13 @@ void MainWindow::asTcpClientOperation(void)
 			QByteArray byteArray = clientTcpSocket->readAll();
 			ui->receive_area->showData(byteArray);//在接收区中展示数据
 			});
-		////配置连接 单项发送
-		// 这里代码有问题，this->singleSend this 都是长期存在，不会自动disconnect，因此每次执行都会重复连接
-		//connect(this->singleSend, &SingleSendWidget::requestToSend, this, [this](QByteArray byteArray) {
-		//    if (clientTcpSocket == nullptr)
-		//    {
-		//        qDebug() << "错误 " << __FILE__ << __LINE__;
-		//        return;
-		//    }
-		//    qDebug() << "客户端发送 " << byteArray;
-		//    this->clientTcpSocket->write(byteArray);
-		//    });
+
 		//配置连接 单项发送
-		connect(this->singleSend, &SingleSendWidget::requestToSend, this->clientTcpSocket,
-			static_cast<qint64(QTcpSocket::*)(const QByteArray& data)>(&QTcpSocket::write));
+		/*connect(this->singleSend, &SingleSendWidget::requestToSend, this->clientTcpSocket,
+			static_cast<qint64(QTcpSocket::*)(const QByteArray& data)>(&QTcpSocket::write));*/
+		connect(this->singleSend, &SingleSendWidget::requestToSend, this->clientTcpSocket, [this](QByteArray data) {
+			this->clientTcpSocket->write(data);
+			});
 	}
 	//客户端 TcpSocket 已创建
 	else
@@ -618,8 +612,7 @@ void MainWindow::asUdpOperation(void)
 {
 	if (this->udpSocket == nullptr)
 	{
-		QString address_str = ui->network_settings->getAddress();
-		QHostAddress address(address_str);
+		QHostAddress address = ui->network_settings->getAddress();
 		if (address.isNull())
 		{
 			this->notificationManager->newBubble("地址无效");
@@ -677,8 +670,11 @@ void MainWindow::asUdpOperation(void)
 			});
 		
 		//配置连接 通过 UDP 发送数据
-		connect(this->singleSend, &SingleSendWidget::requestToSend, this->udpSocket, [this]() {
-			QString targetAddress = this->udpTargetBox->getAddress();
+		connect(this->singleSend, &SingleSendWidget::requestToSend, this->udpSocket, [this](QByteArray data) {
+			QString targetAddressString = this->udpTargetBox->getAddress();
+			uint16_t targetPort = this->udpTargetBox->getPortValue();
+			QHostAddress targetAddress(targetAddressString);
+			this->udpSocket->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
 			});
 
 		emit this->connectionStatusChanged(true);
