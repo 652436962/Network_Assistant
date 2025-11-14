@@ -100,29 +100,6 @@
        </widget>
       </item>
       <item>
-       <spacer name="horizontalSpacer_3">
-        <property name="orientation">
-         <enum>Qt::Orientation::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>37</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-      <item>
-       <widget class="QLabel" name="label_Encoding">
-        <property name="text">
-         <string>要导入文件的编码</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QComboBox" name="comboBox_Encoding"/>
-      </item>
-      <item>
        <widget class="QPushButton" name="pushButton_Import">
         <property name="text">
          <string>导入表格</string>

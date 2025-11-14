@@ -16,6 +16,7 @@
 #include <QHostAddress>
 
 #include "led_widget.h"
+#include "toggle_button.h"
 
 
 #include "sundry.h"
@@ -35,7 +36,7 @@ private:
     QLabel* label_Port;
     LED_Widget* led;
     QPushButton* pushButton_Other;
-    QPushButton* pushButton_Switch;//开关
+    ToggleButton* toggleButton;//开关
     QLineEdit* lineEdit_Address;
     QSpinBox* spinBox_Port;
     QComboBox* comboBox_WorkMode;
@@ -95,10 +96,10 @@ public:
     void changeUiAccordingState(bool state);
 signals:
     /**
-     * @brief 点击
+     * @brief 请求工作
      * @note Qt 信号  
      */
-    void clicked(void);
+    void requestWork(WorkMode mode);
 signals:
     /**
      * @brief 模式选项改变

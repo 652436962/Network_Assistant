@@ -18,7 +18,7 @@ public:
     explicit ReceiveSettingsBox(QWidget *parent = nullptr);
     /*~ReceiveSettingsWidget();*/
 
-public:
+private:
     QGridLayout* gridLayout;
     QRadioButton* radioButton_Text;
     QRadioButton* radioButton_HEX;
@@ -43,37 +43,35 @@ signals:
     /**
      * @brief 接收区清屏
      */
-    void clear(void);
-
+    void receiveAreaClear(void);
+signals:
     /**
      * @brief 设置显示文本
      * @param state 是否
      * @note Qt 信号
      */
     void setText(bool state);
-
+signals:
     /**
      * @brief 设置停止显示
      * @param state 是否
      * @note Qt 信号
      */
     void setStopDispalying(bool state);
-
+signals:
     /**
      * @brief 设置是否显示时间戳
      * @param state 是否
      * @note Qt 信号
      */
     void setTimestamp(bool state);
+signals:
+    /**
+     * @brief 请求保存到文件
+     * @note Qt 信号
+     */
+    void receiveToFile(void);
 
-//private:
-//    /**
-//     * @brief 重写绘图事件以显示边框
-//     * @param event 
-//     */
-//    void paintEvent(QPaintEvent* event) override;
-//private:
-//    Ui::ReceiveSettingsWidget *ui;
 };
 
 

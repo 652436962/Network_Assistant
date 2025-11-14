@@ -8,14 +8,17 @@ ReceiveSettingsBox::ReceiveSettingsBox(QWidget *parent)
     this->setupUi();
 
     
-    connect(this->radioButton_Text, &QRadioButton::toggled, this, [this](bool checked) {
+    connect(this->radioButton_Text, &QRadioButton::toggled, [this](bool checked) {
         emit this->setText(checked); });
-    connect(this->checkBox_StopDisplay, &QCheckBox::toggled, this, [this](bool checked) {
+    connect(this->checkBox_StopDisplay, &QCheckBox::toggled, [this](bool checked) {
         emit this->setStopDispalying(checked); });
-    connect(this->checkBox_Timestamp, &QCheckBox::toggled, this, [this](bool checked) {
+    connect(this->checkBox_Timestamp, &QCheckBox::toggled, [this](bool checked) {
         emit this->setTimestamp(checked); });
-    connect(this->pushButton_Clear, &QPushButton::clicked, this, [this]() {
-        emit this->clear(); });
+    connect(this->pushButton_Clear, &QPushButton::clicked, [this]() {
+        emit this->receiveAreaClear(); });
+    connect(this->pushButton_Save, &QPushButton::clicked, [this]() {
+        emit this->receiveToFile();
+        });
     
 }
 
@@ -88,31 +91,3 @@ void ReceiveSettingsBox::retranslateUi(void)
     pushButton_Save->setText(QCoreApplication::translate("ReceiveSettingsBox", "\344\277\235\345\255\230\345\210\260\346\226\207\344\273\266", nullptr));
 } // retranslateUi
 
-//ReceiveSettingsWidget::~ReceiveSettingsWidget()
-//{
-//    delete ui;
-//}
-
-//void ReceiveSettingsWidget::paintEvent(QPaintEvent* event)
-//{
-//    // 1. 先调用父类的 paintEvent，确保正常绘制背景和子控件
-//    QWidget::paintEvent(event);
-//    // 2. 使用 QPainter 绘制虚线边框
-//    QPainter painter(this);
-//    painter.setRenderHint(QPainter::Antialiasing, false); // 边框不需要抗锯齿
-//
-//    // 3. 创建虚线画笔
-//    QPen pen;
-//    pen.setColor(QColor("#aaaaaa"));  // 灰色
-//    pen.setWidth(1);
-//    pen.setStyle(Qt::DashLine);       // 虚线样式
-//    pen.setDashPattern({ 2, 2 });       // 2像素实线，2像素空隙（可调）
-//    painter.setPen(pen);
-//
-//    // 4. 计算绘制矩形（避开边缘，留出边框空间）
-//    QRect rect = this->rect();
-//    rect.adjust(1, 1, -1, -1); // 缩小1像素，防止边框被裁剪
-//
-//    // 5. 绘制矩形边框
-//    painter.drawRect(rect);
-//}

@@ -37,7 +37,8 @@ find_package(Qt6 REQUIRED COMPONENTS
 add_executable (Network_Assistant
 "main.cpp"
 "main_window.ui" "main_window.h" "main_window.cpp"
- "led_widget.h" "led_widget.cpp" 
+ "custom_widget/led_widget.h" "custom_widget/led_widget.cpp" 
+ "custom_widget/toggle_button.h" "custom_widget/toggle_button.cpp"
  "sundry.h" "sundry.cpp" 
  "sundry_qt.h" "sundry_qt.cpp"
  "network_settings_box.h" "network_settings_box.cpp"
@@ -46,13 +47,17 @@ add_executable (Network_Assistant
  "send_settings_box.h" "send_settings_box.cpp"
  "single_send_widget.ui" "single_send_widget.h" "single_send_widget.cpp"
  "multiple_send_widget.ui" "multiple_send_widget.h" "multiple_send_widget.cpp"
- "notification_bubble.h" "notification_bubble.cpp"   "notification_manager.h" "notification_manager.cpp" "target_box.h" "target_box.cpp")
+ "custom_widget/notification_bubble.h" "custom_widget/notification_bubble.cpp"   "custom_widget/notification_manager.h" "custom_widget/notification_manager.cpp" 
+ "target_box.h" "target_box.cpp" 
+ )
 
 # 显式将 CMake 自动生成文件的输出目录添加到包含路径
 # 这有助于 IDE (如 VS) 的 IntelliSense 找到 ui_*.h 和 moc_*.cpp
 target_include_directories(Network_Assistant PRIVATE
     "${CMAKE_CURRENT_BINARY_DIR}"
     "${CMAKE_BINARY_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/custom_widget"
 )
 
 # =============== 启用 Qt 的自动处理 ===============

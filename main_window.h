@@ -106,8 +106,9 @@ private:
 
 signals:
 	/**
-	 * @brief 连接状态改变
+	 * @brief 网络改变
+	 * @param 网络打开或关闭
 	 * @note Qt 信号
 	 */
-	void connectionStatusChanged(bool state);
+	void netStatusChanged(bool state);
 };

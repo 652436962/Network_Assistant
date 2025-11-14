@@ -13,6 +13,7 @@
 #include <QNetworkInterface>
 #include <QVBoxLayout>
 #include <QMessageBox>
+#include <QFileDialog>
 
 #include "sundry_qt.h"
 
@@ -26,14 +27,33 @@ MainWindow::MainWindow(QWidget* parent)
 	this->notificationManager = new NotificationManager(this, this);//通知气泡管理
 	this->notificationManager->newBubble("欢迎使用");
 
+	//创建 TCP 服务器 需要的 连接到本服务器的客户端展示表格
+	{
+		this->clientTable = new QTableWidget(this);//创建表格
+		QVBoxLayout* layout = static_cast<QVBoxLayout*>(ui->widget_Left->layout());
+		layout->insertWidget(1, this->clientTable);
+		clientTable->setColumnCount(4);
+		clientTable->setHorizontalHeaderLabels({ "客户端","接收","发送","断开" });
+		clientTable->hide();//默认隐藏
+	}
+	
+
+	//创建 UDP 需要的发送目标窗口，用户在此窗口中填入目标地址和端口		
+	{
+		this->udpTargetBox = new TargetBox(this);
+		QVBoxLayout* vBoxLayout = static_cast<QVBoxLayout*>(ui->widget_Left->layout());
+		vBoxLayout->insertWidget(1, udpTargetBox);
+		this->udpTargetBox->hide();
+	}
+
+
 	//配置连接 展示主机信息
 	connect(ui->action_Info, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
 
 	//左侧窗口相关配置
 
-	//配置连接 按钮被点击
-	connect(ui->network_settings, &NetworkSettingsBox::clicked, [this]() {
-		WorkMode mode = ui->network_settings->getSelectedMode();
+	//配置连接 请求工作
+	connect(ui->network_settings, &NetworkSettingsBox::requestWork, [this](WorkMode mode) {
 		//作为 TCP 客户端工作
 		if (mode == WorkMode::TCP_Client)
 		{
@@ -50,17 +70,69 @@ MainWindow::MainWindow(QWidget* parent)
 			this->asUdpOperation();
 		}
 		});
+	//配置连接 工作模式选项切换
+	connect(ui->network_settings, &NetworkSettingsBox::modeOptionChanged, [this](WorkMode mode) {
+		//作为 TCP 客户端工作
+		if (mode == WorkMode::TCP_Client)
+		{
+			this->clientTable->hide();
+			this->udpTargetBox->hide();
+		}
+		//作为 TCP 服务器工作
+		else if (mode == WorkMode::TCP_Server)
+		{
+			this->clientTable->show();
+			this->udpTargetBox->hide();
+		}
+		//作为 UDP 工作
+		else if (mode == WorkMode::UDP)
+		{
+			this->clientTable->hide();
+			this->udpTargetBox->show();
+		}
+		});
 
 	//配置连接 网络设置改变 UI
-	connect(this, &MainWindow::connectionStatusChanged, ui->network_settings, &NetworkSettingsBox::changeUiAccordingState);
+	connect(this, &MainWindow::netStatusChanged, ui->network_settings, &NetworkSettingsBox::changeUiAccordingState);
 
+	//配置连接 切换发送区
+	connect(ui->send_settings, &SendSettingsBox::changeSendArray, [this](SendOptions option) {
+		if (option == SendOptions::single)
+		{
+			this->singleSend->show();
+			this->multipleSend->hide();
+		}
+		else if (option == SendOptions::multiple)
+		{
+			this->singleSend->hide();
+			this->multipleSend->show();
+		}
+		});
 
-	//配置连接 接收设置 -> 接收区 各种链接
+	//配置连接 接收设置 发出
 	{
-		connect(ui->receive_settings, &ReceiveSettingsBox::clear, ui->receive_area, &ReceiveWidget::clear);
+		connect(ui->receive_settings, &ReceiveSettingsBox::receiveAreaClear, ui->receive_area, &ReceiveWidget::clear);
 		connect(ui->receive_settings, &ReceiveSettingsBox::setText, ui->receive_area, &ReceiveWidget::setText);
 		connect(ui->receive_settings, &ReceiveSettingsBox::setStopDispalying, ui->receive_area, &ReceiveWidget::setStopDisplaying);
 		connect(ui->receive_settings, &ReceiveSettingsBox::setTimestamp, ui->receive_area, &ReceiveWidget::setTimestamp);
+		//配置连接 保存到文本文件
+		connect(ui->receive_settings, &ReceiveSettingsBox::receiveToFile, [this]() {
+			QString text = ui->receive_area->toPlainText();
+			QString fileName = QFileDialog::getSaveFileName(this, "保存文本文件", "", "文本文件(*.txt);;所有文件(*)");
+			if (fileName.isEmpty()) return;// 用户取消了？直接返回
+			QFile file(fileName);
+			if (!file.open(QIODeviceBase::WriteOnly | QIODevice::Text))
+			{
+				this->notificationManager->newBubble("无法创建文件");
+				qDebug() << "无法创建文件 "<<__FILE__<<__LINE__ << fileName << file.errorString();
+				return;
+			}
+			QTextStream out(&file);
+			out << text;
+			file.close();
+			this->notificationManager->newBubble("保存成功");
+			qDebug() << "保存成功" << fileName;
+			});
 	}
 
 
@@ -73,6 +145,9 @@ MainWindow::MainWindow(QWidget* parent)
 	}
 	this->singleSend = new SingleSendWidget(this);//创建单项发送窗口
 	verticalLayout->addWidget(singleSend);//添加到布局
+	this->multipleSend = new MultipleSendWidget(this);//创建多项发送窗口
+	verticalLayout->addWidget(multipleSend);
+	this->multipleSend->hide();
 
 	//配置连接 发送设置 -> 单项发送区
 	{
@@ -267,23 +342,9 @@ void MainWindow::asTcpServerOperation(void)
 		bool result = tcpServer->listen(address, port); //开始监听
 		if (result)//监听启动成功
 		{
-			emit this->connectionStatusChanged(true);
+			emit this->netStatusChanged(true);
 			this->notificationManager->newBubble("TCP服务器开始监听");
 			qDebug() << "开始监听  地址" << address << " 端口 " << port;
-
-			//创建客户端展示表格
-			if (this->clientTable != nullptr)
-			{
-				qDebug() << "错误原本存在表格" << __FILE__ << __LINE__;
-			}
-			else
-			{
-				this->clientTable = new QTableWidget(this);//创建表格
-				QVBoxLayout* layout = static_cast<QVBoxLayout*>(ui->widget_Left->layout());
-				layout->insertWidget(1, this->clientTable);
-				clientTable->setColumnCount(4);
-				clientTable->setHorizontalHeaderLabels({ "客户端","接收","发送","断开"});
-			}			
 		}
 		else//监听启动失败
 		{
@@ -447,15 +508,14 @@ void MainWindow::asTcpServerOperation(void)
 		}
 		//注意，在清理时会删除链表节点，因此，如果遍历原本的链表会错！！
 		
-		//删除客户端表格
+		//清空客户端表格
 		if (this->clientTable == nullptr)
 		{
 			qDebug() << "错误 空指针" << __FILE__ << __LINE__;
 		}
 		else
 		{
-			this->clientTable->deleteLater();//删除客户端表格
-			this->clientTable = nullptr;
+			this->clientTable->clear();
 		}
 		
 		
@@ -465,7 +525,7 @@ void MainWindow::asTcpServerOperation(void)
 			this->tcpServer->close();//停止监听
 			this->tcpServer->deleteLater();
 			this->tcpServer = nullptr;
-			emit this->connectionStatusChanged(false);
+			emit this->netStatusChanged(false);
 			this->notificationManager->newBubble("服务器停止监听");
 			qDebug() << "停止监听";
 		}
@@ -497,7 +557,7 @@ void MainWindow::asTcpClientOperation(void)
 		
 		/*配置相关链接*/
 		//与服务器建立了连接
-		connect(this->clientTcpSocket, &QTcpSocket::connected, this, [this]() {
+		connect(this->clientTcpSocket, &QTcpSocket::connected, [this]() {
 			if (clientTcpSocket == nullptr)
 			{
 				qDebug() << "错误 " << __FILE__ << __LINE__;
@@ -507,12 +567,12 @@ void MainWindow::asTcpClientOperation(void)
 			QTextStream connectStream(&connectString);
 			connectStream << "已连接到服务器  " << clientTcpSocket->peerAddress().toString() << " " << clientTcpSocket->peerPort();
 			this->notificationManager->newBubble(connectString);
-			emit this->connectionStatusChanged(true);
+			emit this->netStatusChanged(true);
 			qDebug() << connectString;
 			
 			});
 		//与服务器断开了连接
-		connect(this->clientTcpSocket, &QTcpSocket::disconnected, this, [this]() {
+		connect(this->clientTcpSocket, &QTcpSocket::disconnected, [this]() {
 			if (clientTcpSocket == nullptr)
 			{
 				qDebug() << "错误 " << __FILE__ << __LINE__;
@@ -524,11 +584,11 @@ void MainWindow::asTcpClientOperation(void)
 			this->notificationManager->newBubble(disconnectString);
 			clientTcpSocket->deleteLater();//删除 Socket
 			clientTcpSocket = nullptr;
-			emit this->connectionStatusChanged(false);
+			emit this->netStatusChanged(false);
 			qDebug() << disconnectString;
 			});
 		//发生错误
-		connect(this->clientTcpSocket, &QTcpSocket::errorOccurred, this, [this](QAbstractSocket::SocketError error) {
+		connect(this->clientTcpSocket, &QTcpSocket::errorOccurred, [this](QAbstractSocket::SocketError error) {
 			if (error == QAbstractSocket::RemoteHostClosedError)//这并不是错误情况！！！
 			{
 				qDebug() << "服务端已关闭连接";
@@ -573,12 +633,13 @@ void MainWindow::asTcpClientOperation(void)
 			});
 
 		//接收到了服务器的数据
-		connect(this->clientTcpSocket, &QTcpSocket::readyRead, this, [this]() {
+		connect(this->clientTcpSocket, &QTcpSocket::readyRead, [this]() {
 			if (clientTcpSocket == nullptr)
 			{
 				qDebug() << "错误 " << __FILE__ << __LINE__;
 				return;
 			}
+			ui->receive_area->appendPlainText("[From TCP Server]\n");
 			QByteArray byteArray = clientTcpSocket->readAll();
 			ui->receive_area->showData(byteArray);//在接收区中展示数据
 			});
@@ -634,18 +695,6 @@ void MainWindow::asUdpOperation(void)
 		stream << "UDP 绑定成功" << address.toString() << " " << port;
 		this->notificationManager->newBubble(message);
 		qDebug() << message;
-
-		//创建或显示 UDP 发送目标窗口，用户在此窗口中填入地址和端口		
-		if (this->udpTargetBox == nullptr)
-		{
-			this->udpTargetBox = new TargetBox(this);
-			QVBoxLayout* vBoxLayout = static_cast<QVBoxLayout*>(ui->widget_Left->layout());
-			vBoxLayout->addWidget(udpTargetBox, 1);
-		}
-		else
-		{
-			this->udpTargetBox->show();
-		}
 		
 		
 		//配置连接 接收 UDP 套接字数据
@@ -677,16 +726,15 @@ void MainWindow::asUdpOperation(void)
 			this->udpSocket->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
 			});
 
-		emit this->connectionStatusChanged(true);
+		emit this->netStatusChanged(true);
 	}
 	else
 	{
 		//UDP 是无连接协议，没有“连接状态”，自然也没有“断开连接”或“解绑”操作。
 		this->udpSocket->deleteLater();
 		this->udpSocket = nullptr;
-		emit this->connectionStatusChanged(false);
+		emit this->netStatusChanged(false);
 		this->notificationManager->newBubble("UDP 已关闭");
-		this->udpTargetBox->hide();//隐藏 UDP 目标窗口
 		qDebug() << "UDP 已关闭";
 	}
 }

@@ -13,7 +13,7 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 	this->comboBox_WorkMode->addItem("TCP 服务器", QVariant::fromValue(WorkMode::TCP_Server));	
 	this->comboBox_WorkMode->addItem("UDP", QVariant::fromValue(WorkMode::UDP));
 	//配置连接 选项变化
-	connect(this->comboBox_WorkMode, &QComboBox::currentIndexChanged, this, [this]() {
+	connect(this->comboBox_WorkMode, &QComboBox::currentIndexChanged, [this]() {
 		if (this->networkActive == true)
 		{
 			qDebug() << "错误，网络正在活动时文本不应当变化" << __FILE__ << __LINE__;
@@ -21,14 +21,17 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 		}
 		
 		this->changeUiAccordingOption();
+
+		emit this->modeOptionChanged(this->getSelectedMode());
 		});
 
 	//按钮按下
-	connect(this->pushButton_Switch, &QPushButton::clicked, [this]() {
-		emit this->clicked();
+	connect(this->toggleButton, &QPushButton::clicked, [this]() {
+		emit this->requestWork(this->getSelectedMode());
 		});
-	this->changeUiAccordingOption();
+	
 	this->changeUiAccordingState(false);
+	this->changeUiAccordingOption();
 	this->getLocalAddress();
 	
 
@@ -110,13 +113,13 @@ void NetworkSettingsBox::setupUi(void)
 
 	gridLayout->addWidget(pushButton_Other, 7, 1, 1, 1);
 
-	pushButton_Switch = new QPushButton(this);
-	pushButton_Switch->setObjectName("pushButton_Switch");
-	pushButton_Switch->setMinimumSize(QSize(80, 0));
-	pushButton_Switch->setFont(font);
-	pushButton_Switch->setText("启动");
+	toggleButton = new ToggleButton(this);
+	toggleButton->setObjectName("toggleButton");
+	toggleButton->setMinimumSize(QSize(80, 0));
+	toggleButton->setFont(font);
+	toggleButton->setText("启动");
 
-	gridLayout->addWidget(pushButton_Switch, 7, 2, 1, 1);
+	gridLayout->addWidget(toggleButton, 7, 2, 1, 1);
 
 
 	QMetaObject::connectSlotsByName(this);
@@ -132,12 +135,12 @@ WorkMode NetworkSettingsBox::getSelectedMode(void)
 QHostAddress NetworkSettingsBox::getAddress(void)
 {
 	WorkMode mode = this->getSelectedMode();
+	QString text;
 	// TCP 客户端应当从地址编辑行中得到地址
 	if (mode == WorkMode::TCP_Client)
 	{
-		QString text = this->lineEdit_Address->text();
-		QHostAddress addr(text);
-		return addr;
+		text = this->lineEdit_Address->text();
+		
 	}
 	// TCP 服务器 或 UDP 应当从地址下拉框中得到地址
 	else if (mode == WorkMode::TCP_Server || mode==WorkMode::UDP)
@@ -150,12 +153,10 @@ QHostAddress NetworkSettingsBox::getAddress(void)
 		}
 
 		//解析当前文本（用户手动输入）
-		QString text = this->comboBox_Address->currentText().trimmed();
-		QHostAddress addr(text);
-
-		return addr;// 成功解析		
+		text = this->comboBox_Address->currentText().trimmed();	
 	}
-	
+	QHostAddress addr(text);
+	return addr;	
 }
 
 uint16_t NetworkSettingsBox::getPortValue(void)
@@ -171,25 +172,7 @@ void NetworkSettingsBox::changeUiAccordingState(bool state)
 	this->lineEdit_Address->setReadOnly(state);
 	this->comboBox_WorkMode->setEnabled(!state);
 	this->comboBox_Address->setEnabled(!state);
-	WorkMode mode = this->getSelectedMode();
-	//如果是 TCP 客户端
-	if (mode == WorkMode::TCP_Client)
-	{
-		if (state) this->pushButton_Switch->setText("断开连接");
-		else this->pushButton_Switch->setText("建立连接");
-	}
-	//如果是 TCP 服务器
-	else if (mode == WorkMode::TCP_Server)
-	{
-		if (state) this->pushButton_Switch->setText("停止监听");
-		else this->pushButton_Switch->setText("启动监听"); 
-	}
-	//如果是 UDP
-	else if (mode == WorkMode::UDP)
-	{
-		if (state) this->pushButton_Switch->setText("关闭");
-		else this->pushButton_Switch->setText("绑定");
-	}
+	this->toggleButton->setCheckedState(state);
 }
 
 void NetworkSettingsBox::changeUiAccordingOption(void)
@@ -202,7 +185,7 @@ void NetworkSettingsBox::changeUiAccordingOption(void)
 		this->label_Port->setText("服务器端口");
 		this->lineEdit_Address->show();
 		this->comboBox_Address->hide();
-		this->pushButton_Switch->setText("建立连接");
+		this->toggleButton->setTexts("建立连接","断开连接");
 	}
 	//如果是 TCP 服务器
 	else if (mode == WorkMode::TCP_Server)
@@ -211,7 +194,7 @@ void NetworkSettingsBox::changeUiAccordingOption(void)
 		this->label_Port->setText("本地端口");
 		this->lineEdit_Address->hide();
 		this->comboBox_Address->show();
-		this->pushButton_Switch->setText("启动监听");
+		this->toggleButton->setTexts("启动监听","停止监听");
 	}
 	//如果是 UDP
 	else if (mode == WorkMode::UDP)
@@ -220,7 +203,7 @@ void NetworkSettingsBox::changeUiAccordingOption(void)
 		this->label_Port->setText("本地端口");
 		this->lineEdit_Address->hide();
 		this->comboBox_Address->show();
-		this->pushButton_Switch->setText("绑定");
+		this->toggleButton->setTexts("绑定","关闭");
 	}
 }
 

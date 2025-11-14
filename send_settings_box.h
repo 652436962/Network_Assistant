@@ -82,14 +82,5 @@ signals:
     void setAppend(bool checked, QByteArray content);
 
 
-//private:
-//    Ui::SendSettingsWidget *ui;
-
-//private:
-//    /**
-//     * @brief 重新绘图事件，以显示边框
-//     * @param event
-//     */
-//    void paintEvent(QPaintEvent* event) override;
 };
 
