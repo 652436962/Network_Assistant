@@ -97,3 +97,10 @@ bool isValidHexSequence(const QString& theString)
     // 第四步：检查字符总数是否为偶数（每个字节2位）
     return (cleaned.length() % 2) == 0;
 }
+
+QByteArray getEncodingQByteArray(EncodingEnum e)
+{
+    QByteArray byteArray = QByteArray::fromStdString(getEncodingStdString(e));
+
+    return byteArray;
+}

@@ -13,7 +13,7 @@
 #include "target_box.h"
 
 #include <list>
-
+#include "global.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

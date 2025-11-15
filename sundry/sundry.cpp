@@ -12,25 +12,7 @@
 #include <algorithm>
 #include <chrono>
 
-std::string getWorkModeString(WorkMode mode)
-{
-    std::string typeString = "";
-    switch (mode)
-    {
-    case WorkMode::TCP_Server:
-        typeString = "TCP Server";
-        break;
-    case WorkMode::TCP_Client:
-        typeString = "TCP Client";
-        break;
-    case WorkMode::UDP:
-        typeString = "UDP";
-        break;
-    default:
-        break;
-    }
-    return typeString;
-}
+
 
 EncodingEnum getLocalEncoding()
 {
@@ -54,7 +36,7 @@ EncodingEnum getLocalEncoding()
     return encoding;
 }
 
-std::string getEncodingString(EncodingEnum encoding)
+std::string getEncodingStdString(EncodingEnum encoding)
 {
     std::string result = "UTF-8";
     switch (encoding)

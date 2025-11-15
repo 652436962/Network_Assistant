@@ -2,6 +2,9 @@
 
 #include <QNetworkInterface>
 #include <QString>
+#include <QByteArray>
+
+#include "sundry.h"
 
 /**
 * @brief 得到接口类型对应的字符串
@@ -31,3 +34,10 @@ QByteArray hexSpacedToQByteArray(const QString& hexStr);
  * @note 每个字节必须是两个十六进制字符，如 "00 35 FF"（空格分隔）
  */
 bool isValidHexSequence(const QString& theSymbol);
+
+/**
+ * @brief 得到对应编码的字符串
+ * @param encoding 编码枚举
+ * @return 对应的编码Qt字节数组
+ */
+QByteArray getEncodingQByteArray(EncodingEnum e);

@@ -18,7 +18,7 @@
 #include "led_widget.h"
 #include "toggle_button.h"
 
-
+#include "global.h"
 #include "sundry.h"
 
 class NetworkSettingsBox : public QGroupBox

@@ -8,7 +8,7 @@
 #include <QHostInfo>
 
 #include <QTableWidget>//表格
-
+#include <QActionGroup>
 #include <QSysInfo>//系统信息
 #include <QNetworkInterface>
 #include <QVBoxLayout>
@@ -27,6 +27,28 @@ MainWindow::MainWindow(QWidget* parent)
 	this->notificationManager = new NotificationManager(this, this);//通知气泡管理
 	this->notificationManager->newBubble("欢迎使用");
 
+	//菜单栏相关设置
+	{
+		//配置连接 展示主机信息
+		connect(ui->action_Infomation, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
+		//将编码选项加入组
+		QActionGroup* encodingGroup = new QActionGroup(this);
+		encodingGroup->setExclusive(true);//自动互斥
+		encodingGroup->addAction(ui->action_UTF8);
+		encodingGroup->addAction(ui->action_GB18030);
+		connect(ui->action_UTF8, &QAction::triggered, [](bool checked) {
+			if (checked) encodingUsed = EncodingEnum::UTF8;
+			qDebug() << "编码 " << getEncodingQByteArray(encodingUsed);
+			});
+		connect(ui->action_GB18030, &QAction::triggered, [](bool checked) {
+			if (checked) encodingUsed = EncodingEnum::GB18030;
+			qDebug() << "编码 " << getEncodingQByteArray(encodingUsed);
+			});
+	}
+	
+
+	//左侧窗口相关配置
+
 	//创建 TCP 服务器 需要的 连接到本服务器的客户端展示表格
 	{
 		this->clientTable = new QTableWidget(this);//创建表格
@@ -36,7 +58,7 @@ MainWindow::MainWindow(QWidget* parent)
 		clientTable->setHorizontalHeaderLabels({ "客户端","接收","发送","断开" });
 		clientTable->hide();//默认隐藏
 	}
-	
+
 
 	//创建 UDP 需要的发送目标窗口，用户在此窗口中填入目标地址和端口		
 	{
@@ -45,12 +67,6 @@ MainWindow::MainWindow(QWidget* parent)
 		vBoxLayout->insertWidget(1, udpTargetBox);
 		this->udpTargetBox->hide();
 	}
-
-
-	//配置连接 展示主机信息
-	connect(ui->action_Info, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
-
-	//左侧窗口相关配置
 
 	//配置连接 请求工作
 	connect(ui->network_settings, &NetworkSettingsBox::requestWork, [this](WorkMode mode) {
@@ -242,9 +258,8 @@ void MainWindow::showLocalIPConfig(void)
 	addRow("操作系统", QSysInfo::prettyProductName(), "");
 	addRow("操作系统内核", QSysInfo::kernelType(), "");
 	addRow("内核版本", QSysInfo::kernelVersion(), "");
-	addRow(" CPU 架构", QSysInfo::currentCpuArchitecture(), "");
+	addRow("CPU 架构", QSysInfo::currentCpuArchitecture(), "");
 	addRow("本机名", QSysInfo::machineHostName(), "");// 获取主机信息
-
 
 	// 获取本机所有网络接口（网卡）
 	QList<QNetworkInterface> interfaces = QNetworkInterface::allInterfaces();

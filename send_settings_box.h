@@ -13,7 +13,7 @@
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QSpinBox>
 
-
+#include "global.h"
 #include "sundry.h"
 
 class SendSettingsBox : public QGroupBox
