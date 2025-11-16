@@ -4,7 +4,7 @@ DebouncedSpinBox::DebouncedSpinBox(QWidget* parent, int debounceMs):QSpinBox(par
 {
 	this->m_debouncedTimer = new QTimer(this);
 	this->m_debouncedTimer->setInterval(debounceMs);
-	this->m_debouncedTimer->setTimerType(Qt::TimerType::VeryCoarseTimer);
+	this->m_debouncedTimer->setTimerType(Qt::TimerType::PreciseTimer);//ms级精度
 	this->m_debouncedTimer->setSingleShot(true);//只触发一次
 
 	// 连接原始 valueChanged 信号

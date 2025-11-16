@@ -10,22 +10,30 @@ SendSettingsBox::SendSettingsBox(QWidget* parent)
 	this->setupUi();
 
 	//文本 或 HEX
-	connect(radioButton_Text, &QRadioButton::toggled, this, [this](bool checked) {
+	connect(radioButton_Text, &QRadioButton::toggled, [this](bool checked) {
 		emit this->setText(checked);
 	});
 
 	//自动发送
-	connect(checkBox_AutoSend, &QCheckBox::toggled, this, [this](bool checked) {
+	connect(checkBox_AutoSend, &QCheckBox::toggled, [this](bool checked) {
 		int cycle = spinBox_AutoSendCycle->value();
 		emit this->setAutoSend(checked, cycle);
 	});
+
+	//配置连接 自动发送周期改变
+	connect(spinBox_AutoSendCycle, &DebouncedSpinBox::valueSettled, [this](int value) {
+		if (this->checkBox_AutoSend->isChecked())
+		{
+			emit this->setAutoSend(true, value);
+		}
+		});
 
 	// 添加发送区选项
 	comboBox_Option->addItem("单项发送", QVariant::fromValue<SendOptions>(SendOptions::single));
 	comboBox_Option->addItem("多项发送", QVariant::fromValue<SendOptions>(SendOptions::multiple));
 	//int optionIndex = this->comboBox_Option->findData(QVariant::fromValue<SendOptions>(SendOptions::single)); // 默认单项发送
 	//this->comboBox_Option->setCurrentIndex(optionIndex);
-	connect(comboBox_Option, &QComboBox::currentIndexChanged, this, [this]() {
+	connect(comboBox_Option, &QComboBox::currentIndexChanged, [this]() {
 		SendOptions option = comboBox_Option->currentData().value<SendOptions>();
 		emit this->changeSendArray(option);
 	});
@@ -37,11 +45,11 @@ SendSettingsBox::SendSettingsBox(QWidget* parent)
 	comboBox_Append->addItem("'\\n'", item2);
 	QByteArray item3("\0", 1);
 	comboBox_Append->addItem("'\\0'", item3);
-	connect(checkBox_Append, &QCheckBox::toggled, this, [this](bool checked) {
+	connect(checkBox_Append, &QCheckBox::toggled, [this](bool checked) {
 		QByteArray data = comboBox_Append->currentData().value<QByteArray>();
 		emit this->setAppend(checked, data);
 		});
-	connect(comboBox_Append, &QComboBox::currentIndexChanged, this, [this]() {
+	connect(comboBox_Append, &QComboBox::currentIndexChanged, [this]() {
 		bool append = this->checkBox_Append->isChecked();
 		QByteArray data = comboBox_Append->currentData().value<QByteArray>();
 		emit this->setAppend(append, data); 
@@ -128,7 +136,7 @@ void SendSettingsBox::setupUi(void)
 
 	gridLayout->addWidget(label_AutoSendCycle, 4, 0, 1, 1);
 
-	spinBox_AutoSendCycle = new QSpinBox(this);
+	spinBox_AutoSendCycle = new DebouncedSpinBox(this);
 	spinBox_AutoSendCycle->setObjectName("spinBox_AutoSendCycle");
 	spinBox_AutoSendCycle->setEnabled(true);
 	spinBox_AutoSendCycle->setMaximumSize(QSize(16777215, 24));

@@ -25,7 +25,7 @@ EncodingEnum getLocalEncoding(void);
  * @param encoding 编码枚举
  * @return 对应的编码字符串
  */
-std::string getEncodingStdString(EncodingEnum encoding);
+std::string getEncodingString_Std(EncodingEnum encoding);
 
 
 /**
@@ -34,7 +34,7 @@ std::string getEncodingStdString(EncodingEnum encoding);
  * @return 表格中的数据
  * @note 此函数只读取数据，不处理编码
  */
-std::vector<std::vector<std::string>> readCSVFile(const std::string& filePath);
+std::vector<std::vector<std::string>> readCsvFile_Std(const std::string& filePath);
 
 /**
  * @brief 从 Hex 字符串还原 std::vector<uint8_t>

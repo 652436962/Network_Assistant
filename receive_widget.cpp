@@ -59,7 +59,7 @@ void ReceiveWidget::showData(QByteArray data)
     if (this->text) // 如果选择了文本
     {
         QString dataString;
-        QByteArray encodingName = QByteArray::fromStdString( getEncodingStdString(encoding));      // 得到编码的字符串
+        QByteArray encodingName = QByteArray::fromStdString( getEncodingString_Std(encoding));      // 得到编码的字符串
         QTextCodec* codec = QTextCodec::codecForName(encodingName); // 获取编码器
         dataString = codec->toUnicode(data);                   // 解码为 QString
         stringShow += dataString;

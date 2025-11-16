@@ -36,7 +36,7 @@ EncodingEnum getLocalEncoding()
     return encoding;
 }
 
-std::string getEncodingStdString(EncodingEnum encoding)
+std::string getEncodingString_Std(EncodingEnum encoding)
 {
     std::string result = "UTF-8";
     switch (encoding)
@@ -54,7 +54,7 @@ std::string getEncodingStdString(EncodingEnum encoding)
     return result;
 }
 
-std::vector<std::vector<std::string>> readCSVFile(const std::string& filePath)
+std::vector<std::vector<std::string>> readCsvFile_Std(const std::string& filePath)
 {
     std::vector<std::vector<std::string>> data;
 

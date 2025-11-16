@@ -12,6 +12,7 @@
 #include <QtWidgets/QRadioButton>
 #include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QSpinBox>
+#include "debounced_spin_box.h"
 
 #include "global.h"
 #include "sundry.h"
@@ -34,7 +35,7 @@ private:
     QCheckBox* checkBox_AutoSend;
     QSpacerItem* horizontalSpacer;
     QLabel* label_AutoSendCycle;
-    QSpinBox* spinBox_AutoSendCycle;
+    DebouncedSpinBox* spinBox_AutoSendCycle;
     QLabel* label_MS;
 
     /**

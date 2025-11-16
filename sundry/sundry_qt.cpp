@@ -100,7 +100,46 @@ bool isValidHexSequence(const QString& theString)
 
 QByteArray getEncodingQByteArray(EncodingEnum e)
 {
-    QByteArray byteArray = QByteArray::fromStdString(getEncodingStdString(e));
+    QByteArray byteArray = QByteArray::fromStdString(getEncodingString_Std(e));
 
     return byteArray;
+}
+
+QVector<QVector<QByteArray>> readCsvFile_Qt(const QString& filePath)
+{
+    QVector<QVector<QByteArray>> result;
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return result; // 文件打不开，返回空
+    }
+
+    // 按行读取（QTextStream 会自动处理 \r\n / \n）
+    // 注意：这里我们不指定编码，QTextStream 默认使用本地编码（但我们要的是原始字节！）
+    // 所以改用 readLine() 返回 QByteArray 的方式更合适
+
+    // 改为直接读取原始字节流，避免 QTextStream 自动解码
+    while (!file.atEnd()) {
+        QByteArray line = file.readLine().trimmed(); // 移除行尾换行符和空格
+
+        // 跳过空行
+        if (line.isEmpty()) {
+            continue;
+        }
+
+        // 按逗号分割（注意：不处理引号内的逗号！）
+        QList<QByteArray> fields = line.split(',');
+
+        // 将 QByteArray 列表转为 QVector
+        QVector<QByteArray> row;
+        row.reserve(fields.size());
+        for (const QByteArray& field : fields) {
+            row.append(field.trimmed()); // 可选：去除字段前后空格
+        }
+
+        result.append(row);
+    }
+
+    file.close();
+    return result;
 }

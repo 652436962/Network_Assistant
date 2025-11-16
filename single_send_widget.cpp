@@ -13,9 +13,9 @@ SingleSendWidget::SingleSendWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 
-	this->timer = new QTimer(this);	
-	this->timer->setTimerType(Qt::PreciseTimer);
-this->timer->stop();
+	this->timer = new QTimer(this);
+	this->timer->setTimerType(Qt::PreciseTimer);//ms级经典
+	this->timer->stop();
 	//定时到了
 	connect(timer, &QTimer::timeout, [this]() {
 		QByteArray data = this->getSentContent();
@@ -24,10 +24,10 @@ this->timer->stop();
 
 	//点击发送按钮
 	connect(ui->pushButton_Send, &QPushButton::clicked, [this]() {
-		
+
 		QByteArray data = this->getSentContent();
 		emit this->requestToSend(data);
-	});
+		});
 
 	//清理按钮
 	connect(ui->pushButton_Clear, &QPushButton::clicked, [this]() {
