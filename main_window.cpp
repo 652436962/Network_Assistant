@@ -54,8 +54,8 @@ MainWindow::MainWindow(QWidget* parent)
 		this->clientTable = new QTableWidget(this);//创建表格
 		QVBoxLayout* layout = static_cast<QVBoxLayout*>(ui->widget_Left->layout());
 		layout->insertWidget(1, this->clientTable);
-		clientTable->setColumnCount(4);
-		clientTable->setHorizontalHeaderLabels({ "客户端","接收","发送","断开" });
+		clientTable->setColumnCount(2);
+		clientTable->setHorizontalHeaderLabels({ "客户端","断开" });
 		clientTable->hide();//默认隐藏
 	}
 
@@ -109,19 +109,34 @@ MainWindow::MainWindow(QWidget* parent)
 		});
 
 	//配置连接 网络设置改变 UI
-	connect(this, &MainWindow::netStatusChanged, ui->network_settings, &NetworkSettingsBox::changeUiAccordingState);
+	connect(this, &MainWindow::workingStateChanged, ui->network_settings, &NetworkSettingsBox::changeUiAccordingState);
 
 	//配置连接 切换发送区
 	connect(ui->send_settings, &SendSettingsBox::changeSendArray, [this](SendOptions option) {
 		if (option == SendOptions::single)
 		{
-			this->singleSend->show();
-			this->multipleSend->hide();
+			this->singleSend->show();//展示单项发送区
+			this->multipleSend->hide();//隐藏多项发送区
+
+			if (ui->send_settings->getAutoSend())//如果设置了自动发送
+			{
+				int cycle = ui->send_settings->getAutoSendCycle();
+				this->singleSend->setAutoSend(true, cycle);//开启单项发送区自动发送
+				this->multipleSend->setAutoSend(false, 65535);//取消多项发送区自动发送
+			}
 		}
 		else if (option == SendOptions::multiple)
 		{
-			this->singleSend->hide();
+			this->singleSend->hide();//隐藏单项发送区
+			this->singleSend->setAutoSend(false, 65535);//取消其自动发送
+
 			this->multipleSend->show();
+			if (ui->send_settings->getAutoSend())//如果设置了自动发送
+			{
+				int cycle = ui->send_settings->getAutoSendCycle();
+				this->singleSend->setAutoSend(false, 65535);//取消单项发送区自动发送
+				this->multipleSend->setAutoSend(true, cycle);//开启多项发送区自动发送
+			}
 		}
 		});
 
@@ -161,15 +176,43 @@ MainWindow::MainWindow(QWidget* parent)
 	}
 	this->singleSend = new SingleSendWidget(this);//创建单项发送窗口
 	verticalLayout->addWidget(singleSend);//添加到布局
+	//配置连接 工作中 允许发送
+	connect(this, &MainWindow::workingStateChanged, this->singleSend, &SingleSendWidget::setAllowSending);
+	//配置连接 请求通知
+	connect(this->singleSend, &SingleSendWidget::requestToNotification, [this](QString notification) {
+		this->notificationManager->newBubble(notification);
+		});
+
 	this->multipleSend = new MultipleSendWidget(this);//创建多项发送窗口
 	verticalLayout->addWidget(multipleSend);
 	this->multipleSend->hide();
+	//配置连接 工作中 允许发送
+	connect(this, &MainWindow::workingStateChanged, this->multipleSend, &MultipleSendWidget::setAllowSending);
+	//配置连接 请求通知
+	connect(this->multipleSend, &MultipleSendWidget::requestToNotification, [this](QString notification) {
+		this->notificationManager->newBubble(notification);
+		});
 
-	//配置连接 发送设置 -> 单项发送区
+	//配置连接 发送设置 -> 单项发送区 和 多项发送区
 	{
-		connect(ui->send_settings, &SendSettingsBox::setText, singleSend, &SingleSendWidget::setText);
-		connect(ui->send_settings, &SendSettingsBox::setAppend, singleSend, &SingleSendWidget::setAppend);
-		connect(ui->send_settings, &SendSettingsBox::setAutoSend, singleSend, &SingleSendWidget::setAutoSend);
+		connect(ui->send_settings, &SendSettingsBox::setText, this->singleSend, &SingleSendWidget::setText);
+		connect(ui->send_settings, &SendSettingsBox::setAppend, this->singleSend, &SingleSendWidget::setAppend);
+
+		connect(ui->send_settings, &SendSettingsBox::setText, this->multipleSend, &MultipleSendWidget::setText);
+		connect(ui->send_settings, &SendSettingsBox::setAppend, this->multipleSend, &MultipleSendWidget::setAppend);
+
+		//自动发送
+		connect(ui->send_settings, &SendSettingsBox::setAutoSend, [this](bool open,int cycle) {
+			SendOptions option = ui->send_settings->getSendOption();
+			if (option == SendOptions::single)
+			{
+				this->singleSend->setAutoSend(open, cycle);
+			}
+			else if (option == SendOptions::multiple)
+			{
+				this->multipleSend->setAutoSend(open, cycle);
+			}
+			});
 	}
 
 
@@ -357,7 +400,7 @@ void MainWindow::asTcpServerOperation(void)
 		bool result = tcpServer->listen(address, port); //开始监听
 		if (result)//监听启动成功
 		{
-			emit this->netStatusChanged(true);
+			emit this->workingStateChanged(true);
 			this->notificationManager->newBubble("TCP服务器开始监听");
 			qDebug() << "开始监听  地址" << address << " 端口 " << port;
 		}
@@ -392,17 +435,9 @@ void MainWindow::asTcpServerOperation(void)
 				item_info->setData(Qt::UserRole, QVariant::fromValue(tcpSocket));//在 item_info 中保存 tcpSocket 
 				clientTable->setItem(row, 0, item_info);
 
-				// 第1列：“接收”复选框
-				QCheckBox* receiveBox = new QCheckBox(this->clientTable);
-				receiveBox->setChecked(true);
-				clientTable->setCellWidget(row, 1, receiveBox);
-				// 第2列：“发送”复选框
-				QCheckBox* sendBox = new QCheckBox(this->clientTable);
-				sendBox->setChecked(true);
-				clientTable->setCellWidget(row, 2, sendBox);
-				// 第3列：“断开”按钮
+				// 第2列：“断开”按钮
 				QPushButton* pushButton_disconnect = new QPushButton(this->clientTable);
-				clientTable->setCellWidget(row, 3, pushButton_disconnect);
+				clientTable->setCellWidget(row, 2, pushButton_disconnect);
 				connect(pushButton_disconnect, &QPushButton::clicked,this, [tcpSocket]() {
 					if (tcpSocket == nullptr)
 					{
@@ -496,9 +531,11 @@ void MainWindow::asTcpServerOperation(void)
 				ui->receive_area->showData(byteArray);
 				});
 
-			//配置连接 向新连接的客户端发送数据
+			//配置连接 请求发送
 			connect(this->singleSend, &SingleSendWidget::requestToSend, tcpSocket,
 				static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
+			connect(this->multipleSend, &MultipleSendWidget::requestToSend, tcpSocket,
+				static_cast<qint64(QTcpSocket::*)(const QByteArray& data)>(&QTcpSocket::write));
 			});
 		
 	}
@@ -540,7 +577,7 @@ void MainWindow::asTcpServerOperation(void)
 			this->tcpServer->close();//停止监听
 			this->tcpServer->deleteLater();
 			this->tcpServer = nullptr;
-			emit this->netStatusChanged(false);
+			emit this->workingStateChanged(false);
 			this->notificationManager->newBubble("服务器停止监听");
 			qDebug() << "停止监听";
 		}
@@ -582,7 +619,7 @@ void MainWindow::asTcpClientOperation(void)
 			QTextStream connectStream(&connectString);
 			connectStream << "已连接到服务器  " << clientTcpSocket->peerAddress().toString() << " " << clientTcpSocket->peerPort();
 			this->notificationManager->newBubble(connectString);
-			emit this->netStatusChanged(true);
+			emit this->workingStateChanged(true);
 			qDebug() << connectString;
 			
 			});
@@ -599,7 +636,7 @@ void MainWindow::asTcpClientOperation(void)
 			this->notificationManager->newBubble(disconnectString);
 			clientTcpSocket->deleteLater();//删除 Socket
 			clientTcpSocket = nullptr;
-			emit this->netStatusChanged(false);
+			emit this->workingStateChanged(false);
 			qDebug() << disconnectString;
 			});
 		//发生错误
@@ -659,12 +696,11 @@ void MainWindow::asTcpClientOperation(void)
 			ui->receive_area->showData(byteArray);//在接收区中展示数据
 			});
 
-		//配置连接 单项发送
-		/*connect(this->singleSend, &SingleSendWidget::requestToSend, this->clientTcpSocket,
-			static_cast<qint64(QTcpSocket::*)(const QByteArray& data)>(&QTcpSocket::write));*/
-		connect(this->singleSend, &SingleSendWidget::requestToSend, this->clientTcpSocket, [this](QByteArray data) {
-			this->clientTcpSocket->write(data);
-			});
+		//配置连接 请求发送
+		connect(this->singleSend, &SingleSendWidget::requestToSend, this->clientTcpSocket, 
+			static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
+		connect(this->multipleSend, &MultipleSendWidget::requestToSend, this->clientTcpSocket,
+			static_cast<qint64(QTcpSocket::*)(const QByteArray& data)>(&QTcpSocket::write));
 	}
 	//客户端 TcpSocket 已创建
 	else
@@ -733,22 +769,28 @@ void MainWindow::asUdpOperation(void)
 			}
 			});
 		
-		//配置连接 通过 UDP 发送数据
+		//配置连接 请求发送 通过 UDP 发送数据
 		connect(this->singleSend, &SingleSendWidget::requestToSend, this->udpSocket, [this](QByteArray data) {
 			QString targetAddressString = this->udpTargetBox->getAddress();
 			uint16_t targetPort = this->udpTargetBox->getPortValue();
 			QHostAddress targetAddress(targetAddressString);
 			this->udpSocket->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
 			});
+		connect(this->multipleSend, &MultipleSendWidget::requestToSend, this->udpSocket, [this](QByteArray data) {
+			QString targetAddressString = this->udpTargetBox->getAddress();
+			uint16_t targetPort = this->udpTargetBox->getPortValue();
+			QHostAddress targetAddress(targetAddressString);
+			this->udpSocket->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
+			});
 
-		emit this->netStatusChanged(true);
+		emit this->workingStateChanged(true);
 	}
 	else
 	{
 		//UDP 是无连接协议，没有“连接状态”，自然也没有“断开连接”或“解绑”操作。
 		this->udpSocket->deleteLater();
 		this->udpSocket = nullptr;
-		emit this->netStatusChanged(false);
+		emit this->workingStateChanged(false);
 		this->notificationManager->newBubble("UDP 已关闭");
 		qDebug() << "UDP 已关闭";
 	}

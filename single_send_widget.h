@@ -29,6 +29,7 @@ private:
 	bool autoSend = false;//是否自动发送
 	int autoCycle = 65535;//自动发送周期
 	QTimer* timer;//自动发送定时器
+	bool allowSending = false;//是否允许发送
 private:
 	/**
 	 * @brief 根据选项获取要发送的内容
@@ -53,6 +54,18 @@ public:
 	 * @param c 自动发送周期
 	 */
 	void setAutoSend(bool a, int c);
+	/**
+	 * @brief 获取是否正在自动发送
+	 * @return 是否正在自动发送
+	 */
+	bool getAutoSend(void) const;
+
+	/**
+	 * @brief 是否允许发送
+	 * @param a 是否
+	 */
+	void setAllowSending(bool a);
+
 signals:
 	/**
 	 * @brief 请求发送

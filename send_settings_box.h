@@ -49,7 +49,23 @@ private:
      * @param  
      */
     void retranslateUi(void);
+public:
+    /**
+     * @brief 是否开启了自动发送
+     * @return 是否
+     */
+    bool getAutoSend(void) const;
+    /**
+     * @brief 获取自动发送周期
+     * @return 自动发送周期 ms
+     */
+    int getAutoSendCycle(void) const;
 
+    /**
+     * @brief 获取发送选项
+     * @return 发送选项
+     */
+    SendOptions getSendOption(void) const;
 signals:
     /**
      * @brief 切换发送区

@@ -12,6 +12,9 @@ endif()
 # 设置项目名称
 project ("Network_Assistant")
 
+# 启用 Windows 资源编译器（用于 .rc 文件）
+enable_language(RC)
+
 # 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -35,10 +38,13 @@ find_package(Qt6 REQUIRED COMPONENTS
 # 包含：C++ 源文件、头文件、UI 文件
 # 将源代码添加到此项目的可执行文件。
 add_executable (Network_Assistant
-"main.cpp"
-"main_window.ui" "main_window.h" "main_window.cpp"
+ "main.cpp"
+ "main_window.ui" "main_window.h" "main_window.cpp"
  "custom_widget/led_widget.h" "custom_widget/led_widget.cpp" 
  "custom_widget/toggle_button.h" "custom_widget/toggle_button.cpp"
+ "custom_widget/debounced_spin_box.h" "custom_widget/debounced_spin_box.cpp"
+ "custom_widget/notification_bubble.h" "custom_widget/notification_bubble.cpp"
+ "custom_widget/notification_manager.h" "custom_widget/notification_manager.cpp"
  "sundry/sundry.h" "sundry/sundry.cpp" 
  "sundry/sundry_qt.h" "sundry/sundry_qt.cpp"
  "network_settings_box.h" "network_settings_box.cpp"
@@ -47,9 +53,11 @@ add_executable (Network_Assistant
  "send_settings_box.h" "send_settings_box.cpp"
  "single_send_widget.ui" "single_send_widget.h" "single_send_widget.cpp"
  "multiple_send_widget.ui" "multiple_send_widget.h" "multiple_send_widget.cpp"
- "custom_widget/notification_bubble.h" "custom_widget/notification_bubble.cpp"   "custom_widget/notification_manager.h" "custom_widget/notification_manager.cpp" 
  "target_box.h" "target_box.cpp" 
-  "global.h" "global.cpp" "custom_widget/debounced_spin_box.h" "custom_widget/debounced_spin_box.cpp")
+ "global.h" "global.cpp"
+ "app.rc"
+ "icon.qrc"
+)
 
 # 显式将 CMake 自动生成文件的输出目录添加到包含路径
 # 这有助于 IDE (如 VS) 的 IntelliSense 找到 ui_*.h 和 moc_*.cpp

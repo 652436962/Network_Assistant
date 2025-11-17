@@ -26,9 +26,42 @@ MultipleSendWidget::MultipleSendWidget(QWidget *parent)
 	}
 
 	this->timer = new QTimer(this);
-	timer->stop();
+	this->timer->stop();
 	this->timer->setTimerType(Qt::PreciseTimer);//ms级精度
-	timer->setSingleShot(false); // 循环
+	this->timer->setSingleShot(false); // 循环
+	//定时到了
+	connect(this->timer, &QTimer::timeout, [this]() {
+		if (ui->tabWidget->count() <= 0) // 多页窗口中没有表格
+		{
+			return;
+		}
+
+		// 获取当前表格窗口
+		QTableWidget* tableWidget = static_cast<QTableWidget*>(ui->tabWidget->currentWidget());
+		if (tableWidget->rowCount() <= 0) // 表格中没有数据
+		{
+			return;
+		}
+		// 获取当前行的指令
+		QTableWidgetItem* item = tableWidget->item(this->currentRow, 1);
+		if (!item)
+			return;
+
+		QString command = item->text();
+		QByteArray sendData= this->getSentContent(command);
+		emit this->requestToSend(sendData);
+
+		tableWidget->setCurrentCell(this->currentRow, 1);
+
+		// 更新行号（下一行）
+		this->currentRow++;
+		if (this->currentRow >= tableWidget->rowCount())
+		{
+			this->currentRow = 0; // 回到第一行，实现循环
+		}
+		});
+	//切换页后 自动发送当前行归0
+	connect(this->ui->tabWidget, &QTabWidget::currentChanged, [this]() {this->currentRow = 0; });
 
 	/*创建保存发送数据的文件夹*/
 	QString appDirPath = QCoreApplication::applicationDirPath(); // 获取 .exe 所在的目录
@@ -86,12 +119,17 @@ MultipleSendWidget::MultipleSendWidget(QWidget *parent)
 	// 导入文件按钮
 	connect(ui->pushButton_Import, &QPushButton::clicked, [this]() {
 		QString fileName = QFileDialog::getOpenFileName(this);
+		if (fileName.isEmpty())
+		{
+			return;
+		}
 		// 获取选择的编码
 		if (fileName.isEmpty())
 		{
 			return;
 		}
 		this->ImportCsvFile(fileName); // 导入文件
+		
 		});
 
 	/* 导入 multiple_data_files 中的所有.csv文件 */
@@ -148,13 +186,69 @@ void MultipleSendWidget::setAutoSend(bool a, int c)
 	}
 }
 
+bool MultipleSendWidget::getAutoSend(void) const
+{
+	return this->autoSend;
+}
+
+
+void MultipleSendWidget::setAllowSending(bool a)
+{
+	if (this->allowSending == a) return;
+	this->allowSending = a;
+	//遍历切换选项窗口
+	for (int i = 0; i < this->ui->tabWidget->count(); i++)
+	{
+		QTableWidget* tableWidget = static_cast<QTableWidget*>(this->ui->tabWidget->widget(i));
+		//遍历表格 2列
+		for (int j = 0; j < tableWidget->rowCount(); j++)
+		{
+			QPushButton* pushButton = static_cast<QPushButton*>(tableWidget->cellWidget(j, 2));
+			pushButton->setEnabled(a);
+		}
+	}
+
+}
+
+QByteArray MultipleSendWidget::getSentContent(QString dataString)
+{	
+	if (dataString.isEmpty())
+	{
+		return {};
+	}
+
+	QByteArray dataSend;//要发送的数据
+
+	if (this->text)//如果选择了文本
+	{
+		QTextCodec* codec = QTextCodec::codecForName(getEncodingQByteArray(encodingUsed));
+		dataSend = codec->fromUnicode(dataString);//编码转换
+	}
+	else//选择了 HEX
+	{
+		if (isValidHexSequence(dataString) != true)
+		{
+			emit this->requestToNotification("不是 HEX 字符串");
+			qDebug() << "要发送的不是 HEX 字符串";
+			return {};
+		}
+		dataSend = hexSpacedToQByteArray(dataString);//将对应字符串还原为十六进制数据
+	}
+
+	if (this->append)// 在结尾追加
+	{
+		dataSend.append(this->appendData);
+	}
+
+	return dataSend;
+}
+
 void MultipleSendWidget::ImportCsvFile(QString fileName)
 {
 	QFileInfo fileInfo(fileName);
 	QString baseName = fileInfo.baseName(); // 文件名
 
 	// 读取表格文件的数据
-	/*std::vector<std::vector<std::string>> formData = readCsvFile_Std(fileName.toStdString());*/
 	QVector<QVector<QByteArray>> formData = readCsvFile_Qt(fileName);
 
 	QTableWidget* tableWidget = new QTableWidget(ui->tabWidget); // 表格窗口
@@ -182,13 +276,15 @@ void MultipleSendWidget::ImportCsvFile(QString fileName)
 			tableWidget->setItem(i, j, new QTableWidgetItem(temp));
 		}
 		QPushButton* button = new QPushButton(tableWidget);
-		/*button->setEnabled(portState);
-		button->setIcon(QIcon(":/image/image/send.png"));
+		button->setEnabled(this->allowSending);
+		button->setIcon(QIcon(":/icon/image/send.png"));
 		connect(button, &QPushButton::clicked, [=]() {
-			QString sendData = tableWidget->item(i, 1)->text();
+			QString sendString = tableWidget->item(i, 1)->text();
+			if (sendString.isEmpty()) return;
+			QByteArray sendData = this->getSentContent(sendString);
+			if (sendData.isEmpty()) return;
 			emit this->requestToSend(sendData);
 			});
-		connect(this, &SendMultipleArea::portStateChange, button, &QPushButton::setEnabled);*/
 
 		tableWidget->setCellWidget(i, 2, button);
 	}

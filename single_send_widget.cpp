@@ -12,9 +12,10 @@ SingleSendWidget::SingleSendWidget(QWidget* parent)
 	, ui(new Ui::SingleSendWidget)
 {
 	ui->setupUi(this);
+	this->setAllowSending(false);
 
 	this->timer = new QTimer(this);
-	this->timer->setTimerType(Qt::PreciseTimer);//ms级经典
+	this->timer->setTimerType(Qt::PreciseTimer);//ms级精度
 	this->timer->stop();
 	//定时到了
 	connect(timer, &QTimer::timeout, [this]() {
@@ -110,4 +111,15 @@ void SingleSendWidget::setAutoSend(bool a, int c)
 		this->timer->stop();
 		qDebug() << "单项发送区停止自动发送";
 	}
+}
+
+bool SingleSendWidget::getAutoSend(void) const
+{
+	return this->autoSend;
+}
+
+void SingleSendWidget::setAllowSending(bool a)
+{
+	this->allowSending = a;
+	this->ui->pushButton_Send->setEnabled(a);
 }

@@ -58,6 +58,23 @@ SendSettingsBox::SendSettingsBox(QWidget* parent)
 	qDebug() << "发送设置窗口建立";
 }
 
+
+bool SendSettingsBox::getAutoSend(void) const
+{
+	return this->checkBox_AutoSend->isChecked();
+}
+
+int SendSettingsBox::getAutoSendCycle(void) const
+{
+	return this->spinBox_AutoSendCycle->value();
+}
+
+SendOptions SendSettingsBox::getSendOption(void) const
+{
+	SendOptions option = this->comboBox_Option->currentData().value<SendOptions>();
+	return option;
+}
+
 SendSettingsBox::~SendSettingsBox()
 {
 	qDebug() << "发送设置窗口关闭";
