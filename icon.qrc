@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/icon">
         <file>image/send.png</file>
+        <file>image/disconnect.png</file>
     </qresource>
 </RCC>

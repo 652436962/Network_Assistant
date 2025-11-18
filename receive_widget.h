@@ -6,6 +6,7 @@
 #include <QPlainTextEdit>
 
 #include "sundry.h"
+#include "sundry_qt.h"
 
 class ReceiveWidget : public QPlainTextEdit
 {
@@ -44,6 +45,12 @@ public:
      * @param data 要展示的数据
      */
     void showData(QByteArray data);
+
+    /**
+     * @brief 文本追加
+     * @param text 文本
+     */
+    void appendPlainText(const QString& text);
 
 signals:
 };

@@ -10,8 +10,8 @@ void TargetBox::setupUi(void)
 {
     if (this->objectName().isEmpty())
         this->setObjectName("UDP target box");
-    this->resize(180, 128);
-    this->setMinimumSize(QSize(180, 128));
+    this->resize(196, 128);
+    this->setMinimumSize(QSize(196, 128));
     QFont font;
     font.setPointSize(10);
     this->setFont(font);

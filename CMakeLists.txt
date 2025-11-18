@@ -92,4 +92,8 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET Network_Assistant PROPERTY CXX_STANDARD 20)
 endif()
 
-# TODO: 如有需要，请添加测试并安装目标。
+
+# 在 add_executable 之后，target_link_libraries 之前或之后都可以
+set_target_properties(Network_Assistant PROPERTIES
+    WIN32_EXECUTABLE OFF   # 隐藏控制台窗口
+)

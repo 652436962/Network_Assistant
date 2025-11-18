@@ -35,7 +35,7 @@ private:
     QLabel* label_Address;
     QLabel* label_Port;
     LED_Widget* led;
-    QPushButton* pushButton_Other;
+    QPushButton* pushButton_Refresh;
     ToggleButton* toggleButton;//开关
     QLineEdit* lineEdit_Address;
     QSpinBox* spinBox_Port;

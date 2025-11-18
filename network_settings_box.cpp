@@ -29,6 +29,11 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 	connect(this->toggleButton, &QPushButton::clicked, [this]() {
 		emit this->requestWork(this->getSelectedMode());
 		});
+
+	//配置连接 刷新
+	connect(this->pushButton_Refresh, &QPushButton::clicked, [this]() {
+		this->getLocalAddress();
+		});
 	
 	this->changeUiAccordingState(false);
 	this->changeUiAccordingOption();
@@ -105,13 +110,13 @@ void NetworkSettingsBox::setupUi(void)
 
 	gridLayout->addWidget(led, 7, 0, 1, 1);
 
-	pushButton_Other = new QPushButton(this);
-	pushButton_Other->setObjectName("pushButton_Other");
-	pushButton_Other->setMinimumSize(QSize(40, 0));
-	pushButton_Other->setFont(font);
-	pushButton_Other->setText("其它");
+	pushButton_Refresh = new QPushButton(this);
+	pushButton_Refresh->setObjectName("pushButton_Other");
+	pushButton_Refresh->setMinimumSize(QSize(40, 0));
+	pushButton_Refresh->setFont(font);
+	pushButton_Refresh->setText("刷新");
 
-	gridLayout->addWidget(pushButton_Other, 7, 1, 1, 1);
+	gridLayout->addWidget(pushButton_Refresh, 7, 1, 1, 1);
 
 	toggleButton = new ToggleButton(this);
 	toggleButton->setObjectName("toggleButton");
@@ -186,6 +191,7 @@ void NetworkSettingsBox::changeUiAccordingOption(void)
 		this->lineEdit_Address->show();
 		this->comboBox_Address->hide();
 		this->toggleButton->setTexts("建立连接","断开连接");
+		this->pushButton_Refresh->hide();
 	}
 	//如果是 TCP 服务器
 	else if (mode == WorkMode::TCP_Server)
@@ -195,6 +201,7 @@ void NetworkSettingsBox::changeUiAccordingOption(void)
 		this->lineEdit_Address->hide();
 		this->comboBox_Address->show();
 		this->toggleButton->setTexts("启动监听","停止监听");
+		this->pushButton_Refresh->show();
 	}
 	//如果是 UDP
 	else if (mode == WorkMode::UDP)
@@ -204,6 +211,7 @@ void NetworkSettingsBox::changeUiAccordingOption(void)
 		this->lineEdit_Address->hide();
 		this->comboBox_Address->show();
 		this->toggleButton->setTexts("绑定","关闭");
+		this->pushButton_Refresh->show();
 	}
 }
 
@@ -212,6 +220,8 @@ void NetworkSettingsBox::getLocalAddress(void)
 	// 获取本机所有 IPv4/IPv6 地址
 	QList<QHostAddress> addresses = QNetworkInterface::allAddresses();
 
+	this->comboBox_Address->clear();//清空下拉框
+	//重新添加选项
 	for (const QHostAddress& addr : addresses)
 	{
 		QString displayText = addr.toString();

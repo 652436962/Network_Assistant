@@ -64,8 +64,9 @@ MainWindow::MainWindow(QWidget* parent)
 	{
 		this->udpTargetBox = new TargetBox(this);
 		QVBoxLayout* vBoxLayout = static_cast<QVBoxLayout*>(ui->widget_Left->layout());
-		vBoxLayout->insertWidget(1, udpTargetBox);
+		vBoxLayout->insertWidget(5, udpTargetBox);
 		this->udpTargetBox->hide();
+		this->adjustSize();//让窗口自动缩放到刚好容纳所有内容
 	}
 
 	//配置连接 请求工作
@@ -93,18 +94,21 @@ MainWindow::MainWindow(QWidget* parent)
 		{
 			this->clientTable->hide();
 			this->udpTargetBox->hide();
+			this->adjustSize();//让窗口自动缩放到刚好容纳所有内容
 		}
 		//作为 TCP 服务器工作
 		else if (mode == WorkMode::TCP_Server)
 		{
 			this->clientTable->show();
 			this->udpTargetBox->hide();
+			this->adjustSize();//让窗口自动缩放到刚好容纳所有内容
 		}
 		//作为 UDP 工作
 		else if (mode == WorkMode::UDP)
 		{
 			this->clientTable->hide();
 			this->udpTargetBox->show();
+			this->adjustSize();//让窗口自动缩放到刚好容纳所有内容
 		}
 		});
 
@@ -373,6 +377,132 @@ void MainWindow::showLocalIPConfig(void)
 
 	table->resizeColumnsToContents();
 }
+void MainWindow::asTcpClientOperation(void)
+{
+	if (this->clientTcpSocket == nullptr)//客户端 TcpSocket 未创建
+	{
+		uint16_t port = ui->network_settings->getPortValue();//获取端口
+		QHostAddress address = ui->network_settings->getAddress();//获取 IP 地址
+		if (address.isNull())
+		{
+			this->notificationManager->newBubble("地址无效");
+			qDebug() << "地址无效" << __FILE__ << __LINE__;
+			return;
+		}
+
+		this->clientTcpSocket = new QTcpSocket(this);//创建 TcpSocket 变量
+		this->clientTcpSocket->connectToHost(address, port);//尝试连接服务器
+
+		/*配置相关链接*/
+		//与服务器建立了连接
+		connect(this->clientTcpSocket, &QTcpSocket::connected, [this]() {
+			if (clientTcpSocket == nullptr)
+			{
+				qDebug() << "错误 " << __FILE__ << __LINE__;
+				return;
+			}
+			QString connectString = "";
+			QTextStream connectStream(&connectString);
+			connectStream << "已连接到服务器  " << clientTcpSocket->peerAddress().toString() << " " << clientTcpSocket->peerPort();
+			this->notificationManager->newBubble(connectString);
+			emit this->workingStateChanged(true);
+			qDebug() << connectString;
+
+			});
+		//与服务器断开了连接
+		connect(this->clientTcpSocket, &QTcpSocket::disconnected, [this]() {
+			if (clientTcpSocket == nullptr)
+			{
+				qDebug() << "错误 " << __FILE__ << __LINE__;
+				return;
+			}
+			QString disconnectString = "";
+			QTextStream disconnectStream(&disconnectString);
+			disconnectStream << "已断开与服务器  " << clientTcpSocket->peerAddress().toString() << " " << clientTcpSocket->peerPort() << "  的连接";
+			this->notificationManager->newBubble(disconnectString);
+			clientTcpSocket->deleteLater();//删除 Socket
+			clientTcpSocket = nullptr;
+			emit this->workingStateChanged(false);
+			qDebug() << disconnectString;
+			});
+		//发生错误
+		connect(this->clientTcpSocket, &QTcpSocket::errorOccurred, [this](QAbstractSocket::SocketError error) {
+			if (error == QAbstractSocket::RemoteHostClosedError)//这并不是错误情况！！！
+			{
+				qDebug() << "服务端已关闭连接";
+				// 此时 disconnected 会触发，由它清理
+				return;
+			}
+			switch (error) {
+			case QAbstractSocket::RemoteHostClosedError://这并不是错误情况！！！
+				// ✅ 服务端主动断开，属于正常情况
+				qDebug() << "服务端已关闭连接";
+				// 此时 disconnected 会触发，由它清理
+				break;
+
+			case QAbstractSocket::HostNotFoundError:
+				qDebug() << error << "错误：无法找到服务器，请检查 IP 和端口";
+				QMessageBox::warning(this, "错误", "无法找到服务器，请检查 IP 和端口");
+				break;
+
+			case QAbstractSocket::ConnectionRefusedError:
+				qDebug() << error << "错误：连接被拒绝，服务器可能未启动";
+				QMessageBox::warning(this, "错误", "连接被拒绝，服务器可能未启动");
+				break;
+
+			case QAbstractSocket::NetworkError:
+				qDebug() << error << "网络错误：如断网、超时等";
+				QMessageBox::warning(this, "错误", "网络错误：如断网、超时等");
+				break;
+
+			default:
+				qDebug() << error << "未知错误";
+				QMessageBox::warning(this, "错误", "未知错误");
+				break;
+			}
+			if (error != QAbstractSocket::RemoteHostClosedError)//不是服务器断开了连接
+			{//清理
+				if (this->clientTcpSocket != nullptr)
+				{
+					this->clientTcpSocket->deleteLater();//删除
+					this->clientTcpSocket = nullptr;
+				}
+			}
+			});
+
+		//接收到了服务器的数据
+		connect(this->clientTcpSocket, &QTcpSocket::readyRead, [this]() {
+			if (clientTcpSocket == nullptr)
+			{
+				qDebug() << "错误 " << __FILE__ << __LINE__;
+				return;
+			}
+			ui->receive_area->appendPlainText("[From TCP Server]");
+			QByteArray byteArray = clientTcpSocket->readAll();
+			ui->receive_area->showData(byteArray);//在接收区中展示数据
+			});
+
+		//配置连接 请求发送
+		connect(this->singleSend, &SingleSendWidget::requestToSend, this->clientTcpSocket,
+			static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
+		connect(this->multipleSend, &MultipleSendWidget::requestToSend, this->clientTcpSocket,
+			static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
+	}
+	//客户端 TcpSocket 已创建
+	else
+	{
+		if (clientTcpSocket->state() == QAbstractSocket::ConnectedState)
+		{
+			this->clientTcpSocket->disconnectFromHost();//启动4次挥手，断开连接
+		}
+		else//正常情况下不应该执行到这里
+		{
+			this->clientTcpSocket->deleteLater();
+			this->clientTcpSocket = nullptr;
+			qDebug() << "错误 本客户端Socket未连接" << __FILE__ << __LINE__;
+		}
+	}
+}
 
 void MainWindow::asTcpServerOperation(void)
 {	
@@ -430,14 +560,15 @@ void MainWindow::asTcpServerOperation(void)
 				// 插入新行
 				int row = clientTable->rowCount();
 				clientTable->insertRow(row);
-				// 第0列：地址文本
+				// 0列：地址文本
 				QTableWidgetItem* item_info = new QTableWidgetItem(address + " " + QString::number(port));
 				item_info->setData(Qt::UserRole, QVariant::fromValue(tcpSocket));//在 item_info 中保存 tcpSocket 
 				clientTable->setItem(row, 0, item_info);
 
-				// 第2列：“断开”按钮
+				// 1列：“断开”按钮
 				QPushButton* pushButton_disconnect = new QPushButton(this->clientTable);
-				clientTable->setCellWidget(row, 2, pushButton_disconnect);
+				pushButton_disconnect->setIcon(QIcon(":/icon/image/disconnect.png"));
+				clientTable->setCellWidget(row, 1, pushButton_disconnect);
 				connect(pushButton_disconnect, &QPushButton::clicked,this, [tcpSocket]() {
 					if (tcpSocket == nullptr)
 					{
@@ -525,8 +656,8 @@ void MainWindow::asTcpServerOperation(void)
 				/*qDebug() << "收到了客户端的数据";*/
 				QString string;
 				QTextStream ts(&string);
-				ts << "\n[Tcp client " << tcpSocket->peerAddress().toString() << ' ' << tcpSocket->peerPort() << "]\n";
-				ui->receive_area->insertPlainText(string);
+				ts << "\n[Tcp client " << tcpSocket->peerAddress().toString() << ' ' << tcpSocket->peerPort() << "]";
+				ui->receive_area->appendPlainText(string);
 				QByteArray byteArray = tcpSocket->readAll();
 				ui->receive_area->showData(byteArray);
 				});
@@ -591,134 +722,6 @@ void MainWindow::asTcpServerOperation(void)
 
 }
 
-void MainWindow::asTcpClientOperation(void)
-{
-	if (this->clientTcpSocket == nullptr)//客户端 TcpSocket 未创建
-	{
-		uint16_t port = ui->network_settings->getPortValue();//获取端口
-		QHostAddress address = ui->network_settings->getAddress();//获取 IP 地址
-		if (address.isNull())
-		{
-			this->notificationManager->newBubble("地址无效");
-			qDebug() << "地址无效" << __FILE__ << __LINE__;
-			return;
-		}
-
-		this->clientTcpSocket = new QTcpSocket(this);//创建 TcpSocket 变量
-		this->clientTcpSocket->connectToHost(address, port);//尝试连接服务器
-		
-		/*配置相关链接*/
-		//与服务器建立了连接
-		connect(this->clientTcpSocket, &QTcpSocket::connected, [this]() {
-			if (clientTcpSocket == nullptr)
-			{
-				qDebug() << "错误 " << __FILE__ << __LINE__;
-				return;
-			}
-			QString connectString = "";
-			QTextStream connectStream(&connectString);
-			connectStream << "已连接到服务器  " << clientTcpSocket->peerAddress().toString() << " " << clientTcpSocket->peerPort();
-			this->notificationManager->newBubble(connectString);
-			emit this->workingStateChanged(true);
-			qDebug() << connectString;
-			
-			});
-		//与服务器断开了连接
-		connect(this->clientTcpSocket, &QTcpSocket::disconnected, [this]() {
-			if (clientTcpSocket == nullptr)
-			{
-				qDebug() << "错误 " << __FILE__ << __LINE__;
-				return;
-			}
-			QString disconnectString = "";
-			QTextStream disconnectStream(&disconnectString);
-			disconnectStream << "已断开与服务器  " << clientTcpSocket->peerAddress().toString() << " " << clientTcpSocket->peerPort()<<"  的连接";
-			this->notificationManager->newBubble(disconnectString);
-			clientTcpSocket->deleteLater();//删除 Socket
-			clientTcpSocket = nullptr;
-			emit this->workingStateChanged(false);
-			qDebug() << disconnectString;
-			});
-		//发生错误
-		connect(this->clientTcpSocket, &QTcpSocket::errorOccurred, [this](QAbstractSocket::SocketError error) {
-			if (error == QAbstractSocket::RemoteHostClosedError)//这并不是错误情况！！！
-			{
-				qDebug() << "服务端已关闭连接";
-				// 此时 disconnected 会触发，由它清理
-				return;
-			}
-			switch (error) {
-			case QAbstractSocket::RemoteHostClosedError://这并不是错误情况！！！
-				// ✅ 服务端主动断开，属于正常情况
-				qDebug() << "服务端已关闭连接";
-				// 此时 disconnected 会触发，由它清理
-				break;
-
-			case QAbstractSocket::HostNotFoundError:
-				qDebug() << error << "错误：无法找到服务器，请检查 IP 和端口";
-				QMessageBox::warning(this, "错误", "无法找到服务器，请检查 IP 和端口");
-				break;
-
-			case QAbstractSocket::ConnectionRefusedError:
-				qDebug() << error << "错误：连接被拒绝，服务器可能未启动";
-				QMessageBox::warning(this, "错误", "连接被拒绝，服务器可能未启动");
-				break;
-
-			case QAbstractSocket::NetworkError:
-				qDebug() << error << "网络错误：如断网、超时等";
-				QMessageBox::warning(this, "错误", "网络错误：如断网、超时等");
-				break;
-
-			default:
-				qDebug() << error << "未知错误";
-				QMessageBox::warning(this, "错误", "未知错误");
-				break;
-			}
-			if (error != QAbstractSocket::RemoteHostClosedError)//不是服务器断开了连接
-			{//清理
-				if (this->clientTcpSocket != nullptr)
-				{
-					this->clientTcpSocket->deleteLater();//删除
-					this->clientTcpSocket = nullptr;
-				}
-			}
-			});
-
-		//接收到了服务器的数据
-		connect(this->clientTcpSocket, &QTcpSocket::readyRead, [this]() {
-			if (clientTcpSocket == nullptr)
-			{
-				qDebug() << "错误 " << __FILE__ << __LINE__;
-				return;
-			}
-			ui->receive_area->appendPlainText("[From TCP Server]\n");
-			QByteArray byteArray = clientTcpSocket->readAll();
-			ui->receive_area->showData(byteArray);//在接收区中展示数据
-			});
-
-		//配置连接 请求发送
-		connect(this->singleSend, &SingleSendWidget::requestToSend, this->clientTcpSocket, 
-			static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
-		connect(this->multipleSend, &MultipleSendWidget::requestToSend, this->clientTcpSocket,
-			static_cast<qint64(QTcpSocket::*)(const QByteArray& data)>(&QTcpSocket::write));
-	}
-	//客户端 TcpSocket 已创建
-	else
-	{
-		if (clientTcpSocket->state() == QAbstractSocket::ConnectedState)
-		{
-			this->clientTcpSocket->disconnectFromHost();//启动4次挥手，断开连接
-		}
-		else//正常情况下不应该执行到这里
-		{
-			this->clientTcpSocket->deleteLater();
-			this->clientTcpSocket = nullptr;
-			qDebug() << "错误 本客户端Socket未连接" << __FILE__ << __LINE__;
-		}
-	}
-
-
-}
 
 void MainWindow::asUdpOperation(void)
 {
@@ -763,7 +766,7 @@ void MainWindow::asUdpOperation(void)
 				uint16_t senderPort;
 				//读取数据，并记录发送者的地址和端口
 				this->udpSocket->readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
-				QString senderString = QString("[UDP from %1:%2]\n").arg(senderAddress.toString()).arg(senderPort);
+				QString senderString = QString("[UDP from %1:%2]").arg(senderAddress.toString()).arg(senderPort);
 				ui->receive_area->appendPlainText(senderString);
 				ui->receive_area->showData(data);
 			}
