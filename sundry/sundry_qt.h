@@ -46,7 +46,8 @@ QByteArray getEncodingQByteArray(EncodingEnum e);
 /**
  * @brief 读取CSV表格文件内容
  * @param filePath 文件完整路径
- * @return 表格中的数据
+ * @return 正常 表格中的数据  空 出现问题
+ * @note 逗号分隔符
  * @note 此函数只读取数据，不处理编码
  */
 QVector<QVector<QByteArray>> readCsvFile_Qt(const QString& filePath);

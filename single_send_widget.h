@@ -58,7 +58,7 @@ public:
 	 * @brief 获取是否正在自动发送
 	 * @return 是否正在自动发送
 	 */
-	bool getAutoSend(void) const;
+	bool isAutoSend(void) const;
 
 	/**
 	 * @brief 是否允许发送

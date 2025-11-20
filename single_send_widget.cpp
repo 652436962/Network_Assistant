@@ -113,7 +113,7 @@ void SingleSendWidget::setAutoSend(bool a, int c)
 	}
 }
 
-bool SingleSendWidget::getAutoSend(void) const
+bool SingleSendWidget::isAutoSend(void) const
 {
 	return this->autoSend;
 }

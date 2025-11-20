@@ -186,7 +186,7 @@ void MultipleSendWidget::setAutoSend(bool a, int c)
 	}
 }
 
-bool MultipleSendWidget::getAutoSend(void) const
+bool MultipleSendWidget::isAutoSend(void) const
 {
 	return this->autoSend;
 }
@@ -256,7 +256,7 @@ void MultipleSendWidget::ImportCsvFile(QString fileName)
 	tableWidget->setColumnCount(3); // 设置为3列
 	tableWidget->setHorizontalHeaderLabels(QStringList() << "备注" << "指令" << "发送");
 
-	QVBoxLayout* layout = new QVBoxLayout;
+	QVBoxLayout* layout = new QVBoxLayout(ui->tabWidget);
 	layout->setContentsMargins(2, 2, 2, 2);
 	layout->setSpacing(2);
 
@@ -270,7 +270,7 @@ void MultipleSendWidget::ImportCsvFile(QString fileName)
 
 	for (int i = 0; i < formData.size(); i++)
 	{
-		for (int j = 0; j < 2; j++)
+		for (int j = 0; j < 2 && j<(formData[i]).size(); j++)
 		{
 			QString temp = codec->toUnicode(formData[i][j]); // 编码转换
 			tableWidget->setItem(i, j, new QTableWidgetItem(temp));

@@ -1,5 +1,4 @@
-#ifndef MULTIPLE_SEND_WIDGET_H
-#define MULTIPLE_SEND_WIDGET_H
+#pragma once
 
 #include <QWidget>
 #include <QTimer>
@@ -62,10 +61,10 @@ public:
 	 */
 	void setAutoSend(bool a, int c);
 	/**
-	 * @brief 获取是否正在自动发送
+	 * @brief 是否正在自动发送
 	 * @return 是否正在自动发送
 	 */
-	bool getAutoSend(void) const;
+	bool isAutoSend(void) const;
 	/**
 	 * @brief 是否允许发送
 	 * @param a 是否
@@ -87,4 +86,4 @@ signals:
 	void requestToNotification(QString notification);
 };
 
-#endif // MULTIPLE_SEND_WIDGET_H
+

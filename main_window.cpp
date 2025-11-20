@@ -132,9 +132,8 @@ MainWindow::MainWindow(QWidget* parent)
 		else if (option == SendOptions::multiple)
 		{
 			this->singleSend->hide();//隐藏单项发送区
-			this->singleSend->setAutoSend(false, 65535);//取消其自动发送
+			this->multipleSend->show();//展示多项发送区
 
-			this->multipleSend->show();
 			if (ui->send_settings->getAutoSend())//如果设置了自动发送
 			{
 				int cycle = ui->send_settings->getAutoSendCycle();
@@ -376,6 +375,7 @@ void MainWindow::showLocalIPConfig(void)
 
 
 	table->resizeColumnsToContents();
+	dialog->adjustSize();
 }
 void MainWindow::asTcpClientOperation(void)
 {

@@ -110,7 +110,8 @@ QVector<QVector<QByteArray>> readCsvFile_Qt(const QString& filePath)
     QVector<QVector<QByteArray>> result;
 
     QFile file(filePath);
-    if (!file.open(QIODevice::ReadOnly)) {
+    if (!file.open(QIODevice::ReadOnly))
+    {
         return result; // 文件打不开，返回空
     }
 
@@ -119,11 +120,13 @@ QVector<QVector<QByteArray>> readCsvFile_Qt(const QString& filePath)
     // 所以改用 readLine() 返回 QByteArray 的方式更合适
 
     // 改为直接读取原始字节流，避免 QTextStream 自动解码
-    while (!file.atEnd()) {
+    while (!file.atEnd()) 
+    {
         QByteArray line = file.readLine().trimmed(); // 移除行尾换行符和空格
 
         // 跳过空行
-        if (line.isEmpty()) {
+        if (line.isEmpty()) 
+        {
             continue;
         }
 
@@ -133,7 +136,8 @@ QVector<QVector<QByteArray>> readCsvFile_Qt(const QString& filePath)
         // 将 QByteArray 列表转为 QVector
         QVector<QByteArray> row;
         row.reserve(fields.size());
-        for (const QByteArray& field : fields) {
+        for (const QByteArray& field : fields) 
+        {
             row.append(field.trimmed()); // 可选：去除字段前后空格
         }
 
