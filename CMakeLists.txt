@@ -1,6 +1,6 @@
 ﻿# CMakeList.txt: Network_Assistant 的 CMake 项目，在此处包括源代码并定义
 # 项目特定的逻辑。
-#
+
 cmake_minimum_required (VERSION 3.16)
 
 # 如果支持，请为 MSVC 编译器启用热重载。
@@ -12,12 +12,12 @@ endif()
 # 设置项目名称
 project ("Network_Assistant")
 
-# 启用 Windows 资源编译器（用于 .rc 文件）
-enable_language(RC)
-
 # 设置 C++ 标准
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# 启用 Windows 资源编译器（用于 .rc 文件）
+enable_language(RC)
 
 # =============== Qt6 配置 ===============
 # 告诉 CMake 在 D:\Qt\6.9.3\msvc2022_64 下查找 Qt6
@@ -70,7 +70,7 @@ target_include_directories(Network_Assistant PRIVATE
 )
 
 # =============== 启用 Qt 的自动处理 ===============
-# 这三行启用 Qt6 的自动 moc、uic、rcc 处理
+# 启用 Qt6 的自动 moc、uic、rcc 处理
 # CMake 会自动检测 .h 中的 Q_OBJECT、.ui 文件、.qrc 文件并调用相应工具
 set_target_properties(Network_Assistant PROPERTIES
     AUTOMOC ON

@@ -2,6 +2,7 @@
 
 #include <QLayout>
 #include <QTextCodec>
+#include <QFileDialog>
 
 ReceiveWidget::ReceiveWidget(QWidget* parent)
 	: QPlainTextEdit{ parent }
@@ -72,4 +73,23 @@ void ReceiveWidget::appendPlainText(const QString& text)
 {
 	if (this->stopDisplaying) return;
 	this->QPlainTextEdit::appendPlainText(text);
+}
+
+void ReceiveWidget::receiveToFile(void)
+{
+	QString text = this->toPlainText();
+	QString fileName = QFileDialog::getSaveFileName(this, "保存文本文件", "", "文本文件(*.txt);;所有文件(*)");
+	if (fileName.isEmpty()) return;// 用户取消了？直接返回
+	QFile file(fileName);
+	if (!file.open(QIODeviceBase::WriteOnly | QIODevice::Text))
+	{
+		emit this->requestToNotification("无法创建文件");
+		qDebug() << "无法创建文件 " << __FILE__ << __LINE__ << fileName << file.errorString();
+		return;
+	}
+	QTextStream out(&file);
+	out << text;
+	file.close();
+	this->requestToNotification("保存成功");
+	qDebug() << "保存成功" << fileName;
 }

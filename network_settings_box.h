@@ -56,12 +56,6 @@ public:
      */
     WorkMode getSelectedMode(void);
 
-    ///**
-    // * @brief 获取输入的地址
-    // * @return 输入的地址
-    // */
-    //QString getAddress(void);
-
     /**
      * @brief 获取IP地址
      * @return 选择或输入的IP地址
@@ -77,8 +71,6 @@ public:
 private:
     bool networkActive = false;//是否正在进行网络活动
 private:
-
-
     /**
      * @brief 根据选项改变 UI
      */

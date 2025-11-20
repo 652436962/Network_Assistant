@@ -150,27 +150,16 @@ MainWindow::MainWindow(QWidget* parent)
 		connect(ui->receive_settings, &ReceiveSettingsBox::setStopDispalying, ui->receive_area, &ReceiveWidget::setStopDisplaying);
 		connect(ui->receive_settings, &ReceiveSettingsBox::setTimestamp, ui->receive_area, &ReceiveWidget::setTimestamp);
 		//配置连接 保存到文本文件
-		connect(ui->receive_settings, &ReceiveSettingsBox::receiveToFile, [this]() {
-			QString text = ui->receive_area->toPlainText();
-			QString fileName = QFileDialog::getSaveFileName(this, "保存文本文件", "", "文本文件(*.txt);;所有文件(*)");
-			if (fileName.isEmpty()) return;// 用户取消了？直接返回
-			QFile file(fileName);
-			if (!file.open(QIODeviceBase::WriteOnly | QIODevice::Text))
-			{
-				this->notificationManager->newBubble("无法创建文件");
-				qDebug() << "无法创建文件 "<<__FILE__<<__LINE__ << fileName << file.errorString();
-				return;
-			}
-			QTextStream out(&file);
-			out << text;
-			file.close();
-			this->notificationManager->newBubble("保存成功");
-			qDebug() << "保存成功" << fileName;
-			});
+		connect(ui->receive_settings, &ReceiveSettingsBox::receiveToFile, ui->receive_area,&ReceiveWidget::receiveToFile);
 	}
 
 
 	//右侧窗口相关配置
+
+	//配置连接 接收区请求通知
+	connect(ui->receive_area, &ReceiveWidget::requestToNotification, [this](QString notification) {
+		this->notificationManager->newBubble(notification);
+		});
 
 	QVBoxLayout* verticalLayout = qobject_cast<QVBoxLayout*>(ui->widget_Right->layout());
 	if (verticalLayout == nullptr)

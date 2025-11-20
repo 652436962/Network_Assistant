@@ -66,6 +66,12 @@ public:
      * @return 发送选项
      */
     SendOptions getSendOption(void) const;
+
+    /**
+     * @brief 根据网络的连接情况改变
+     * @param checked 是否正在进行网络活动
+     */
+    void changeAccordingState(bool checked);
 signals:
     /**
      * @brief 切换发送区

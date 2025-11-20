@@ -52,7 +52,18 @@ public:
      */
     void appendPlainText(const QString& text);
 
+    /**
+     * @brief 保存到文件
+     */
+    void receiveToFile(void);
+
 signals:
+    /**
+     * @brief 请求通知
+     * @param notification 通知文本
+     * @note Qt 信号
+     */
+    void requestToNotification(QString notification);
 };
 
 

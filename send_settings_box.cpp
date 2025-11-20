@@ -75,6 +75,20 @@ SendOptions SendSettingsBox::getSendOption(void) const
 	return option;
 }
 
+void SendSettingsBox::changeAccordingState(bool checked)
+{
+	if (checked)
+	{
+		this->checkBox_AutoSend->setEnabled(true);//启用自动发送复选框
+	}
+	else
+	{
+		this->checkBox_AutoSend->setChecked(false);//取消自动发送的选择
+		this->checkBox_AutoSend->setEnabled(false);//禁用自动发送复选框
+		emit this->setAutoSend(false, 65535);
+	}
+}
+
 SendSettingsBox::~SendSettingsBox()
 {
 	qDebug() << "发送设置窗口关闭";
