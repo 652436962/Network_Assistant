@@ -43,12 +43,6 @@ private:
      * @param  
      */
     void setupUi(void);
-
-    /**
-     * @brief 设置 UI 中的文本
-     * @param  
-     */
-    void retranslateUi(void);
 public:
     /**
      * @brief 是否开启了自动发送
@@ -89,12 +83,19 @@ signals:
     void setText(bool state);
 signals:
     /**
-     * @brief 设置自动发送
+     * @brief 请求自动发送是否开启
      * @param open 是否开启
-     * @param cycle 自动发送周期 单位 毫秒
      * @note Qt 信号
      */
-    void setAutoSend(bool open, int cycle);
+    void requestAutoSend(bool open);
+signals:
+    /**
+     * @brief 请求设置自动发送周期
+     * @param msec 自动发送周期 毫秒
+     * @note Qt 信号
+     */
+    void requestChangeCycle(int msec);
+
 signals:
     /**
      * @brief 设置追加

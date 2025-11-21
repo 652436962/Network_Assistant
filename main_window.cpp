@@ -114,6 +114,7 @@ MainWindow::MainWindow(QWidget* parent)
 
 	//配置连接 网络设置改变 UI
 	connect(this, &MainWindow::workingStateChanged, ui->network_settings, &NetworkSettingsBox::changeUiAccordingState);
+	connect(this, &MainWindow::workingStateChanged, ui->send_settings, &SendSettingsBox::changeAccordingState);
 
 	//配置连接 切换发送区
 	connect(ui->send_settings, &SendSettingsBox::changeSendArray, [this](SendOptions option) {
@@ -124,9 +125,8 @@ MainWindow::MainWindow(QWidget* parent)
 
 			if (ui->send_settings->getAutoSend())//如果设置了自动发送
 			{
-				int cycle = ui->send_settings->getAutoSendCycle();
-				this->singleSend->setAutoSend(true, cycle);//开启单项发送区自动发送
-				this->multipleSend->setAutoSend(false, 65535);//取消多项发送区自动发送
+				this->singleSend->setAutoSend(true);//开启单项发送区自动发送
+				this->multipleSend->setAutoSend(false);//取消多项发送区自动发送
 			}
 		}
 		else if (option == SendOptions::multiple)
@@ -136,9 +136,8 @@ MainWindow::MainWindow(QWidget* parent)
 
 			if (ui->send_settings->getAutoSend())//如果设置了自动发送
 			{
-				int cycle = ui->send_settings->getAutoSendCycle();
-				this->singleSend->setAutoSend(false, 65535);//取消单项发送区自动发送
-				this->multipleSend->setAutoSend(true, cycle);//开启多项发送区自动发送
+				this->singleSend->setAutoSend(false);//取消单项发送区自动发送
+				this->multipleSend->setAutoSend(true);//开启多项发送区自动发送
 			}
 		}
 		});
@@ -194,15 +193,26 @@ MainWindow::MainWindow(QWidget* parent)
 		connect(ui->send_settings, &SendSettingsBox::setAppend, this->multipleSend, &MultipleSendWidget::setAppend);
 
 		//自动发送
-		connect(ui->send_settings, &SendSettingsBox::setAutoSend, [this](bool open,int cycle) {
+		connect(ui->send_settings, &SendSettingsBox::requestAutoSend, [this](bool open) {
 			SendOptions option = ui->send_settings->getSendOption();
 			if (option == SendOptions::single)
 			{
-				this->singleSend->setAutoSend(open, cycle);
+				this->singleSend->setAutoSend(open);
 			}
 			else if (option == SendOptions::multiple)
 			{
-				this->multipleSend->setAutoSend(open, cycle);
+				this->multipleSend->setAutoSend(open);
+			}
+			});
+		connect(ui->send_settings, &SendSettingsBox::requestChangeCycle, [this](int msec) {
+			SendOptions option = ui->send_settings->getSendOption();
+			if (option == SendOptions::single)
+			{
+				this->singleSend->setSendCycle(msec);
+			}
+			else if (option == SendOptions::multiple)
+			{
+				this->multipleSend->setSendCycle(msec);
 			}
 			});
 	}

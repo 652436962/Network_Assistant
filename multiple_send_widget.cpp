@@ -29,6 +29,7 @@ MultipleSendWidget::MultipleSendWidget(QWidget *parent)
 	this->timer->stop();
 	this->timer->setTimerType(Qt::PreciseTimer);//ms级精度
 	this->timer->setSingleShot(false); // 循环
+	this->timer->setInterval(500);
 	//定时到了
 	connect(this->timer, &QTimer::timeout, [this]() {
 		if (ui->tabWidget->count() <= 0) // 多页窗口中没有表格
@@ -161,23 +162,12 @@ void MultipleSendWidget::setAppend(bool a, QByteArray data)
 	this->appendData = data;
 }
 
-void MultipleSendWidget::setAutoSend(bool a, int c)
+void MultipleSendWidget::setAutoSend(bool a)
 {
-	this->autoSend = a;
-	this->autoCycle = c;
-
-	if (this->autoSend)
+	if (a)
 	{
-		if (this->timer->isActive())
-		{
-			this->timer->setInterval(autoCycle);
-			qDebug() << "多项发送区自动发送周期改变";
-		}
-		else
-		{
-			this->timer->start(autoCycle);
+			this->timer->start();
 			qDebug() << "多项发送区开始自动发送";
-		}
 	}
 	else
 	{
@@ -188,7 +178,12 @@ void MultipleSendWidget::setAutoSend(bool a, int c)
 
 bool MultipleSendWidget::isAutoSend(void) const
 {
-	return this->autoSend;
+	return this->timer->isActive();
+}
+
+void MultipleSendWidget::setSendCycle(int mesc)
+{
+	this->timer->setInterval(mesc);
 }
 
 

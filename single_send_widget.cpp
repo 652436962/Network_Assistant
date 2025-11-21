@@ -17,6 +17,7 @@ SingleSendWidget::SingleSendWidget(QWidget* parent)
 	this->timer = new QTimer(this);
 	this->timer->setTimerType(Qt::PreciseTimer);//ms级精度
 	this->timer->stop();
+	this->timer->setInterval(500);
 	//定时到了
 	connect(timer, &QTimer::timeout, [this]() {
 		QByteArray data = this->getSentContent();
@@ -88,23 +89,12 @@ void SingleSendWidget::setAppend(bool a, QByteArray data)
 	this->appendData = data;
 }
 
-void SingleSendWidget::setAutoSend(bool a, int c)
+void SingleSendWidget::setAutoSend(bool a)
 {
-	this->autoSend = a;
-	this->autoCycle = c;
-
-	if (this->autoSend)
+	if (a)
 	{
-		if (this->timer->isActive())
-		{
-			this->timer->setInterval(autoCycle);
-			qDebug() << "单项发送区自动发送周期改变";
-		}
-		else
-		{
-			this->timer->start(autoCycle);
-			qDebug() << "单项发送区开始自动发送";
-		}
+		this->timer->start();
+		qDebug() << "单项发送区开始自动发送";
 	}
 	else
 	{
@@ -115,7 +105,13 @@ void SingleSendWidget::setAutoSend(bool a, int c)
 
 bool SingleSendWidget::isAutoSend(void) const
 {
-	return this->autoSend;
+	return this->timer->isActive();
+}
+
+void SingleSendWidget::setSendCycle(int msec)
+{
+	this->timer->setInterval(msec);
+	qDebug() << "单项发送区自动发送周期改变";
 }
 
 void SingleSendWidget::setAllowSending(bool a)

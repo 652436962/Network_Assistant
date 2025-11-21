@@ -26,8 +26,6 @@ private:
 	bool text = true;//要发送的是否是文本字符串
 	bool append = true;//是否追加内容
 	QByteArray appendData = QByteArray("\r\n", 2);//要追加内容
-	bool autoSend = false;//是否自动发送
-	int autoCycle = 65535;//自动发送周期
 	QTimer* timer;//自动发送定时器
 	bool allowSending = false;//是否允许发送
 private:
@@ -51,14 +49,19 @@ public:
 	/**
 	 * @brief 设置是否自动发送
 	 * @param a true 是 false 否
-	 * @param c 自动发送周期
 	 */
-	void setAutoSend(bool a, int c);
+	void setAutoSend(bool a);
 	/**
 	 * @brief 获取是否正在自动发送
 	 * @return 是否正在自动发送
 	 */
 	bool isAutoSend(void) const;
+
+	/**
+	 * @brief 设置自动发送周期
+	 * @param msec 自动发送周期毫秒
+	 */
+	void setSendCycle(int msec);
 
 	/**
 	 * @brief 是否允许发送
