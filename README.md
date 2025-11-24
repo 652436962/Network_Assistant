@@ -76,11 +76,11 @@ UDP不区分客户端服务器，因此发送目标随时可以更改。
 
 ### 发送区
 
-![](D:\Code\Qt_Project\Serial_Port_Assistant\README\发送设置.png)
+![](.\README\发送设置.png)
 
 可以切换是单项发送还是多项发送
 
-![](D:\Code\Qt_Project\Serial_Port_Assistant\README\发送选项.png)
+![](.\README\发送选项.png)
 
 可以选择发送十六进制数据，这时您的文本应当是如 01 23 87 AB EF 这种字符串。
 
