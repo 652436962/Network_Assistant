@@ -15,7 +15,11 @@
 #include <QMessageBox>
 #include <QFileDialog>
 
+#include <QProcess>
+
 #include "sundry_qt.h"
+
+#include "Windows.h"
 
 
 MainWindow::MainWindow(QWidget* parent)
@@ -27,8 +31,21 @@ MainWindow::MainWindow(QWidget* parent)
 	this->notificationManager = new NotificationManager(this, this);//通知气泡管理
 	this->notificationManager->newBubble("欢迎使用");
 
+	encodingUsed = getLocalEncoding();//获取本机使用的编码
+	qDebug() << "本机编码" << getEncodingQByteArray(encodingUsed);
+
+
 	//菜单栏相关设置
 	{
+		connect(ui->action_Ncpa, &QAction::triggered, [this]() {
+			// 打开“网络连接”窗口
+			qDebug() << "打开Windows网络连接";
+			QProcess::startDetached("control.exe", { "ncpa.cpl" });
+			});
+		connect(ui->action_Control, &QAction::triggered, [this]() {
+			qDebug() << "打开Windows控制面板";
+			QProcess::startDetached("control.exe");//打开Windows控制面板
+			});
 		//配置连接 展示主机信息
 		connect(ui->action_Infomation, &QAction::triggered, this, &MainWindow::showLocalIPConfig);
 		//将编码选项加入组
@@ -44,6 +61,8 @@ MainWindow::MainWindow(QWidget* parent)
 			if (checked) encodingUsed = EncodingEnum::GB18030;
 			qDebug() << "编码 " << getEncodingQByteArray(encodingUsed);
 			});
+		if (encodingUsed == EncodingEnum::UTF8) ui->action_UTF8->setChecked(true);
+		else if (encodingUsed == EncodingEnum::GB18030) ui->action_GB18030->setChecked(true);
 	}
 	
 
@@ -697,7 +716,7 @@ void MainWindow::asTcpServerOperation(void)
 		}
 		else
 		{
-			this->clientTable->clear();
+			this->clientTable->clearContents();//只清除单元格内容，保留行列结构和表头
 		}
 		
 		

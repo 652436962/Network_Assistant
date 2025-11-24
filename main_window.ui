@@ -186,6 +186,8 @@
      <addaction name="action_UTF8"/>
      <addaction name="action_GB18030"/>
     </widget>
+    <addaction name="action_Ncpa"/>
+    <addaction name="action_Control"/>
     <addaction name="action_Infomation"/>
     <addaction name="menu_Encoding"/>
    </widget>
@@ -200,6 +202,16 @@
    </attribute>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
+   <action name="action_Ncpa">
+     <property name="text">
+       <string>网络连接</string>
+     </property>
+   </action>
+  <action name="action_Control">
+    <property name="text">
+      <string>控制面板</string>
+    </property>
+  </action>
   <action name="action_Infomation">
    <property name="text">
     <string>本机信息</string>
@@ -223,7 +235,7 @@
    <property name="text">
     <string>GB18030</string>
    </property>
-  </action>
+  </action>  
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
