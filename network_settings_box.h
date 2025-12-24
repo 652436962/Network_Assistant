@@ -17,6 +17,7 @@
 
 #include "led_widget.h"
 #include "toggle_button.h"
+#include "auto_width_combobox.h"
 
 #include "global.h"
 #include "sundry.h"
@@ -40,7 +41,7 @@ private:
     QLineEdit* lineEdit_Address;
     QSpinBox* spinBox_Port;
     QComboBox* comboBox_WorkMode;
-    QComboBox* comboBox_Address;
+    AutoWidthCombobox* comboBox_Address;
 
     /**
      * @brief 设置 UI
@@ -79,7 +80,7 @@ private:
     /**
      * @brief 获取本地所有可用 IP 地址并刷新下拉框
      */
-    void getLocalAddress(void);
+    void refreshAddress(void);
 public:
     /**
      * @brief 根据网络的连接情况改变UI

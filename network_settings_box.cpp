@@ -32,12 +32,12 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 
 	//配置连接 刷新
 	connect(this->pushButton_Refresh, &QPushButton::clicked, [this]() {
-		this->getLocalAddress();
+		this->refreshAddress();
 		});
 	
 	this->changeUiAccordingState(false);
 	this->changeUiAccordingOption();
-	this->getLocalAddress();
+	this->refreshAddress();
 	
 
 	qDebug() << "网络设置窗口建立";
@@ -80,10 +80,9 @@ void NetworkSettingsBox::setupUi(void)
 
 	gridLayout->addWidget(lineEdit_Address, 3, 0, 1, 3);
 
-	comboBox_Address = new QComboBox(this);
+	comboBox_Address = new AutoWidthCombobox(this);
 	comboBox_Address->setObjectName("comboBox_Address");
 	comboBox_Address->setFont(font);
-	comboBox_Address->setEditable(true);
 
 	gridLayout->addWidget(comboBox_Address, 4, 0, 1, 3);
 
@@ -98,7 +97,7 @@ void NetworkSettingsBox::setupUi(void)
 	spinBox_Port->setObjectName("spinBox_Port");
 	spinBox_Port->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
 	spinBox_Port->setMaximum(65535);
-	spinBox_Port->setValue(8080);
+	spinBox_Port->setValue(12345);
 
 
 	gridLayout->addWidget(spinBox_Port, 6, 0, 1, 3);
@@ -140,28 +139,25 @@ WorkMode NetworkSettingsBox::getSelectedMode(void)
 QHostAddress NetworkSettingsBox::getAddress(void)
 {
 	WorkMode mode = this->getSelectedMode();
-	QString text;
+	QHostAddress address;
 	// TCP 客户端应当从地址编辑行中得到地址
 	if (mode == WorkMode::TCP_Client)
 	{
-		text = this->lineEdit_Address->text();
-		
+		QString text = this->lineEdit_Address->text();
+		address.setAddress(text);
 	}
 	// TCP 服务器 或 UDP 应当从地址下拉框中得到地址
 	else if (mode == WorkMode::TCP_Server || mode==WorkMode::UDP)
 	{
-		// 先尝试从 data 中取（说明是预设项）
+		// 从下拉框的用户数据中取
 		QVariant data = this->comboBox_Address->currentData();
-		if (data.isValid() && data.canConvert<QHostAddress>())
+		if (data.isValid())
 		{
-			return data.value<QHostAddress>();//预设项
+			address = data.value<QHostAddress>();//预设项
 		}
-
-		//解析当前文本（用户手动输入）
-		text = this->comboBox_Address->currentText().trimmed();	
 	}
-	QHostAddress addr(text);
-	return addr;	
+	qDebug()<<"选择的 IP 地址为： " << address;
+	return address;
 }
 
 uint16_t NetworkSettingsBox::getPortValue(void)
@@ -215,19 +211,32 @@ void NetworkSettingsBox::changeUiAccordingOption(void)
 	}
 }
 
-void NetworkSettingsBox::getLocalAddress(void)
+void NetworkSettingsBox::refreshAddress(void)
 {
-	// 获取本机所有 IPv4/IPv6 地址
-	QList<QHostAddress> addresses = QNetworkInterface::allAddresses();
-
 	this->comboBox_Address->clear();//清空下拉框
-	//重新添加选项
+
+	// === 添加特殊通配符地址（用于监听所有接口）===
+	this->comboBox_Address->addItem(
+		"0.0.0.0    (IPv4 任意地址)", QVariant::fromValue(QHostAddress(QHostAddress::Any)));
+	this->comboBox_Address->addItem(
+		"::    (IPv6 任意地址)", QVariant::fromValue(QHostAddress(QHostAddress::AnyIPv6)));
+
+	// === 添加回环地址 ===
+	this->comboBox_Address->addItem(
+		"127.0.0.1    (IPv4 回环地址)", QVariant::fromValue(QHostAddress(QHostAddress::LocalHost)));
+	this->comboBox_Address->addItem(
+		"::1    (IPv6 回环地址)", QVariant::fromValue(QHostAddress(QHostAddress::LocalHostIPv6)));
+
+	// 获取本机所有 IPv4/IPv6 地址
+	QList<QHostAddress> addresses = QNetworkInterface::allAddresses();	
+	//添加选项
 	for (const QHostAddress& addr : addresses)
 	{
-		QString displayText = addr.toString();
-
-		// 添加项：text = 字符串, userData = QHostAddress
-		this->comboBox_Address->addItem(displayText, QVariant::fromValue(addr));
+		//跳过已经添加的
+		if (addr == QHostAddress::LocalHost || addr == QHostAddress::LocalHostIPv6) continue;
+		
+		// 添加 IP 地址
+		this->comboBox_Address->addItem(addr.toString(), QVariant::fromValue(addr));
 	}
 }
 

@@ -45,6 +45,7 @@ add_executable (Network_Assistant
  "custom_widget/debounced_spin_box.h" "custom_widget/debounced_spin_box.cpp"
  "custom_widget/notification_bubble.h" "custom_widget/notification_bubble.cpp"
  "custom_widget/notification_manager.h" "custom_widget/notification_manager.cpp"
+ "custom_widget/auto_width_combobox.h" "custom_widget/auto_width_combobox.cpp"
  "sundry/sundry.h" "sundry/sundry.cpp" 
  "sundry/sundry_qt.h" "sundry/sundry_qt.cpp"
  "network_settings_box.h" "network_settings_box.cpp"
@@ -93,7 +94,7 @@ if (CMAKE_VERSION VERSION_GREATER 3.12)
 endif()
 
 
-# 在 add_executable 之后，target_link_libraries 之前或之后都可以
+
 set_target_properties(Network_Assistant PROPERTIES
-    WIN32_EXECUTABLE ON   # 是否隐藏控制台窗口
+    WIN32_EXECUTABLE OFF   # 是否隐藏控制台窗口
 )

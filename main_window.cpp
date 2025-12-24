@@ -64,7 +64,7 @@ MainWindow::MainWindow(QWidget* parent)
 		if (encodingUsed == EncodingEnum::UTF8) ui->action_UTF8->setChecked(true);
 		else if (encodingUsed == EncodingEnum::GB18030) ui->action_GB18030->setChecked(true);
 	}
-	
+
 
 	//左侧窗口相关配置
 
@@ -168,7 +168,7 @@ MainWindow::MainWindow(QWidget* parent)
 		connect(ui->receive_settings, &ReceiveSettingsBox::setStopDispalying, ui->receive_area, &ReceiveWidget::setStopDisplaying);
 		connect(ui->receive_settings, &ReceiveSettingsBox::setTimestamp, ui->receive_area, &ReceiveWidget::setTimestamp);
 		//配置连接 保存到文本文件
-		connect(ui->receive_settings, &ReceiveSettingsBox::receiveToFile, ui->receive_area,&ReceiveWidget::receiveToFile);
+		connect(ui->receive_settings, &ReceiveSettingsBox::receiveToFile, ui->receive_area, &ReceiveWidget::receiveToFile);
 	}
 
 
@@ -523,7 +523,7 @@ void MainWindow::asTcpClientOperation(void)
 }
 
 void MainWindow::asTcpServerOperation(void)
-{	
+{
 	//服务器还没有创建
 	if (this->tcpServer == nullptr)
 	{
@@ -533,7 +533,7 @@ void MainWindow::asTcpServerOperation(void)
 			return;
 		}
 		uint16_t port = ui->network_settings->getPortValue();//获取端口
-		QHostAddress address =ui->network_settings->getAddress();//获取地址
+		QHostAddress address = ui->network_settings->getAddress();//获取地址
 		if (address.isNull())
 		{
 			this->notificationManager->newBubble("地址无效");
@@ -544,20 +544,24 @@ void MainWindow::asTcpServerOperation(void)
 		this->tcpServer = new QTcpServer(this);//创建TCP服务器
 		this->tcpServer->setObjectName("TCP Server");
 
-		
+
 		bool result = tcpServer->listen(address, port); //开始监听
 		if (result)//监听启动成功
 		{
 			emit this->workingStateChanged(true);
 			this->notificationManager->newBubble("TCP服务器开始监听");
-			qDebug() << "开始监听  地址" << address << " 端口 " << port;
+			qDebug() << "TCP服务器开始监听  地址" << address << " 端口 " << port;
 		}
 		else//监听启动失败
 		{
+			this->notificationManager->newBubble("TCP服务器监听启动失败");
+			qDebug() << "TCP服务器监听启动失败！ " << __FILE__ << __LINE__;
+			QAbstractSocket::SocketError error = tcpServer->serverError();
+			QString errorMsg = tcpServer->errorString();
+			qDebug() << "错误码 " << error << " 错误信息 " << errorMsg;
 			this->tcpServer->deleteLater();
 			this->tcpServer = nullptr;
-			this->notificationManager->newBubble("TCP服务器监听启动失败");
-			qDebug() << "监听启动失败！";
+			
 		}
 
 		//配置连接 有新的客户端连接
@@ -587,7 +591,7 @@ void MainWindow::asTcpServerOperation(void)
 				QPushButton* pushButton_disconnect = new QPushButton(this->clientTable);
 				pushButton_disconnect->setIcon(QIcon(":/icon/image/disconnect.png"));
 				clientTable->setCellWidget(row, 1, pushButton_disconnect);
-				connect(pushButton_disconnect, &QPushButton::clicked,this, [tcpSocket]() {
+				connect(pushButton_disconnect, &QPushButton::clicked, this, [tcpSocket]() {
 					if (tcpSocket == nullptr)
 					{
 						qDebug() << "错误 空指针" << __FILE__ << __LINE__;
@@ -600,14 +604,14 @@ void MainWindow::asTcpServerOperation(void)
 					}
 					tcpSocket->disconnectFromHost();//开始四次挥手断开连接
 					});
-				
+
 			}
-			
+
 			QString connectString = "";
 			QTextStream text(&connectString);
-			text << "客户端  " << address<<" " << port << "  接入";
+			text << "客户端  " << address << " " << port << "  接入";
 			this->notificationManager->newBubble(connectString);//通知气泡
-			qDebug() << connectString;			
+			qDebug() << connectString;
 
 			//配置连接 有客户端断开
 			connect(tcpSocket, &QTcpSocket::disconnected, this, [this, tcpSocket]() {
@@ -629,6 +633,7 @@ void MainWindow::asTcpServerOperation(void)
 					if (this->clientTable == nullptr)
 					{
 						qDebug() << "错误 空指针" << __FILE__ << __LINE__;
+						return;
 					}
 					int row = -1;
 					//查找
@@ -646,6 +651,7 @@ void MainWindow::asTcpServerOperation(void)
 					if (row == -1)
 					{
 						qDebug() << "错误 在表格中找不到目标" << __FILE__ << __LINE__;
+						return;
 					}
 					else
 					{
@@ -656,10 +662,10 @@ void MainWindow::asTcpServerOperation(void)
 				QString disconnectString = "";
 				QTextStream stream(&disconnectString);
 				stream << "客户端  " << tcpSocket->peerAddress().toString() << " " << tcpSocket->peerPort() << "  已断开";
-				
+
 				tcpSocket->deleteLater();
 				this->tcpSocketsList.erase(it);//移除链表中对应节点
-				
+
 				this->notificationManager->newBubble(disconnectString);
 				qDebug() << disconnectString;
 				});
@@ -684,9 +690,9 @@ void MainWindow::asTcpServerOperation(void)
 			connect(this->singleSend, &SingleSendWidget::requestToSend, tcpSocket,
 				static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
 			connect(this->multipleSend, &MultipleSendWidget::requestToSend, tcpSocket,
-				static_cast<qint64(QTcpSocket::*)(const QByteArray& data)>(&QTcpSocket::write));
+				static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
 			});
-		
+
 	}
 	//服务器已经创建
 	else
@@ -704,11 +710,11 @@ void MainWindow::asTcpServerOperation(void)
 			if (tcpSocket->state() == QAbstractSocket::ConnectedState)
 			{
 				tcpSocket->disconnectFromHost();
-			}			
+			}
 			//会在 tcpSocket 的 disconnected 信号对应的槽函数中清理
 		}
 		//注意，在清理时会删除链表节点，因此，如果遍历原本的链表会错！！
-		
+
 		//清空客户端表格
 		if (this->clientTable == nullptr)
 		{
@@ -718,8 +724,8 @@ void MainWindow::asTcpServerOperation(void)
 		{
 			this->clientTable->clearContents();//只清除单元格内容，保留行列结构和表头
 		}
-		
-		
+
+
 		//服务器正在监听
 		if (this->tcpServer->isListening())
 		{
@@ -734,7 +740,7 @@ void MainWindow::asTcpServerOperation(void)
 		{
 			this->tcpServer->deleteLater();
 			this->tcpServer = nullptr;
-			qDebug() << "错误 服务器没有监听 " << __FILE__ << __LINE__ ;
+			qDebug() << "错误 服务器没有监听 " << __FILE__ << __LINE__;
 		}
 	}
 
@@ -767,14 +773,14 @@ void MainWindow::asUdpOperation(void)
 		stream << "UDP 绑定成功" << address.toString() << " " << port;
 		this->notificationManager->newBubble(message);
 		qDebug() << message;
-		
-		
+
+
 		//配置连接 接收 UDP 套接字数据
 		connect(this->udpSocket, &QUdpSocket::readyRead, this, [this]() {
 			/*QUdpSocket 是 数据报（Datagram）套接字，不是流式套接字！
 			* TCP (QTcpSocket) 是流式的 → 可以用 readAll()、read() 等 QIODevice 方法
 			* UDP (QUdpSocket) 是基于数据包（Datagram） 的 → 必须用 readDatagram()
-			*/			
+			*/
 			// 是否有待读取的数据报
 			while (this->udpSocket->hasPendingDatagrams())
 			{
@@ -789,7 +795,7 @@ void MainWindow::asUdpOperation(void)
 				ui->receive_area->showData(data);
 			}
 			});
-		
+
 		//配置连接 请求发送 通过 UDP 发送数据
 		connect(this->singleSend, &SingleSendWidget::requestToSend, this->udpSocket, [this](QByteArray data) {
 			QString targetAddressString = this->udpTargetBox->getAddress();
