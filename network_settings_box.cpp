@@ -97,8 +97,7 @@ void NetworkSettingsBox::setupUi(void)
 	spinBox_Port->setObjectName("spinBox_Port");
 	spinBox_Port->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
 	spinBox_Port->setMaximum(65535);
-	spinBox_Port->setValue(12345);
-
+	spinBox_Port->setValue(9999);
 
 	gridLayout->addWidget(spinBox_Port, 6, 0, 1, 3);
 
