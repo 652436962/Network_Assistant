@@ -4,6 +4,8 @@
 #include <QString>
 #include <QByteArray>
 #include <QFile>
+#include <QDataStream>
+#include <QVector>
 
 #include "sundry.h"
 
@@ -51,3 +53,31 @@ QByteArray getEncodingQByteArray(EncodingEnum e);
  * @note 此函数只读取数据，不处理编码
  */
 QVector<QVector<QByteArray>> readCsvFile_Qt(const QString& filePath);
+
+
+/*
+* 将多个字符串以二进制文件存储
+* 文件结构
+* [uint32_t count]                    // 字符串总数（4字节）
+* [string 0: uint32_t len + len bytes (UTF-8)]
+* [string 1: uint32_t len + len bytes (UTF-8)]
+* ……
+* [string N-1: ...]
+*/
+
+/**
+ * @brief 将 QVector<QString> 以二进制格式写入文件
+ * @param filename 文件路径
+ * @param strings 字符串向量
+ * @return true 成功
+ * @return false 失败
+ */
+bool saveQStrings(const QString& filename, const QVector<QString>& strings);
+
+/**
+ * @brief 从二进制文件读取 QVector<QString>
+ * @param filename 文件路径
+ * @return 成功 字符串向量
+ * @return 失败 返回空
+ */
+QVector<QString> loadQStrings(const QString& filename);

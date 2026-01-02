@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+#include <fstream>
 #include <vector>
 #include <string>
 
@@ -55,3 +57,30 @@ std::string vectorToHexString(const std::vector<uint8_t>& data);
 * @return hh:mm:ss.zzz
 */
 std::string getTimestamp(void);
+
+
+/*
+* 将多个字符串以二进制文件存储
+* 文件结构
+* [uint32_t count]                    // 字符串总数（4字节）
+* [string 0: uint32_t len + len bytes]
+* [string 1: uint32_t len + len bytes]
+* ……
+* [string N-1: ...]
+*/
+
+/**
+* @brief 写入 vector<string> 到二进制文件
+* @param filename 文件路径
+* @param strings 字符串向量
+* @return true 成功
+* @return false 失败
+*/
+bool save_strings(const std::string& filename, const std::vector<std::string>& strings);
+
+/**
+* @brief 从二进制文件读取到 vector<string>
+* @param filename 文件路径
+* @return vector<string>
+*/
+std::vector<std::string> load_strings(const std::string& filename);

@@ -33,12 +33,6 @@ private:
      */
     void setupUi(void);
 
-    /**
-     * @brief 设置 UI 中的文本
-     * @param  
-     */
-    void retranslateUi(void);
-
 signals:
     /**
      * @brief 接收区清屏

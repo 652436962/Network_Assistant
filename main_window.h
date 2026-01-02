@@ -41,14 +41,25 @@ private:
 private:
 	NotificationManager* notificationManager;//通知管理
 private:
-	SingleSendWidget* singleSend = nullptr;//单项发送区
-	MultipleSendWidget* multipleSend = nullptr;//多项发送区
-	TargetBox* udpTargetBox = nullptr;//UDP 目标窗口
-private:
 	/**
 	 * @brief 创建对话框展示本机网络信息
 	 */
 	void showLocalIPConfig(void);
+
+
+	/**
+	* 作为 TCP 客户端时的相关功能
+	*/
+private:
+	/**
+	 * @brief 作为客户端使用时的 TCP 套接字
+	 */
+	QTcpSocket* clientTcpSocket = nullptr;
+
+	/**
+	 * @brief 作为TCP客户端工作
+	 */
+	void asTcpClientOperation(void);
 
 
 	/**
@@ -76,20 +87,6 @@ private:
 	 */
 	void asTcpServerOperation(void);
 
-
-	/**
-	* 作为 TCP 客户端时的相关功能
-	*/
-private:
-	/**
-	 * @brief 作为客户端使用时的 TCP 套接字
-	 */
-	QTcpSocket* clientTcpSocket = nullptr;
-
-	/**
-	 * @brief 作为TCP客户端工作
-	 */
-	void asTcpClientOperation(void);
 
 	/**
 	 * 作为 UDP 时的相关功能

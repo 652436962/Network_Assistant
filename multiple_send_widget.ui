@@ -102,7 +102,7 @@
       <item>
        <widget class="QPushButton" name="pushButton_Import">
         <property name="text">
-         <string>导入表格</string>
+         <string>导入CSV</string>
         </property>
        </widget>
       </item>
@@ -118,6 +118,13 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QPushButton" name="pushButton_Add">
+        <property name="text">
+         <string>添加一页</string>
+        </property>
+       </widget>
       </item>
       <item>
        <widget class="QPushButton" name="pushButton_Delete">

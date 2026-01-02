@@ -3,9 +3,95 @@
 #include <QWidget>
 #include <QTimer>
 #include <QTableWidget>
+#include <QLineEdit>
+#include <QScrollArea>
+#include <QLabel>
+#include <QHBoxLayout>
+#include <QPushButton>
 
 #include "global.h"
 #include "sundry_qt.h"
+
+class ALineWidget :public QWidget
+{
+	Q_OBJECT
+public: 
+	/**
+	 * @brief 构造函数
+	 * @param parent 父对象
+	 * @param comment 备注字符串
+	 * @param instruction 指令字符串
+	 */
+	explicit ALineWidget(QWidget* parent = nullptr, QString comment = "", QString instruction = "");
+private:
+	QLineEdit* commentEdit = nullptr;
+	QLineEdit* instructionEdit = nullptr;
+	QPushButton* sendButton = nullptr;
+
+	QHBoxLayout* horizontalLayout = nullptr;
+	void setupUi(void);
+public:
+	/**
+	 * @brief 获取备注字符串
+	 * @return 备注字符串
+	 */
+	QString getComment(void) const;
+	/**
+	 * @brief 获取指令字符串
+	 * @return 指令字符串
+	 */
+	QString getInstruction(void) const;
+signals:
+	/**
+	 * @brief 发送信号
+	 * @param data 要发送的数据
+	 * @note Qt信号
+	 */
+	void sendSignal(QString data);
+};
+
+class LineTableWidget :public QWidget
+{
+	Q_OBJECT
+public:
+	explicit LineTableWidget(QWidget* parent = nullptr);
+private:
+	QVBoxLayout* verticalLayout;
+	QScrollArea* scrollArea;
+	QWidget* scrollAreaWidgetContents;
+	QVBoxLayout* verticalLayout_2;
+
+	QWidget* widget_Labels;
+	QHBoxLayout* horizontalLayout_2;
+	QSpacerItem* horizontalSpacer_2;
+	QLabel* label_Comment;
+	QSpacerItem* horizontalSpacer_3;
+	QLabel* label_Instruction;
+	QSpacerItem* horizontalSpacer_4;
+	QLabel* label_Send;
+	QSpacerItem* horizontalSpacer_5;
+	QWidget* widget_Buttons;
+	QHBoxLayout* horizontalLayout;
+	QSpacerItem* horizontalSpacer;
+	QPushButton* pushButton_Add;
+	QPushButton* pushButton_Remove;
+	
+	void setupUi(void);
+	
+public:
+	/**
+	 * @brief 添加一行
+	 * @param comment 备注
+	 * @param instruction 指令 
+	 */
+	void pushBackLine(QString comment = "", QString instruction = "");
+	/**
+	 * @brief 删除最后一行
+	 */
+	void popBackLine(void);
+signals:
+	void sendSignal(QString comment);
+};
 
 namespace Ui {
 class MultipleSendWidget;
@@ -34,7 +120,7 @@ private:
 	 * @param dataString 界面中的字符串
 	 * @return 要发送的内容
 	 */
-	QByteArray getSentContent(QString dataString);
+	QByteArray getSentContent(QString& dataString);
 	/**
 	 * @brief 导入.csv表格文件
 	 * @param fileName 文件完整路径

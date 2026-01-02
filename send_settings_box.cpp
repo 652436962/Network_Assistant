@@ -96,17 +96,13 @@ SendSettingsBox::~SendSettingsBox()
 
 void SendSettingsBox::setupUi(void)
 {
-	if (this->objectName().isEmpty())
-		this->setObjectName("SendSettingsBox");
 	this->resize(200, 180);
 	this->setMinimumSize(QSize(200, 180));
 	QFont font;
 	font.setPointSize(10);
 	this->setFont(font);
 	gridLayout = new QGridLayout(this);
-	gridLayout->setObjectName("gridLayout");
 	label_Option = new QLabel(this);
-	label_Option->setObjectName("label_Option");
 	label_Option->setMaximumSize(QSize(150, 150));
 	label_Option->setAlignment(Qt::AlignmentFlag::AlignRight | Qt::AlignmentFlag::AlignTrailing | Qt::AlignmentFlag::AlignVCenter);
 	label_Option->setText("发送选项");
@@ -114,13 +110,11 @@ void SendSettingsBox::setupUi(void)
 	gridLayout->addWidget(label_Option, 0, 0, 1, 1);
 
 	comboBox_Option = new QComboBox(this);
-	comboBox_Option->setObjectName("comboBox_Option");
 	comboBox_Option->setMaximumSize(QSize(150, 24));
 
 	gridLayout->addWidget(comboBox_Option, 0, 1, 1, 2);
 
 	radioButton_Text = new QRadioButton(this);
-	radioButton_Text->setObjectName("radioButton_Text");
 	radioButton_Text->setMaximumSize(QSize(150, 32));
 	radioButton_Text->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
 	radioButton_Text->setChecked(true);
@@ -129,7 +123,6 @@ void SendSettingsBox::setupUi(void)
 	gridLayout->addWidget(radioButton_Text, 1, 0, 1, 1);
 
 	radioButton_HEX = new QRadioButton(this);
-	radioButton_HEX->setObjectName("radioButton_HEX");
 	radioButton_HEX->setMaximumSize(QSize(150, 32));
 	radioButton_HEX->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
 	radioButton_HEX->setText("发送HEX");	
@@ -137,7 +130,6 @@ void SendSettingsBox::setupUi(void)
 	gridLayout->addWidget(radioButton_HEX, 1, 1, 1, 2);
 
 	checkBox_Append = new QCheckBox(this);
-	checkBox_Append->setObjectName("checkBox_Append");
 	checkBox_Append->setMaximumSize(QSize(150, 32));
 	checkBox_Append->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
 	checkBox_Append->setChecked(true);
@@ -146,13 +138,11 @@ void SendSettingsBox::setupUi(void)
 	gridLayout->addWidget(checkBox_Append, 2, 0, 1, 1);
 
 	comboBox_Append = new QComboBox(this);
-	comboBox_Append->setObjectName("comboBox_Append");
 	comboBox_Append->setMaximumSize(QSize(150, 24));	
 
 	gridLayout->addWidget(comboBox_Append, 2, 1, 1, 2);
 
 	checkBox_AutoSend = new QCheckBox(this);
-	checkBox_AutoSend->setObjectName("checkBox_AutoSend");
 	checkBox_AutoSend->setEnabled(true);
 	checkBox_AutoSend->setMaximumSize(QSize(150, 32));
 	checkBox_AutoSend->setLayoutDirection(Qt::LayoutDirection::RightToLeft);
@@ -166,7 +156,6 @@ void SendSettingsBox::setupUi(void)
 	gridLayout->addItem(horizontalSpacer, 3, 1, 1, 2);
 
 	label_AutoSendCycle = new QLabel(this);
-	label_AutoSendCycle->setObjectName("label_AutoSendCycle");
 	label_AutoSendCycle->setEnabled(true);
 	label_AutoSendCycle->setMaximumSize(QSize(16777215, 32));
 	label_AutoSendCycle->setText("自动发送周期");
@@ -174,7 +163,6 @@ void SendSettingsBox::setupUi(void)
 	gridLayout->addWidget(label_AutoSendCycle, 4, 0, 1, 1);
 
 	spinBox_AutoSendCycle = new DebouncedSpinBox(this);
-	spinBox_AutoSendCycle->setObjectName("spinBox_AutoSendCycle");
 	spinBox_AutoSendCycle->setEnabled(true);
 	spinBox_AutoSendCycle->setMaximumSize(QSize(16777215, 24));
 	spinBox_AutoSendCycle->setMaximum(99999);
@@ -183,17 +171,12 @@ void SendSettingsBox::setupUi(void)
 	gridLayout->addWidget(spinBox_AutoSendCycle, 4, 1, 1, 1);
 
 	label_MS = new QLabel(this);
-	label_MS->setObjectName("label_MS");
 	label_MS->setEnabled(true);
 	label_MS->setMaximumSize(QSize(16777215, 32));
 	label_MS->setText("ms");
 
 	gridLayout->addWidget(label_MS, 4, 2, 1, 1);
-
-
-
-	QMetaObject::connectSlotsByName(this);
-} // setupUi
+}
 
 
 

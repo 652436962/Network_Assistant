@@ -45,56 +45,46 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 
 void NetworkSettingsBox::setupUi(void)
 {
-	if (this->objectName().isEmpty())
-		this->setObjectName("NetworkSettingsBox");
 	this->resize(175, 225);
 	this->setMinimumSize(QSize(175, 225));
 	QFont font;
 	font.setPointSize(10);
 	this->setFont(font);
 	gridLayout = new QGridLayout(this);
-	gridLayout->setObjectName("gridLayout");
 	label_WorkMode = new QLabel(this);
-	label_WorkMode->setObjectName("label_WorkMode");
 	label_WorkMode->setFont(font);
 	label_WorkMode->setText("工作模式");
 
 	gridLayout->addWidget(label_WorkMode, 0, 0, 1, 2);
 
 	comboBox_WorkMode = new QComboBox(this);
-	comboBox_WorkMode->setObjectName("comboBox_ProtocolType");
 	comboBox_WorkMode->setFont(font);
 
 	gridLayout->addWidget(comboBox_WorkMode, 1, 0, 1, 3);
 
 	label_Address = new QLabel(this);
-	label_Address->setObjectName("label_Address");
 	label_Address->setFont(font);
 	label_Address->setText("地址");
 
 	gridLayout->addWidget(label_Address, 2, 0, 1, 1);
 
 	lineEdit_Address = new QLineEdit(this);
-	lineEdit_Address->setObjectName("lineEdit_Address");
 	lineEdit_Address->setFont(font);
 
 	gridLayout->addWidget(lineEdit_Address, 3, 0, 1, 3);
 
 	comboBox_Address = new AutoWidthCombobox(this);
-	comboBox_Address->setObjectName("comboBox_Address");
 	comboBox_Address->setFont(font);
 
 	gridLayout->addWidget(comboBox_Address, 4, 0, 1, 3);
 
 	label_Port = new QLabel(this);
-	label_Port->setObjectName("label_Port");
 	label_Port->setFont(font);
 	label_Port->setText("端口");
 
 	gridLayout->addWidget(label_Port, 5, 0, 1, 1);
 
 	spinBox_Port = new QSpinBox(this);
-	spinBox_Port->setObjectName("spinBox_Port");
 	spinBox_Port->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
 	spinBox_Port->setMaximum(65535);
 	spinBox_Port->setValue(9999);
@@ -102,14 +92,12 @@ void NetworkSettingsBox::setupUi(void)
 	gridLayout->addWidget(spinBox_Port, 6, 0, 1, 3);
 
 	led = new LED_Widget(this);
-	led->setObjectName("led");
 	led->setMinimumSize(QSize(24, 24));
 	led->setMaximumSize(QSize(24, 24));
 
 	gridLayout->addWidget(led, 7, 0, 1, 1);
 
 	pushButton_Refresh = new QPushButton(this);
-	pushButton_Refresh->setObjectName("pushButton_Other");
 	pushButton_Refresh->setMinimumSize(QSize(40, 0));
 	pushButton_Refresh->setFont(font);
 	pushButton_Refresh->setText("刷新");
@@ -117,15 +105,11 @@ void NetworkSettingsBox::setupUi(void)
 	gridLayout->addWidget(pushButton_Refresh, 7, 1, 1, 1);
 
 	toggleButton = new ToggleButton(this);
-	toggleButton->setObjectName("toggleButton");
 	toggleButton->setMinimumSize(QSize(80, 0));
 	toggleButton->setFont(font);
 	toggleButton->setText("启动");
 
 	gridLayout->addWidget(toggleButton, 7, 2, 1, 1);
-
-
-	QMetaObject::connectSlotsByName(this);
 }
 
 

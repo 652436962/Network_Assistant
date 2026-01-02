@@ -147,3 +147,68 @@ QVector<QVector<QByteArray>> readCsvFile_Qt(const QString& filePath)
     file.close();
     return result;
 }
+
+
+bool saveQStrings(const QString& filename, const QVector<QString>& strings)
+{
+    QFile file(filename);
+    if (!file.open(QIODevice::WriteOnly)) {
+        return false;
+    }
+
+    QDataStream out(&file);
+    out.setVersion(QDataStream::Qt_5_15); // 或你项目的最低 Qt 版本
+
+    // 写入字符串数量
+    out << static_cast<quint32>(strings.size());
+
+    // 写入每个字符串：先长度（字节数），再 UTF-8 数据
+    for (const QString& str : strings) {
+        QByteArray utf8 = str.toUtf8();
+        out << static_cast<quint32>(utf8.size());
+        out.writeRawData(utf8.constData(), utf8.size());
+    }
+
+    return true;
+}
+
+
+QVector<QString> loadQStrings(const QString& filename)
+{
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadOnly)) {
+        return {};
+    }
+
+    QDataStream in(&file);
+    in.setVersion(QDataStream::Qt_5_15);
+
+    quint32 count = 0;
+    in >> count;
+
+    // 安全检查：防止恶意文件导致内存爆炸
+    if (count > 2048) { // 限制最多 2048 条
+        return {};
+    }
+
+    QVector<QString> strings;
+    strings.reserve(static_cast<int>(count));
+
+    for (quint32 i = 0; i < count; ++i) {
+        quint32 len = 0;
+        in >> len;
+
+        if (len > 1000000) { // 单个字符串不超过 1MB
+            return {};
+        }
+
+        QByteArray data(len, Qt::Uninitialized);
+        if (in.readRawData(data.data(), static_cast<int>(len)) != static_cast<int>(len)) {
+            return {}; // 读取失败
+        }
+
+        strings.append(QString::fromUtf8(data));
+    }
+
+    return strings;
+}

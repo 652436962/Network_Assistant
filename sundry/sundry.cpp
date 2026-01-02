@@ -203,3 +203,44 @@ std::string getTimestamp(void)
     result = std::string(buffer) + '.' + std::to_string(ms.count());
     return result;
 }
+
+
+bool save_strings(const std::string& filename, const std::vector<std::string>& strings)
+{
+    std::ofstream file(filename, std::ios::binary);
+    if (!file) return false;
+
+    uint32_t n = strings.size();
+    file.write(reinterpret_cast<const char*>(&n), sizeof(n));
+
+    for (const std::string& s : strings)
+    {
+        uint32_t len = s.size();
+        file.write(reinterpret_cast<const char*>(&len), sizeof(len));
+        file.write(s.data(), len);
+    }
+
+    return true;
+}
+
+std::vector<std::string> load_strings(const std::string& filename)
+{
+    std::ifstream file(filename, std::ios::binary);
+    if (!file) return {};// 文件打不开 → 返回空 vector
+
+    uint32_t n;
+    if (!file.read(reinterpret_cast<char*>(&n), sizeof(n))) return {};
+
+    std::vector<std::string> strings;
+    strings.reserve(n);
+
+    for (uint32_t i = 0; i < n; ++i) {
+        uint32_t len;
+        if (!file.read(reinterpret_cast<char*>(&len), sizeof(len))) return {};
+        std::string s(len, '\0');
+        if (!file.read(s.data(), len)) return{};
+        strings.push_back(std::move(s));
+    }
+
+    return strings;
+}
