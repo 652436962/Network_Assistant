@@ -101,36 +101,17 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 		});
 
 	// 配置连接 添加一页
-	connect(ui->pushButton_Add, &QPushButton::clicked, [this]() {
-		LineTableWidget* lineTable = new LineTableWidget(this->ui->tabWidget);
-		ui->tabWidget->addTab(lineTable, "");
-		});
+	connect(ui->pushButton_Add, &QPushButton::clicked, this, &MultipleSendWidget::addTabPage);
 
 	// 配置连接 移除当前页
-	connect(ui->pushButton_Delete, &QPushButton::clicked, [this]() {
-		if (ui->tabWidget->count() <= 0)
-		{
-			return;
-		}
-		int index = ui->tabWidget->currentIndex();
-		ui->tabWidget->removeTab(index);
-		});
+	connect(ui->pushButton_Delete, &QPushButton::clicked, this, &MultipleSendWidget::removeCurrentTabPage);
 
 	// 配置连接 导入.csv文件
 	// 导入文件按钮
 	connect(ui->pushButton_Import, &QPushButton::clicked, [this]() {
 		QString fileName = QFileDialog::getOpenFileName(this);
-		if (fileName.isEmpty())
-		{
-			return;
-		}
-		// 获取选择的编码
-		if (fileName.isEmpty())
-		{
-			return;
-		}
+		if (fileName.isEmpty())return;
 		this->ImportCsvFile(fileName); // 导入文件
-
 		});
 
 	///* 导入 multiple_data_files 中的所有.csv文件 */
@@ -187,19 +168,19 @@ void MultipleSendWidget::setSendCycle(int mesc)
 }
 
 
-void MultipleSendWidget::setAllowSending(bool a)
+void MultipleSendWidget::setAllowSending(bool checked)
 {
-	if (this->allowSending == a) return;
-	this->allowSending = a;
+	if (this->allowSending == checked) return;
+	this->allowSending = checked;
 	//遍历切换选项窗口
 	for (int i = 0; i < this->ui->tabWidget->count(); i++)
 	{
-		QTableWidget* tableWidget = static_cast<QTableWidget*>(this->ui->tabWidget->widget(i));
+		LineTableWidget* tableWidget = static_cast<LineTableWidget*>(this->ui->tabWidget->widget(i));
 		//遍历表格 2列
 		for (int j = 0; j < tableWidget->rowCount(); j++)
 		{
-			QPushButton* pushButton = static_cast<QPushButton*>(tableWidget->cellWidget(j, 2));
-			pushButton->setEnabled(a);
+			ALineWidget* lineWidget = tableWidget->getLine(j);
+			lineWidget->setButtonEnable(checked);
 		}
 	}
 
@@ -233,6 +214,36 @@ QByteArray MultipleSendWidget::getSentContent(QString& dataString)
 	}
 
 	return dataSend;
+}
+
+void MultipleSendWidget::addTabPage(void)
+{
+	LineTableWidget* lineTable = new LineTableWidget(this->ui->tabWidget);
+	lineTable->setAllButtonsEnable(this->allowSending);
+	int pageCount = ui->tabWidget->count();
+	ui->tabWidget->addTab(lineTable, QString::number(pageCount + 1));
+	connect(lineTable, &LineTableWidget::sendSignal, [this](QString comment) {
+		QByteArray byteArray = this->getSentContent(comment);
+		emit this->requestToSend(byteArray);
+		});
+}
+
+void MultipleSendWidget::removeCurrentTabPage(void)
+{
+	if (ui->tabWidget->count() <= 0)
+	{
+		return;
+	}
+	int index = ui->tabWidget->currentIndex();
+	QWidget* widget = ui->tabWidget->widget(index);
+	if (widget)
+	{
+		ui->tabWidget->removeTab(index);
+		delete widget;
+	}
+	else {
+		qDebug() << "错误 空指针 " << __FILE__ << __LINE__;
+	}
 }
 
 void MultipleSendWidget::ImportCsvFile(QString fileName)
@@ -317,7 +328,7 @@ void ALineWidget::setupUi(void)
 	sendButton = new QPushButton(this);
 	sendButton->setMinimumSize(QSize(16, 16));
 	sendButton->setMaximumSize(QSize(24, 24));
-
+	sendButton->setIcon(QIcon(":/icon/image/send.png"));
 	horizontalLayout->addWidget(sendButton);
 }
 
@@ -329,6 +340,11 @@ QString ALineWidget::getComment(void) const
 QString ALineWidget::getInstruction(void) const
 {
 	return instructionEdit->text();
+}
+
+void ALineWidget::setButtonEnable(bool checked)
+{
+	sendButton->setEnabled(checked);
 }
 
 LineTableWidget::LineTableWidget(QWidget* parent) :QWidget(parent)
@@ -356,7 +372,7 @@ void LineTableWidget::setupUi(void)
 
 	scrollAreaWidgetContents = new QWidget(this);
 	scrollAreaWidgetContents->setGeometry(QRect(0, 0, 336, 337));
-	verticalLayout_2 = new QVBoxLayout(scrollAreaWidgetContents);
+	verticalLayout_Scroll = new QVBoxLayout(scrollAreaWidgetContents);
 
 	// 标签 widget
 	widget_Labels = new QWidget(scrollAreaWidgetContents);
@@ -379,10 +395,8 @@ void LineTableWidget::setupUi(void)
 	label_Send = new QLabel("发送", widget_Labels);
 	label_Send->setFont(fontLabels);
 	horizontalLayout_2->addWidget(label_Send);
-	horizontalSpacer_5 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
-	horizontalLayout_2->addItem(horizontalSpacer_5);
 
-	verticalLayout_2->addWidget(widget_Labels);
+	verticalLayout_Scroll->addWidget(widget_Labels);
 
 	// 按钮 widget
 	widget_Buttons = new QWidget(scrollAreaWidgetContents);
@@ -396,9 +410,12 @@ void LineTableWidget::setupUi(void)
 	pushButton_Add = new QPushButton("添加一行", widget_Buttons);
 	horizontalLayout->addWidget(pushButton_Add);
 	pushButton_Remove = new QPushButton("删除一行", widget_Buttons);
+	pushButton_Remove->setEnabled(false);//初始不应有删除
 	horizontalLayout->addWidget(pushButton_Remove);
 
-	verticalLayout_2->addWidget(widget_Buttons);
+	verticalLayout_Scroll->addWidget(widget_Buttons);
+
+	verticalLayout_Scroll->addStretch();//末尾添加一个弹性空间（stretch）
 
 	//设置滚动窗口
 	scrollArea->setWidget(scrollAreaWidgetContents);
@@ -414,13 +431,14 @@ void LineTableWidget::pushBackLine(QString comment, QString instruction)
 		return;
 	}
 	ALineWidget* aLine = new ALineWidget(this->scrollAreaWidgetContents, comment, instruction);
-	vBoxLayout->insertWidget(vBoxLayout->count() - 1, aLine);
+
+	vBoxLayout->insertWidget(vBoxLayout->count() - 2, aLine);//最后是两个按钮和一个弹性空间，所以要-2
 
 	//配置连接 发送
 	connect(aLine, &ALineWidget::sendSignal, this, &LineTableWidget::sendSignal);
 
 	//启用删除按钮
-	if (vBoxLayout->count() == 3) this->pushButton_Remove->setEnabled(true);
+	if (vBoxLayout->count() == 4) this->pushButton_Remove->setEnabled(true);
 }
 
 void LineTableWidget::popBackLine(void)
@@ -431,12 +449,12 @@ void LineTableWidget::popBackLine(void)
 		return;
 	}
 	int allCount = vBoxLayout->count();
-	if (allCount < 2) {
+	if (allCount <= 3) {
 		qDebug() << "数量错误 " << __FILE__ << __LINE__;
 		return;
 	}
 	// 在布局中移除 ，并从内部列表取出 item (item 仍然存在）
-	QLayoutItem* item = vBoxLayout->takeAt(allCount - 2);//QVBoxLayout 中 QLayoutItem 编号从0开始
+	QLayoutItem* item = vBoxLayout->takeAt(allCount - 3);//QVBoxLayout 中 QLayoutItem 编号从0开始
 	if (!item) {
 		qDebug() << "item takeAt 失败 " << __FILE__ << __LINE__;
 		return;
@@ -449,5 +467,61 @@ void LineTableWidget::popBackLine(void)
 	delete item;// 删除 Item 本身（防止内存泄漏）
 
 	//禁用删除按钮
-	if (vBoxLayout->count() <= 2) this->pushButton_Remove->setEnabled(false);
+	if (vBoxLayout->count() <= 3) this->pushButton_Remove->setEnabled(false);
+}
+
+ALineWidget* LineTableWidget::getLine(int index)
+{
+	QVBoxLayout* vBoxLayout = qobject_cast<QVBoxLayout*>(this->scrollAreaWidgetContents->layout());
+	if (!vBoxLayout) {
+		qDebug() << "layout 错误 " << __FILE__ << __LINE__;
+		return nullptr;
+	}
+	int allCount = vBoxLayout->count();
+	if (index > (allCount - 3)) return nullptr;
+
+	QLayoutItem* item = vBoxLayout->itemAt(index + 1);
+	if (!item) return nullptr;
+
+	return qobject_cast<ALineWidget*>(item->widget());
+}
+
+void LineTableWidget::setAllButtonsEnable(bool enabled)
+{
+	int linesCount = this->rowCount();
+	if (linesCount <= 0) return;
+	for (int i = 0; i < linesCount; i++)
+	{
+		ALineWidget* aLine = getLine(i);
+		if (!aLine) return;
+		aLine->setButtonEnable(enabled);
+	}
+}
+
+int LineTableWidget::rowCount(void)
+{
+	QVBoxLayout* vBoxLayout = qobject_cast<QVBoxLayout*>(this->scrollAreaWidgetContents->layout());
+	if (!vBoxLayout) {
+		qDebug() << "layout 错误 " << __FILE__ << __LINE__;
+		return 0;
+	}
+	return (vBoxLayout->count() - 3);
+}
+
+QVector<QString> LineTableWidget::getAllQStrings(void)
+{
+	int linesCount = this->rowCount();
+	if (linesCount <= 0) return QVector<QString>();
+
+	QVector<QString> allQStrings;
+	allQStrings.reserve(linesCount);
+	for (int i = 0; i < linesCount; i++)
+	{
+		ALineWidget* aLine = getLine(i);
+		if(!aLine) return QVector<QString>();
+		allQStrings.push_back(aLine->getComment());
+		allQStrings.push_back(aLine->getInstruction());
+	}
+
+	return allQStrings;
 }

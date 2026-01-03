@@ -157,7 +157,6 @@ bool saveQStrings(const QString& filename, const QVector<QString>& strings)
     }
 
     QDataStream out(&file);
-    out.setVersion(QDataStream::Qt_5_15); // 或你项目的最低 Qt 版本
 
     // 写入字符串数量
     out << static_cast<quint32>(strings.size());
@@ -181,15 +180,12 @@ QVector<QString> loadQStrings(const QString& filename)
     }
 
     QDataStream in(&file);
-    in.setVersion(QDataStream::Qt_5_15);
 
     quint32 count = 0;
     in >> count;
 
     // 安全检查：防止恶意文件导致内存爆炸
-    if (count > 2048) { // 限制最多 2048 条
-        return {};
-    }
+    if (count > 2048)  return {};// 限制最多 2048 条
 
     QVector<QString> strings;
     strings.reserve(static_cast<int>(count));
@@ -198,9 +194,7 @@ QVector<QString> loadQStrings(const QString& filename)
         quint32 len = 0;
         in >> len;
 
-        if (len > 1000000) { // 单个字符串不超过 1MB
-            return {};
-        }
+        if (len > 1024) return {};// 单个字符串不超过 1024B       
 
         QByteArray data(len, Qt::Uninitialized);
         if (in.readRawData(data.data(), static_cast<int>(len)) != static_cast<int>(len)) {

@@ -27,7 +27,7 @@ public:
     QVBoxLayout *verticalLayout;
     QScrollArea *scrollArea;
     QWidget *scrollAreaWidgetContents;
-    QVBoxLayout *verticalLayout_2;
+    QVBoxLayout *verticalLayout_Scroll;
     QWidget *widget_Labels;
     QHBoxLayout *horizontalLayout_2;
     QSpacerItem *horizontalSpacer_2;
@@ -56,7 +56,7 @@ public:
         scrollArea->setWidgetResizable(true);
         scrollAreaWidgetContents = new QWidget();
         scrollAreaWidgetContents->setGeometry(QRect(0, 0, 522, 337));
-        verticalLayout_2 = new QVBoxLayout(scrollAreaWidgetContents);
+        verticalLayout_Scroll = new QVBoxLayout(scrollAreaWidgetContents);
 
         // 标签 widget
         widget_Labels = new QWidget(scrollAreaWidgetContents);
@@ -83,7 +83,7 @@ public:
         horizontalSpacer_5 = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
         horizontalLayout_2->addItem(horizontalSpacer_5);
 
-        verticalLayout_2->addWidget(widget_Labels);
+        verticalLayout_Scroll->addWidget(widget_Labels);
 
         // 按钮 widget
         widget_Buttons = new QWidget(scrollAreaWidgetContents);
@@ -99,7 +99,7 @@ public:
         pushButton_Remove = new QPushButton(widget_Buttons);
         horizontalLayout->addWidget(pushButton_Remove);
 
-        verticalLayout_2->addWidget(widget_Buttons);
+        verticalLayout_Scroll->addWidget(widget_Buttons);
 
         scrollArea->setWidget(scrollAreaWidgetContents);
 

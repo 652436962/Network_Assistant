@@ -231,12 +231,18 @@ std::vector<std::string> load_strings(const std::string& filename)
     uint32_t n;
     if (!file.read(reinterpret_cast<char*>(&n), sizeof(n))) return {};
 
+    // 安全检查：防止恶意文件导致内存爆炸
+    if (n > 2048) { // 限制最多 2048 条
+        return {};
+    }
+
     std::vector<std::string> strings;
     strings.reserve(n);
 
     for (uint32_t i = 0; i < n; ++i) {
         uint32_t len;
         if (!file.read(reinterpret_cast<char*>(&len), sizeof(len))) return {};
+        if (len > 1024) return {};//单个长度不允许超过 1024B
         std::string s(len, '\0');
         if (!file.read(s.data(), len)) return{};
         strings.push_back(std::move(s));

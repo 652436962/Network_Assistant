@@ -41,6 +41,11 @@ public:
 	 * @return 指令字符串
 	 */
 	QString getInstruction(void) const;
+	/**
+	 * @brief 设置发送按钮能否使用
+	 * @param checked 能否使用
+	 */
+	void setButtonEnable(bool checked);
 signals:
 	/**
 	 * @brief 发送信号
@@ -59,7 +64,7 @@ private:
 	QVBoxLayout* verticalLayout;
 	QScrollArea* scrollArea;
 	QWidget* scrollAreaWidgetContents;
-	QVBoxLayout* verticalLayout_2;
+	QVBoxLayout* verticalLayout_Scroll;
 
 	QWidget* widget_Labels;
 	QHBoxLayout* horizontalLayout_2;
@@ -69,7 +74,6 @@ private:
 	QLabel* label_Instruction;
 	QSpacerItem* horizontalSpacer_4;
 	QLabel* label_Send;
-	QSpacerItem* horizontalSpacer_5;
 	QWidget* widget_Buttons;
 	QHBoxLayout* horizontalLayout;
 	QSpacerItem* horizontalSpacer;
@@ -89,6 +93,30 @@ public:
 	 * @brief 删除最后一行
 	 */
 	void popBackLine(void);
+
+	/**
+	 * @brief 取得某行
+	 * @param index 索引
+	 * @return ALineWidget 指针 成功
+	 * @return nullptr 失败
+	 */
+	ALineWidget* getLine(int index);
+	/**
+	 * @brief 设置所有按钮 enable
+	 * @param enabled 是否使用
+	 */
+	void setAllButtonsEnable(bool enabled);
+
+	/**
+	 * @brief 一共多少行
+	 * @return 行数
+	 */
+	int rowCount(void);
+	/**
+	 * @brief 获取本窗口中所有字符串
+	 * @return 本窗口中所有字符串
+	 */
+	QVector<QString> getAllQStrings(void);
 signals:
 	void sendSignal(QString comment);
 };
@@ -122,6 +150,14 @@ private:
 	 */
 	QByteArray getSentContent(QString& dataString);
 	/**
+	 * @brief 在TabWidget中添加一页
+	 */
+	void addTabPage(void);
+	/**
+	 * @brief 在TabWidget中移除当前页
+	 */
+	void removeCurrentTabPage(void);
+	/**
 	 * @brief 导入.csv表格文件
 	 * @param fileName 文件完整路径
 	 */
@@ -134,13 +170,13 @@ public:
 	void setText(bool t);
 	/**
 	 * @brief 设置追加内容
-	 * @param a true 追加 false 不追加
+	 * @param checked true 追加 false 不追加
 	 * @param data 要追加的数据
 	 */
 	void setAppend(bool a, QByteArray data);
 	/**
 	 * @brief 设置是否自动发送
-	 * @param a true 是 false 否
+	 * @param checked true 是 false 否
 	 */
 	void setAutoSend(bool a);
 	/**
@@ -155,9 +191,9 @@ public:
 	void setSendCycle(int mesc);
 	/**
 	 * @brief 是否允许发送
-	 * @param a 是否
+	 * @param checked 是否
 	 */
-	void setAllowSending(bool a);
+	void setAllowSending(bool checked);
 signals:
 	/**
 	 * @brief 请求发送
@@ -173,5 +209,4 @@ signals:
 	 */
 	void requestToNotification(QString notification);
 };
-
 
