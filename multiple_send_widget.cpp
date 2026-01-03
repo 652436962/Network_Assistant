@@ -10,6 +10,8 @@
 #include <QTextCodec>
 #include <QDesktopServices>
 
+#include "scrollable_list_widget.h"
+
 
 
 MultipleSendWidget::MultipleSendWidget(QWidget* parent)

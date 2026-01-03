@@ -19,7 +19,8 @@ enum class WorkMode
 {
     TCP_Client,
     TCP_Server,
-    UDP
+    UDP,
+    UDP_Send_Only
 };
 
 /**

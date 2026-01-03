@@ -14,6 +14,9 @@ std::string getWorkModeString(WorkMode mode)
     case WorkMode::UDP:
         typeString = "UDP";
         break;
+    case WorkMode::UDP_Send_Only:
+        typeString = "UDP_Send_Only";
+        break;
     default:
         break;
     }
