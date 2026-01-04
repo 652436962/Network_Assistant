@@ -12,6 +12,26 @@
 #include "global.h"
 #include "sundry_qt.h"
 
+
+
+class TitleWidget : public QWidget
+{
+	Q_OBJECT
+private:
+	QHBoxLayout* horizontalLayout;
+	QSpacerItem* horizontalSpacer;
+	QLabel* label_Comment;
+	QSpacerItem* horizontalSpacer_2;
+	QLabel* label_Instruction;
+	QSpacerItem* horizontalSpacer_3;
+	QLabel* label_Send;
+
+	void setupUi();
+public:
+	TitleWidget(QWidget* parent);
+};
+
+
 class ALineWidget :public QWidget
 {
 	Q_OBJECT
@@ -53,6 +73,29 @@ signals:
 	 * @note Qt信号
 	 */
 	void sendSignal(QString data);
+};
+
+
+class TailWidget :public QWidget
+{
+	Q_OBJECT
+private:
+	QHBoxLayout* horizontalLayout;
+	QSpacerItem* horizontalSpacer;
+	QPushButton* pushButton_Add;
+	QPushButton* pushButton_Remove;
+	void setupUi();
+public:
+	TailWidget(QWidget* parent);
+	/**
+	 * @brief 删除是否可用
+	 * @param enabled true 是  false 否
+	 */
+	void setRemoveEnable(bool enabled);
+signals:
+	void signalAdd();
+signals:
+	void signalRemove();
 };
 
 class LineTableWidget :public QWidget

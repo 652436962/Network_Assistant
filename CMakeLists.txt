@@ -58,7 +58,7 @@ add_executable (Network_Assistant
  "global.h" "global.cpp"
  "app.rc"
  "icon.qrc"
- "custom_widget/scrollable_list_widget.h" "custom_widget/scrollable_list_widget.cpp")
+     "custom_widget/scrollable_list_widget.cpp" "custom_widget/scrollable_list_widget.h")
 
 # 显式将 CMake 自动生成文件的输出目录添加到包含路径
 # 这有助于 IDE (如 VS) 的 IntelliSense 找到 ui_*.h 和 moc_*.cpp

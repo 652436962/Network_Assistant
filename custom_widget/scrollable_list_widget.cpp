@@ -9,14 +9,14 @@ ScrollableListWidget::ScrollableListWidget(QWidget* parent)
 
 void ScrollableListWidget::setupUi()
 {
-	// 创建滚动区域
+	// 滚动区域
 	scrollArea = new QScrollArea(this);
 	scrollArea->setWidgetResizable(true);
 	scrollArea->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 	scrollArea->setVerticalScrollBarPolicy(Qt::ScrollBarAsNeeded);
 
-	// 创建滚动内容窗口
-	scrollAreaWidget = new QWidget;
+	// 滚动内容窗口
+	scrollAreaWidget = new QWidget(this);
 	vBoxLayout_Scroll = new QVBoxLayout(scrollAreaWidget);
 	vBoxLayout_Scroll->setContentsMargins(0, 0, 0, 0);
 	vBoxLayout_Scroll->setSpacing(0);
@@ -25,49 +25,17 @@ void ScrollableListWidget::setupUi()
 	spacer = new QSpacerItem(0, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 	vBoxLayout_Scroll->addItem(spacer);
 
-	// 设置滚动区域的内容
+	// 设置滚动区域内容
 	scrollArea->setWidget(scrollAreaWidget);
 
-	// 本窗口布局
+	// 主布局
 	vBoxLayout_This = new QVBoxLayout(this);
 	vBoxLayout_This->setContentsMargins(0, 0, 0, 0);
 	vBoxLayout_This->setSpacing(0);
 	vBoxLayout_This->addWidget(scrollArea);
 }
 
-void ScrollableListWidget::setTitleWidget(QWidget* titleWidget)
-{
-	// 移除旧标题
-	if (titleWidget_) {
-		vBoxLayout_Scroll->removeWidget(titleWidget_);
-		titleWidget_->deleteLater();
-	}
-	titleWidget_ = titleWidget;
-
-	// 添加新标题（如果存在）
-	if (titleWidget) {
-		titleWidget->setParent(scrollAreaWidget);
-		vBoxLayout_Scroll->insertWidget(0, titleWidget);
-	}
-}
-
-void ScrollableListWidget::setTailWidget(QWidget* tailWidget)
-{
-	// 移除旧尾部
-	if (tailWidget_) {
-		vBoxLayout_Scroll->removeWidget(tailWidget_);
-		tailWidget_->deleteLater();
-	}
-	tailWidget_ = tailWidget;
-
-	// 添加新尾部（如果存在）
-	if (tailWidget) {
-		tailWidget->setParent(scrollAreaWidget);
-		// 在弹簧之前插入尾部
-		int insertIndex = vBoxLayout_Scroll->count() - 2; // 弹簧前一个位置
-		vBoxLayout_Scroll->insertWidget(insertIndex, tailWidget);
-	}
-}
+// --- 公共接口实现 ---
 
 size_t ScrollableListWidget::size() const
 {
@@ -81,9 +49,9 @@ bool ScrollableListWidget::empty() const
 
 void ScrollableListWidget::clear()
 {
-	for (QWidget* widget : widgetsList) {
-		vBoxLayout_Scroll->removeWidget(widget);
-		widget->deleteLater();
+	for (QWidget* w : widgetsList) {
+		vBoxLayout_Scroll->removeWidget(w);
+		delete w;
 	}
 	widgetsList.clear();
 }
@@ -91,57 +59,34 @@ void ScrollableListWidget::clear()
 void ScrollableListWidget::push_back(QWidget* val)
 {
 	if (!val) return;
-
 	val->setParent(scrollAreaWidget);
 
-	// 确定插入位置：在尾部之前（如果存在尾部）或弹簧之前
-	int insertIndex;
-	if (tailWidget_) {
-		insertIndex = vBoxLayout_Scroll->indexOf(tailWidget_);
-	}
-	else {
-		insertIndex = vBoxLayout_Scroll->count() - 2; // 弹簧前一个位置
-	}
-
+	// 插入到弹簧之前（即布局末尾 - 1）
+	int insertIndex = vBoxLayout_Scroll->count() - 1;
 	vBoxLayout_Scroll->insertWidget(insertIndex, val);
-	widgetsList.append(val);
+	widgetsList.push_back(val);
 }
 
 void ScrollableListWidget::push_front(QWidget* val)
 {
 	if (!val) return;
-
 	val->setParent(scrollAreaWidget);
 
-	// 插入到标题之后（如果有标题）或最顶部（如果没有标题）
-	int insertIndex = (titleWidget_) ? 1 : 0;
-	vBoxLayout_Scroll->insertWidget(insertIndex, val);
-	widgetsList.prepend(val);
+	// 插入到最前面（索引 0）
+	vBoxLayout_Scroll->insertWidget(0, val);
+	widgetsList.push_front(val);
 }
 
 int ScrollableListWidget::insert(int index, QWidget* val)
 {
-	if (!val || index < 0 || index > widgetsList.size())
+	if (!val || index < 0 || index > static_cast<int>(widgetsList.size()))
 		return -1;
 
 	val->setParent(scrollAreaWidget);
 
-	// 计算实际插入位置
-	int insertIndex;
-	if (titleWidget_) {
-		// 有标题时，窗口列表从索引1开始
-		insertIndex = index + 1;
-	}
-	else {
-		// 无标题时，窗口列表从索引0开始
-		insertIndex = index;
-	}
-
-	// 如果有尾部，插入位置在尾部之前
-	if (tailWidget_) {
-		insertIndex = qMin(insertIndex, vBoxLayout_Scroll->indexOf(tailWidget_));
-	}
-
+	// 插入位置 = index（因为无标题，窗口从0开始）
+	// 但不能超过弹簧前的位置
+	int insertIndex = qMin(index, vBoxLayout_Scroll->count() - 1);
 	vBoxLayout_Scroll->insertWidget(insertIndex, val);
 	widgetsList.insert(index, val);
 	return index;
@@ -151,32 +96,40 @@ void ScrollableListWidget::pop_back()
 {
 	if (widgetsList.isEmpty()) return;
 
-	QWidget* last = widgetsList.last();
-	vBoxLayout_Scroll->removeWidget(last);
-	last->deleteLater();
-	widgetsList.removeLast();
+	QWidget* w = widgetsList.takeLast();
+	vBoxLayout_Scroll->removeWidget(w);
+	delete w;
 }
 
 void ScrollableListWidget::pop_front()
 {
 	if (widgetsList.isEmpty()) return;
 
-	QWidget* first = widgetsList.first();
-	vBoxLayout_Scroll->removeWidget(first);
-	first->deleteLater();
-	widgetsList.removeFirst();
+	QWidget* w = widgetsList.takeFirst();
+	vBoxLayout_Scroll->removeWidget(w);
+	delete w;
 }
 
 int ScrollableListWidget::erase(int index)
 {
-	if (index < 0 || index >= widgetsList.size())
+	if (index < 0 || index >= static_cast<int>(widgetsList.size()))
 		return -1;
 
-	QWidget* widget = widgetsList[index];
-	vBoxLayout_Scroll->removeWidget(widget);
-	widget->deleteLater();
-	widgetsList.removeAt(index);
+	QWidget* w = widgetsList.takeAt(index);
+	vBoxLayout_Scroll->removeWidget(w);
+	delete w;
 
-	// 返回删除后下一个窗口的索引（或-1表示末尾）
 	return (index >= widgetsList.size()) ? -1 : index;
+}
+
+void ScrollableListWidget::remove(QWidget* value)
+{
+	if (!value) return;
+
+	int index = widgetsList.indexOf(value);
+	if (index == -1) return; // not found
+
+	widgetsList.removeAt(index);
+	vBoxLayout_Scroll->removeWidget(value);
+	delete value;
 }

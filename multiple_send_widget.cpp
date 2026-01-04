@@ -220,14 +220,21 @@ QByteArray MultipleSendWidget::getSentContent(QString& dataString)
 
 void MultipleSendWidget::addTabPage(void)
 {
-	LineTableWidget* lineTable = new LineTableWidget(this->ui->tabWidget);
-	lineTable->setAllButtonsEnable(this->allowSending);
+	//LineTableWidget* lineTable = new LineTableWidget(this->ui->tabWidget);
+	//lineTable->setAllButtonsEnable(this->allowSending);
+	//int pageCount = ui->tabWidget->count();
+	//ui->tabWidget->addTab(lineTable, QString::number(pageCount + 1));
+	//connect(lineTable, &LineTableWidget::sendSignal, [this](QString comment) {
+	//	QByteArray byteArray = this->getSentContent(comment);
+	//	emit this->requestToSend(byteArray);
+	//	});
+
+	ScrollableListWidget* scrollWidget = new ScrollableListWidget(this->ui->tabWidget);
+	scrollWidget->push_front(new TitleWidget(scrollWidget));
+	scrollWidget->push_back(new TailWidget(scrollWidget));
 	int pageCount = ui->tabWidget->count();
-	ui->tabWidget->addTab(lineTable, QString::number(pageCount + 1));
-	connect(lineTable, &LineTableWidget::sendSignal, [this](QString comment) {
-		QByteArray byteArray = this->getSentContent(comment);
-		emit this->requestToSend(byteArray);
-		});
+	ui->tabWidget->addTab(scrollWidget, QString::number(pageCount + 1));
+
 }
 
 void MultipleSendWidget::removeCurrentTabPage(void)
@@ -526,4 +533,84 @@ QVector<QString> LineTableWidget::getAllQStrings(void)
 	}
 
 	return allQStrings;
+}
+
+
+TitleWidget::TitleWidget(QWidget* parent) :QWidget(parent)
+{
+	setupUi();
+}
+
+void TitleWidget::setupUi()
+{
+	this->resize(275, 32);
+	this->setMinimumSize(QSize(128, 32));
+	this->setMaximumSize(QSize(512, 64));
+	QFont font;
+	font.setPointSize(12);
+	this->setFont(font);
+	horizontalLayout = new QHBoxLayout(this);
+	horizontalLayout->setSpacing(2);
+	horizontalLayout->setContentsMargins(2, 2, 2, 2);
+	horizontalSpacer = new QSpacerItem(52, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+	horizontalLayout->addItem(horizontalSpacer);
+
+	label_Comment = new QLabel("备注", this);
+
+	horizontalLayout->addWidget(label_Comment);
+
+	horizontalSpacer_2 = new QSpacerItem(52, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+	horizontalLayout->addItem(horizontalSpacer_2);
+
+	label_Instruction = new QLabel("指令", this);
+
+	horizontalLayout->addWidget(label_Instruction);
+
+	horizontalSpacer_3 = new QSpacerItem(52, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+	horizontalLayout->addItem(horizontalSpacer_3);
+
+	label_Send = new QLabel("发送", this);
+
+	horizontalLayout->addWidget(label_Send);
+}
+
+
+
+TailWidget::TailWidget(QWidget* parent) :QWidget(parent)
+{
+	this->setupUi();
+	connect(this->pushButton_Add, &QPushButton::clicked, [this]() {
+		emit this->signalAdd(); });
+	connect(this->pushButton_Remove, &QPushButton::clicked, [this]() {
+		emit this->signalRemove(); });
+}
+void TailWidget::setRemoveEnable(bool enabled)
+{
+	this->pushButton_Remove->setEnabled(enabled);
+}
+void TailWidget::setupUi()
+{
+	this->resize(374, 32);
+	this->setMinimumSize(QSize(128, 32));
+	this->setMaximumSize(QSize(512, 48));
+	QFont font;
+	font.setPointSize(10);
+	this->setFont(font);
+	horizontalLayout = new QHBoxLayout(this);
+	horizontalLayout->setSpacing(4);
+	horizontalLayout->setContentsMargins(2, 2, 2, 2);
+	horizontalSpacer = new QSpacerItem(209, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+	horizontalLayout->addItem(horizontalSpacer);
+
+	pushButton_Add = new QPushButton("添加一行", this);
+
+	horizontalLayout->addWidget(pushButton_Add);
+
+	pushButton_Remove = new QPushButton("删除一行", this);
+
+	horizontalLayout->addWidget(pushButton_Remove);
 }

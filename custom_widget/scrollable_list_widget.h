@@ -8,15 +8,15 @@
  */
 class ScrollableListWidget : public QWidget
 {
+	Q_OBJECT
 private:
 	QVBoxLayout* vBoxLayout_This;//本窗口布局
 	QScrollArea* scrollArea;//滚动区类
 	QWidget* scrollAreaWidget;//要滚动的窗口
 	QVBoxLayout* vBoxLayout_Scroll;//滚动窗口布局
 
-	QWidget* titleWidget_ = nullptr;//标题窗口 不在 widgetesList 中记录
-	QList<QWidget*> widgetsList;//保存所有加入的窗口的指针，便于之后处理	
-	QWidget* tailWidget_ = nullptr;//结尾窗口 不在 widgetesList 中记录
+	QList<QWidget*> widgetsList;//保存所有加入的窗口的指针，便于之后处理
+
 	QSpacerItem* spacer;//最底下的弹簧
 private:
 	/**
@@ -28,18 +28,7 @@ public:
 	 * @brief 构造函数
 	 * @param parent 父对象
 	 */
-	explicit ScrollableListWidget(QWidget* parent);
-	/**
-	 * @brief 设置标题窗口
-	 * @param titleWidget 标题窗口
-	 */
-	void setTitleWidget(QWidget* titleWidget);
-	/**
-	 * @brief 设置结尾窗口
-	 * @param tailWidget 结尾窗口
-	 */
-	void setTailWidget(QWidget* tailWidget);
-
+	explicit ScrollableListWidget(QWidget* parent = nullptr);
 public:
 	/**
 	 * @brief 当前加入的窗口的个数
@@ -85,8 +74,12 @@ public:
 	/**
 	 * @brief 删除 索引 index 的窗口
 	 * @param index 索引
-	 * @return 被删除窗口之后窗口的索引 （或-1表示末尾）
+	 * @return 被删除窗口之后窗口的索引
 	 */
 	int erase(int index);
-
+	/**
+	 * @brief 移除窗口
+	 * @param value 要移除的窗口
+	 */
+	void remove(QWidget* value);
 };
