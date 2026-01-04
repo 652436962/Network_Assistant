@@ -779,7 +779,7 @@ void MainWindow::asUdpOperation(void)
 				QHostAddress senderAddress;
 				uint16_t senderPort;
 				//读取数据，并记录发送者的地址和端口
-				this->udpSocket->readDatagram(data.data(), data.size(), &senderAddress, &senderPort);
+				this->udpSocket->readDatagram(data.data(), data.count(), &senderAddress, &senderPort);
 				QString senderString = QString("[UDP from %1:%2]").arg(senderAddress.toString()).arg(senderPort);
 				ui->receive_area->appendPlainText(senderString);
 				ui->receive_area->showData(data);

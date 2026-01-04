@@ -1,3 +1,5 @@
+#pragma once
+
 #include <QWidget>
 #include <QScrollArea>
 #include <QHBoxLayout>
@@ -30,56 +32,74 @@ public:
 	 */
 	explicit ScrollableListWidget(QWidget* parent = nullptr);
 public:
+	// 容量与大小
 	/**
 	 * @brief 当前加入的窗口的个数
 	 * @return 当前加入的窗口的个数
 	 */
-	size_t size() const;
+	size_t count() const;
 	/**
 	 * @brief 检查“链表窗口”是否为空
 	 * @return true 空
 	 * @return false 非空
 	 */
 	bool empty() const;
+
+	//元素访问
+
 	/**
-	 * @brief 移除所有窗口
+	 * @brief 返回第一个窗口
+	 * @return 第一个窗口
 	 */
-	void clear();
-	
+	QWidget* front();
+	/**
+	 * @brief 返回最后一个窗口
+	 * @return 最后一个窗口
+	 */
+	QWidget* back();
+
+	// 修改器
 	/**
 	 * @brief 在尾部插入一个窗口
 	 * @param val 要插入的窗口
 	 */
 	void push_back(QWidget* val);
 	/**
+	 * @brief 删除最后一个窗口
+	 */
+	void pop_back();
+	/**
 	 * @brief 在头部插入一个窗口
 	 * @param val 要插入的窗口
 	 */
 	void push_front(QWidget* val);
 	/**
-	 * @brief 在 索引 index 前插入一个窗口
-	 * @param index 索引
-	 * @param val 要插入的窗口
-	 * @return 新窗口索引
-	 */
-	int insert(int index, QWidget* val);
-	/**
-	 * @brief 删除最后一个窗口
-	 */
-	void pop_back();
-	/**
 	 * @brief 删除第一个窗口
 	 */
 	void pop_front();
 	/**
+	 * @brief 在 索引 pos 前插入一个窗口
+	 * @param pos 索引
+	 * @param val 要插入的窗口
+	 * @return 新窗口索引
+	 */
+	int insert(int pos, QWidget* val);	
+	/**
 	 * @brief 删除 索引 index 的窗口
-	 * @param index 索引
+	 * @param pos 索引
 	 * @return 被删除窗口之后窗口的索引
 	 */
-	int erase(int index);
+	int erase(int pos);
+	/**
+	 * @brief 移除所有窗口
+	 */
+	void clear();
+
+	// 链表特有
+
 	/**
 	 * @brief 移除窗口
 	 * @param value 要移除的窗口
 	 */
-	void remove(QWidget* value);
+	void remove(QWidget* value);	
 };

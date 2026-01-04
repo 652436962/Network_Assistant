@@ -37,9 +37,9 @@ void ScrollableListWidget::setupUi()
 
 // --- 公共接口实现 ---
 
-size_t ScrollableListWidget::size() const
+size_t ScrollableListWidget::count() const
 {
-	return widgetsList.size();
+	return widgetsList.count();
 }
 
 bool ScrollableListWidget::empty() const
@@ -77,19 +77,17 @@ void ScrollableListWidget::push_front(QWidget* val)
 	widgetsList.push_front(val);
 }
 
-int ScrollableListWidget::insert(int index, QWidget* val)
+int ScrollableListWidget::insert(int pos, QWidget* val)
 {
-	if (!val || index < 0 || index > static_cast<int>(widgetsList.size()))
+	if (!val || pos < 0 || pos > widgetsList.count())
 		return -1;
 
 	val->setParent(scrollAreaWidget);
 
 	// 插入位置 = index（因为无标题，窗口从0开始）
-	// 但不能超过弹簧前的位置
-	int insertIndex = qMin(index, vBoxLayout_Scroll->count() - 1);
-	vBoxLayout_Scroll->insertWidget(insertIndex, val);
-	widgetsList.insert(index, val);
-	return index;
+	vBoxLayout_Scroll->insertWidget(pos, val);
+	widgetsList.insert(pos, val);
+	return pos;
 }
 
 void ScrollableListWidget::pop_back()
@@ -110,16 +108,16 @@ void ScrollableListWidget::pop_front()
 	delete w;
 }
 
-int ScrollableListWidget::erase(int index)
+int ScrollableListWidget::erase(int pos)
 {
-	if (index < 0 || index >= static_cast<int>(widgetsList.size()))
+	if (pos < 0 || pos >= static_cast<int>(widgetsList.count()))
 		return -1;
 
-	QWidget* w = widgetsList.takeAt(index);
+	QWidget* w = widgetsList.takeAt(pos);
 	vBoxLayout_Scroll->removeWidget(w);
 	delete w;
 
-	return (index >= widgetsList.size()) ? -1 : index;
+	return (pos >= widgetsList.count()) ? -1 : pos;
 }
 
 void ScrollableListWidget::remove(QWidget* value)
@@ -132,4 +130,13 @@ void ScrollableListWidget::remove(QWidget* value)
 	widgetsList.removeAt(index);
 	vBoxLayout_Scroll->removeWidget(value);
 	delete value;
+}
+
+QWidget* ScrollableListWidget::front()
+{
+	return widgetsList.front();
+}
+QWidget* ScrollableListWidget::back()
+{
+	return widgetsList.back();
 }
