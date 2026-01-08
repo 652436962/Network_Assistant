@@ -36,9 +36,9 @@ SendSettingsBox::SendSettingsBox(QWidget* parent)
 
 	//追加选项
 	QByteArray item1("\r\n", 2);
-	comboBox_Append->addItem("'\\r''\\n'", item1);
+	comboBox_Append->addItem("CRLF('\\r''\\n')", item1);
 	QByteArray item2("\n", 1);
-	comboBox_Append->addItem("'\\n'", item2);
+	comboBox_Append->addItem("LF('\\n')", item2);
 	QByteArray item3("\0", 1);
 	comboBox_Append->addItem("'\\0'", item3);
 	connect(checkBox_Append, &QCheckBox::toggled, [this](bool checked) {

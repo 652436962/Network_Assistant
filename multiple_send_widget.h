@@ -61,11 +61,7 @@ private:
 	 * @brief 在TabWidget中移除当前页
 	 */
 	void removeCurrentTabPage(void);
-	/**
-	 * @brief 导入.csv表格文件
-	 * @param fileName 文件完整路径
-	 */
-	void ImportCsvFile(QString fileName);
+
 public:
 	/**
 	 * @brief 要发送的是否是文本字符串
@@ -160,10 +156,20 @@ public:
 	 */
 	QString getComment(void) const;
 	/**
+	 * @brief 设置备注
+	 * @param 备注字符串 
+	 */
+	void setComment(QString str);
+	/**
 	 * @brief 获取指令字符串
 	 * @return 指令字符串
 	 */
 	QString getInstruction(void) const;
+	/**
+	 * @brief 设置指令
+	 * @param str 指令字符串
+	 */
+	void setInstruction(QString str);
 	/**
 	 * @brief 设置发送按钮能否使用
 	 * @param checked 能否使用

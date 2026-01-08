@@ -17,6 +17,7 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 
+
 	while (ui->tabWidget->count() > 0) // 开始清空tabWidget
 	{
 		ui->tabWidget->removeTab(0); // 索引会变更
@@ -79,25 +80,7 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 		}
 	}
 
-	// 配置连接 打开文件保存目录
-	connect(ui->pushButton_Location, &QPushButton::clicked, [this]() {
-		QString location = QCoreApplication::applicationDirPath() + "/multiple_data_files";
-		QDir locationDir(location);
-		if (!locationDir.exists())
-		{
-			if (!QDir().mkpath(location))
-			{
-				qDebug() << "创建失败 " << __FILE__ << __LINE__;
-			}
-		}
-
-		bool result = QDesktopServices::openUrl(location); // 在资源管理器中打开
-		if (!result)
-		{
-			qDebug() << "无法打开文件夹";
-			emit this->requestToNotification("找不到默认保存位置，请检查");
-		}
-		});
+	
 
 	// 配置连接 添加一页
 	connect(ui->pushButton_Add, &QPushButton::clicked, [this]() {
@@ -109,13 +92,7 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 	// 配置连接 移除当前页
 	connect(ui->pushButton_Delete, &QPushButton::clicked, this, &MultipleSendWidget::removeCurrentTabPage);
 
-	// 配置连接 导入.csv文件
-	// 导入文件按钮
-	connect(ui->pushButton_Import, &QPushButton::clicked, [this]() {
-		QString fileName = QFileDialog::getOpenFileName(this);
-		if (fileName.isEmpty())return;
-		this->ImportCsvFile(fileName); // 导入文件
-		});
+	
 
 	///* 导入 multiple_data_files 中的所有.csv文件 */
 	//// 获取所有 .csv 文件（不区分大小写）
@@ -296,59 +273,6 @@ void MultipleSendWidget::removeCurrentTabPage(void)
 	}
 }
 
-void MultipleSendWidget::ImportCsvFile(QString fileName)
-{
-	QFileInfo fileInfo(fileName);
-	QString baseName = fileInfo.baseName(); // 文件名
-
-	// 读取表格文件的数据
-	QVector<QVector<QByteArray>> formData = readCsvFile_Qt(fileName);
-
-	QTableWidget* tableWidget = new QTableWidget(ui->tabWidget); // 表格窗口
-	tableWidget->setRowCount(formData.count());
-	tableWidget->setColumnCount(3); // 设置为3列
-	tableWidget->setHorizontalHeaderLabels(QStringList() << "备注" << "指令" << "发送");
-
-	QVBoxLayout* layout = new QVBoxLayout(ui->tabWidget);
-	layout->setContentsMargins(2, 2, 2, 2);
-	layout->setSpacing(2);
-
-	layout->addWidget(tableWidget);
-	layout->addStretch();
-
-	int lineNumber = 0;
-
-	QByteArray encodingName = getEncodingQByteArray(encodingUsed);
-	QTextCodec* codec = QTextCodec::codecForName(encodingName); // 编码转换
-
-	for (int i = 0; i < formData.count(); i++)
-	{
-		for (int j = 0; j < 2 && j < (formData[i]).count(); j++)
-		{
-			QString temp = codec->toUnicode(formData[i][j]); // 编码转换
-			tableWidget->setItem(i, j, new QTableWidgetItem(temp));
-		}
-		QPushButton* button = new QPushButton(tableWidget);
-		button->setEnabled(this->allowSending);
-		button->setIcon(QIcon(":/icon/image/send.png"));
-		connect(button, &QPushButton::clicked, [=]() {
-			QString sendString = tableWidget->item(i, 1)->text();
-			if (sendString.isEmpty()) return;
-			QByteArray sendData = this->getSentContent(sendString);
-			if (sendData.isEmpty()) return;
-			emit this->requestToSend(sendData);
-			});
-
-		tableWidget->setCellWidget(i, 2, button);
-	}
-
-	ui->tabWidget->addTab(tableWidget, baseName);
-	tableWidget->resizeColumnsToContents();
-	ui->tabWidget->setCurrentWidget(tableWidget); // 展示新导入的
-
-	qDebug() << "成功从 " << fileName << " 中导入 " + QString::number(formData.count()) + " 条指令";
-}
-
 ALineWidget::ALineWidget(QWidget* parent, QString comment, QString instruction) : QWidget(parent)
 {
 	this->setupUi();
@@ -387,9 +311,19 @@ QString ALineWidget::getComment(void) const
 	return commentEdit->text();
 }
 
+void ALineWidget::setComment(QString str)
+{
+	this->commentEdit->setText(str);
+}
+
 QString ALineWidget::getInstruction(void) const
 {
 	return instructionEdit->text();
+}
+
+void ALineWidget::setInstruction(QString str)
+{
+	this->instructionEdit->setText(str);
 }
 
 void ALineWidget::setButtonEnable(bool checked)
