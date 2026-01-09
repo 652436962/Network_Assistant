@@ -7,16 +7,20 @@
 EditableTabWidget::EditableTabWidget(QWidget* parent)
 	: QTabWidget(parent)
 {
-	// 启用双击编辑
-	connect(this->tabBar(), &QTabBar::tabBarDoubleClicked, this, &EditableTabWidget::onTabBarDoubleClicked);
-	connect(this, &QTabWidget::currentChanged, this, &EditableTabWidget::onCurrentChanged);
-}
-
-void EditableTabWidget::onTabBarDoubleClicked(int index)
-{
-	if (index < 0 || index >= count()) return;
-	/*qDebug() << "双击事件触发  索引 " << index;*/
-	startEditing(index);
+	//配置连接 双击
+	connect(this->tabBar(), &QTabBar::tabBarDoubleClicked, [this](int index) {
+		if (index < 0 || index >= count()) return;
+		/*qDebug() << "双击事件触发  索引 " << index;*/
+		startEditing(index);
+		});
+	//配置连接 编辑页变化
+	connect(this, &QTabWidget::currentChanged, [this](int index) {
+		/*qDebug() << "onCurrentChanged";*/
+		// 当用户切换到其他标签页时，自动结束当前编辑
+		if (m_editLine && index != m_editingIndex) {
+			finishEditing(true);
+		}
+		});
 }
 
 void EditableTabWidget::startEditing(int index)
@@ -44,38 +48,36 @@ void EditableTabWidget::startEditing(int index)
 	QPoint globalPos = tabBar()->mapToGlobal(tabRect.topLeft());  // 转为全局
 	QPoint localPos = mapFromGlobal(globalPos);                   // 转为 this 的局部坐标
 	m_editLine->setGeometry(QRect(localPos, tabRect.size()));// 设置几何 位置 大小
+		
+	m_editLine->show();// 强制显示（虽然默认 visible=true，但保险）
+	m_editLine->setFocus();//设置焦点
+	m_editLine->selectAll();//全选
 
-	// 强制显示（虽然默认 visible=true，但保险）
-	m_editLine->show();
-
-	m_editLine->setFocus();
-	m_editLine->selectAll();
-
-	// 连接信号
-	connect(m_editLine, &QLineEdit::editingFinished, this, &EditableTabWidget::onEditingFinished);
+	// 配置连接 编辑完成
+	connect(m_editLine, &QLineEdit::editingFinished, [this]() {
+		// 注意：editingFinished 可能由失去焦点触发，但我们通过事件过滤器已处理 Enter/Esc
+		// 所以这里只做兜底
+		if (this->m_editLine)
+		{
+			this->finishEditing(true);
+		}
+		});
 
 	// 支持按 Enter 提交，Esc 取消
 	m_editLine->installEventFilter(this);
 }
 
-void EditableTabWidget::onEditingFinished()
-{
-	/*qDebug() << "onEditingFinished";*/
-	// 注意：editingFinished 可能由失去焦点触发，但我们通过事件过滤器已处理 Enter/Esc
-	// 所以这里只做兜底
-	if (m_editLine) {
-		finishEditing(true);
-	}
-}
-
 bool EditableTabWidget::eventFilter(QObject* watched, QEvent* event)
 {
+	//m_editLine 发来的事件
 	if (watched == m_editLine && event->type() == QEvent::KeyPress) {
 		QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+		//如果按了 Esc → 取消编辑
 		if (keyEvent->key() == Qt::Key_Escape) {
 			finishEditing(false); // 取消
 			return true;
 		}
+		//如果按了 Enter/Return → 提交编辑
 		else if (keyEvent->key() == Qt::Key_Return || keyEvent->key() == Qt::Key_Enter) {
 			finishEditing(true); // 接受
 			return true;
@@ -101,11 +103,3 @@ void EditableTabWidget::finishEditing(bool accept)
 	m_editingIndex = -1;
 }
 
-void EditableTabWidget::onCurrentChanged(int index)
-{
-	/*qDebug() << "onCurrentChanged";*/
-	// 当用户切换到其他标签页时，自动结束当前编辑
-	if (m_editLine && index != m_editingIndex) {
-		finishEditing(true);
-	}
-}

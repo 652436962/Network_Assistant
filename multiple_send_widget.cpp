@@ -17,7 +17,6 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 {
 	ui->setupUi(this);
 
-
 	while (ui->tabWidget->count() > 0) // 开始清空tabWidget
 	{
 		ui->tabWidget->removeTab(0); // 索引会变更
@@ -35,29 +34,27 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 			return;
 		}
 
-		// 获取当前表格窗口
-		QTableWidget* tableWidget = static_cast<QTableWidget*>(ui->tabWidget->currentWidget());
-		if (tableWidget->rowCount() <= 0) // 表格中没有数据
-		{
-			return;
-		}
+		// 获取当前窗口
+		ScrollableListWidget* scroll = qobject_cast<ScrollableListWidget*>(ui->tabWidget->currentWidget());
+		if (!scroll) return;
+
+		
 		// 获取当前行的指令
-		QTableWidgetItem* item = tableWidget->item(this->currentRow, 1);
-		if (!item)
-			return;
+		ALineWidget* aLine = qobject_cast<ALineWidget*>(scroll->at(this->currentRow));
+		if (!aLine) return;
 
-		QString command = item->text();
-		QByteArray sendData = this->getSentContent(command);
-		emit this->requestToSend(sendData);
+		//QString command = item->text();
+		//QByteArray sendData = this->getSentContent(command);
+		//emit this->requestToSend(sendData);
 
-		tableWidget->setCurrentCell(this->currentRow, 1);
+		//tableWidget->setCurrentCell(this->currentRow, 1);
 
-		// 更新行号（下一行）
-		this->currentRow++;
-		if (this->currentRow >= tableWidget->rowCount())
-		{
-			this->currentRow = 0; // 回到第一行，实现循环
-		}
+		//// 更新行号（下一行）
+		//this->currentRow++;
+		//if (this->currentRow >= tableWidget->rowCount())
+		//{
+		//	this->currentRow = 0; // 回到第一行，实现循环
+		//}
 		});
 	//切换页后 自动发送当前行归0
 	connect(this->ui->tabWidget, &QTabWidget::currentChanged, [this]() {this->currentRow = 0; });
@@ -91,21 +88,6 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 
 	// 配置连接 移除当前页
 	connect(ui->pushButton_Delete, &QPushButton::clicked, this, &MultipleSendWidget::removeCurrentTabPage);
-
-	
-
-	///* 导入 multiple_data_files 中的所有.csv文件 */
-	//// 获取所有 .csv 文件（不区分大小写）
-	//QStringList filters;
-	//filters << "*.csv" << "*.CSV";
-	//QFileInfoList fileList = dataDir.entryInfoList(filters, QDir::Files); // 只找文件，不找子文件夹
-	//// 遍历每个 .csv 文件
-	//for (const QFileInfo& fileInfo : fileList)
-	//{
-	//	QString filePath = fileInfo.absoluteFilePath(); // 完整路径
-	//	this->ImportCsvFile(filePath);
-	//	// qDebug()<<"已导入"<<filePath;
-	//}
 
 	//开始没有就来一页
 	if (ui->tabWidget->count() == 0)
@@ -163,7 +145,14 @@ void MultipleSendWidget::setAllowSending(bool checked)
 	//遍历切换选项窗口
 	for (int i = 0; i < this->ui->tabWidget->count(); i++)
 	{
-
+		ScrollableListWidget* scroll = qobject_cast<ScrollableListWidget*>(ui->tabWidget->currentWidget());
+		if (!scroll) continue;
+		for (int j = 0; j < scroll->count(); j++)
+		{
+			ALineWidget* aLine = qobject_cast<ALineWidget*>(scroll->at(j));
+			if (!aLine) continue;
+			aLine->setButtonEnable(checked);
+		}
 	}
 
 }
@@ -201,11 +190,12 @@ QByteArray MultipleSendWidget::getSentContent(QString& dataString)
 ScrollableListWidget* MultipleSendWidget::addTabPage(void)
 {
 	ScrollableListWidget* scrollWidget = new ScrollableListWidget(this->ui->tabWidget);
-	scrollWidget->push_front(new TitleWidget(scrollWidget));
+	TitleWidget* title = new TitleWidget(scrollWidget);
+	scrollWidget->setTitleWidget(title);
 
 	TailWidget* tail = new TailWidget(scrollWidget);
 	tail->setRemoveEnable(false);//开始没有，因此删除不可用
-	scrollWidget->push_back(tail);
+	scrollWidget->setTailWidget(tail);
 
 	//加入到 tabWidget 中
 	int pageCount = ui->tabWidget->count();
@@ -225,19 +215,18 @@ ScrollableListWidget* MultipleSendWidget::addTabPage(void)
 
 void MultipleSendWidget::addALine(ScrollableListWidget* scroll)
 {
-	int index = scroll->count() - 1;//索引从0开始，最后有个 tail（其索引为 count() - 1） 故而 -1
 	ALineWidget* line = new ALineWidget(scroll);
 	line->setButtonEnable(this->allowSending);
-	scroll->insert(index, line);
+	scroll->push_back(line);
 	//配置连接 发送
 	connect(line, &ALineWidget::signalSend, [this](QString str) {
 		QByteArray data = this->getSentContent(str);
 		emit this->requestToSend(data);
 		});
 	//有“行”了
-	if (scroll->count() >= 3)
+	if (!(scroll->empty()))
 	{
-		TailWidget* tail = qobject_cast<TailWidget*>(scroll->back());
+		TailWidget* tail = qobject_cast<TailWidget*>(scroll->getTailWidget());
 		if (!tail) return;
 		tail->setRemoveEnable(true);//启用删除按钮
 	}
@@ -245,12 +234,11 @@ void MultipleSendWidget::addALine(ScrollableListWidget* scroll)
 
 void MultipleSendWidget::removeLastLine(ScrollableListWidget* scroll)
 {
-	int index = scroll->count() - 1 - 1;//索引从0开始，最后有个 tail（其索引为 count() - 1） 故而 -1再-1
-	scroll->erase(index);
+	scroll->pop_back();
 	//没有“行”了
-	if (scroll->count() <= 2)
+	if (scroll->empty())
 	{
-		TailWidget* tail = qobject_cast<TailWidget*>(scroll->back());
+		TailWidget* tail = qobject_cast<TailWidget*>(scroll->getTailWidget());
 		if (!tail) return;
 		tail->setRemoveEnable(false);//禁用删除按钮
 	}

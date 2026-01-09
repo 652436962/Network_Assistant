@@ -17,8 +17,9 @@ private:
 	QWidget* scrollAreaWidget;//要滚动的窗口
 	QVBoxLayout* vBoxLayout_Scroll;//滚动窗口布局
 
-	QList<QWidget*> widgetsList;//保存所有加入的窗口的指针，便于之后处理
-
+	QWidget* titleWidget;//标题窗口
+	QList<QWidget*> widgetsList;//保存所有加入的窗口的指针的链表，便于之后处理
+	QWidget* tailWidget;//尾部窗口
 	QSpacerItem* spacer;//最底下的弹簧
 private:
 	/**
@@ -31,6 +32,26 @@ public:
 	 * @param parent 父对象
 	 */
 	explicit ScrollableListWidget(QWidget* parent = nullptr);
+	/**
+	 * @brief 设置标题窗口
+	 * @param title 标题 传入 nullptr 设置标题为空的窗口 
+	 */
+	void setTitleWidget(QWidget* title = nullptr);
+	/**
+	 * @brief 获取标题窗口
+	 * @return 标题窗口
+	 */
+	QWidget* getTitleWidget(void) const;
+	/**
+	 * @brief 设置结尾窗口
+	 * @param tail 结尾 传入 nullptr 设置结尾为空的窗口
+	 */
+	void setTailWidget(QWidget* tail = nullptr);
+	/**
+	 * @brief 获取结尾窗口
+	 * @return 结尾窗口
+	 */
+	QWidget* getTailWidget(void) const;
 public:
 	// 容量与大小
 	/**
@@ -57,6 +78,13 @@ public:
 	 * @return 最后一个窗口
 	 */
 	QWidget* back();
+	/**
+	 * @brief 按索引取得窗口
+	 * @param index 索引
+	 * @return 窗口
+	 * @note std::list 中没有
+	 */
+	QWidget* at(int index) const;
 
 	// 修改器
 	/**

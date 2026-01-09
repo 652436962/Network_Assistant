@@ -54,7 +54,7 @@ private:
 	void addALine(ScrollableListWidget* scroll);
 	/**
 	 * @brief 在某页中删除最后一行
-	 * @param scroll 
+	 * @param scroll 对应页的滚动窗口
 	 */
 	void removeLastLine(ScrollableListWidget* scroll);
 	/**
