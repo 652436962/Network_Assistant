@@ -29,35 +29,27 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 	this->timer->setInterval(500);
 	//定时到了
 	connect(this->timer, &QTimer::timeout, [this]() {
-		if (ui->tabWidget->count() <= 0) // 多页窗口中没有表格
-		{
-			return;
-		}
+		if (ui->tabWidget->count() <= 0) return;
 
 		// 获取当前窗口
 		ScrollableListWidget* scroll = qobject_cast<ScrollableListWidget*>(ui->tabWidget->currentWidget());
 		if (!scroll) return;
 
-		
 		// 获取当前行的指令
-		ALineWidget* aLine = qobject_cast<ALineWidget*>(scroll->at(this->currentRow));
+		ALineWidget* aLine = qobject_cast<ALineWidget*>(scroll->at(this->rowIndex));
 		if (!aLine) return;
 
-		//QString command = item->text();
-		//QByteArray sendData = this->getSentContent(command);
-		//emit this->requestToSend(sendData);
+		
+		QString command = aLine->getInstruction();
+		QByteArray sendData = this->getSentContent(command);
+		emit this->requestToSend(sendData);//请求发送
 
-		//tableWidget->setCurrentCell(this->currentRow, 1);
-
-		//// 更新行号（下一行）
-		//this->currentRow++;
-		//if (this->currentRow >= tableWidget->rowCount())
-		//{
-		//	this->currentRow = 0; // 回到第一行，实现循环
-		//}
+		// 更新索引（下一行）
+		this->rowIndex++;
+		if (this->rowIndex >= scroll->count()) this->rowIndex = 0; // 回到第一行，实现循环
 		});
 	//切换页后 自动发送当前行归0
-	connect(this->ui->tabWidget, &QTabWidget::currentChanged, [this]() {this->currentRow = 0; });
+	connect(this->ui->tabWidget, &QTabWidget::currentChanged, [this]() {this->rowIndex = 0; });
 
 	/*创建保存发送数据的文件夹*/
 	QString appDirPath = QCoreApplication::applicationDirPath(); // 获取 .exe 所在的目录
@@ -76,8 +68,6 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 			qWarning() << "创建文件夹" << dataDirPath << "失败!";
 		}
 	}
-
-	
 
 	// 配置连接 添加一页
 	connect(ui->pushButton_Add, &QPushButton::clicked, [this]() {
@@ -215,7 +205,9 @@ ScrollableListWidget* MultipleSendWidget::addTabPage(void)
 
 void MultipleSendWidget::addALine(ScrollableListWidget* scroll)
 {
-	ALineWidget* line = new ALineWidget(scroll);
+	int index = scroll->count();
+	ALineWidget* line = new ALineWidget(scroll, QString::number(index));
+
 	line->setButtonEnable(this->allowSending);
 	scroll->push_back(line);
 	//配置连接 发送
@@ -261,11 +253,14 @@ void MultipleSendWidget::removeCurrentTabPage(void)
 	}
 }
 
-ALineWidget::ALineWidget(QWidget* parent, QString comment, QString instruction) : QWidget(parent)
+ALineWidget::ALineWidget(QWidget* parent, const QString& text, const QString& comment, const QString& instruction) : QWidget(parent)
 {
 	this->setupUi();
+
+	this->label->setText(text);
 	this->commentEdit->setText(comment);
 	this->instructionEdit->setText(instruction);
+	
 	connect(sendButton, &QPushButton::clicked, [this]() {
 		emit signalSend(instructionEdit->text());
 		});
@@ -279,19 +274,38 @@ void ALineWidget::setupUi(void)
 	horizontalLayout = new QHBoxLayout(this);
 	horizontalLayout->setSpacing(4);
 	horizontalLayout->setContentsMargins(2, 2, 2, 2);
+
+	//索引标签
+	label = new QLabel(this);
+	horizontalLayout->addWidget(label);
+
+	//备注编辑框
 	commentEdit = new QLineEdit(this);
 
 	horizontalLayout->addWidget(commentEdit);
 
+	//指令编辑框
 	instructionEdit = new QLineEdit(this);
 
 	horizontalLayout->addWidget(instructionEdit);
 
+	//发送按钮
 	sendButton = new QPushButton(this);
 	sendButton->setMinimumSize(QSize(16, 16));
 	sendButton->setMaximumSize(QSize(24, 24));
 	sendButton->setIcon(QIcon(":/icon/image/send.png"));
+
 	horizontalLayout->addWidget(sendButton);
+}
+
+void ALineWidget::setLabelText(const QString& text)
+{
+	this->label->setText(text);
+}
+
+QString ALineWidget::getLabelText(void)
+{
+	return this->label->text();
 }
 
 QString ALineWidget::getComment(void) const
@@ -317,6 +331,11 @@ void ALineWidget::setInstruction(QString str)
 void ALineWidget::setButtonEnable(bool checked)
 {
 	sendButton->setEnabled(checked);
+}
+
+void ALineWidget::setInstructionEditFocus()
+{
+	instructionEdit->setFocus();
 }
 
 

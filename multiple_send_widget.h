@@ -33,7 +33,7 @@ private:
 	bool append = true;//是否追加内容
 	QByteArray appendData = QByteArray("\r\n", 2);//要追加内容
 	QTimer* timer;//自动发送定时器
-	int currentRow = 0;//自动发送的当前行号
+	int rowIndex = 0;//自动发送的当前行号
 	bool allowSending = false;//是否允许发送
 private:
 	/**
@@ -138,11 +138,13 @@ public:
 	/**
 	 * @brief 构造函数
 	 * @param parent 父对象
+	 * @param text 标签文本
 	 * @param comment 备注字符串
 	 * @param instruction 指令字符串
 	 */
-	explicit ALineWidget(QWidget* parent = nullptr, QString comment = "", QString instruction = "");
+	explicit ALineWidget(QWidget* parent = nullptr, const QString& text = "", const QString& comment = "", const QString& instruction = "");
 private:
+	QLabel* label = nullptr;
 	QLineEdit* commentEdit = nullptr;
 	QLineEdit* instructionEdit = nullptr;
 	QPushButton* sendButton = nullptr;
@@ -150,6 +152,16 @@ private:
 	QHBoxLayout* horizontalLayout = nullptr;
 	void setupUi(void);
 public:
+	/**
+	 * @brief 设置标签文本
+	 * @param text 标签
+	 */
+	void setLabelText(const QString& text);
+	/**
+	 * @brief 获取标签文本
+	 * @return 标签文本
+	 */
+	QString getLabelText(void);
 	/**
 	 * @brief 获取备注字符串
 	 * @return 备注字符串
@@ -175,6 +187,10 @@ public:
 	 * @param checked 能否使用
 	 */
 	void setButtonEnable(bool checked);
+	/**
+	 * @brief 设置指令编辑行的焦点
+	 */
+	void setInstructionEditFocus();
 signals:
 	/**
 	 * @brief 发送信号
