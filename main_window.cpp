@@ -749,7 +749,7 @@ void MainWindow::asUdpOperation(void)
 			return;
 		}
 		uint16_t port = ui->network_settings->getPortValue();
-		this->udpSocket = new QUdpSocket(this);
+		this->udpSocket = new QUdpSocket(this);//创建UDP套接字
 		bool result = this->udpSocket->bind(address, port);//UDP 绑定
 		if (!result)
 		{
@@ -807,6 +807,45 @@ void MainWindow::asUdpOperation(void)
 		//UDP 是无连接协议，没有“连接状态”，自然也没有“断开连接”或“解绑”操作。
 		this->udpSocket->deleteLater();
 		this->udpSocket = nullptr;
+		emit this->workingStateChanged(false);
+		this->notificationManager->newBubble("UDP 已关闭");
+		qDebug() << "UDP 已关闭";
+	}
+}
+
+void MainWindow::asUdpOnlySendOperation(void)
+{
+	if (this->udpSocket_OnlySend == nullptr)
+	{	
+		this->udpSocket_OnlySend = new QUdpSocket(this);//创建UDP套接字
+
+		QString message = "";
+		QTextStream stream(&message);
+		stream << "只能发送的UDP";
+		this->notificationManager->newBubble(message);
+		qDebug() << message;
+
+		//配置连接 请求发送 通过 UDP 发送数据
+		connect(ui->singleSend, &SingleSendWidget::requestToSend, this->udpSocket_OnlySend, [this](QByteArray data) {
+			QString targetAddressString = ui->udpTargetBox->getAddress();
+			uint16_t targetPort = ui->udpTargetBox->getPortValue();
+			QHostAddress targetAddress(targetAddressString);
+			this->udpSocket_OnlySend->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
+			});
+		connect(ui->multipleSend, &MultipleSendWidget::requestToSend, this->udpSocket_OnlySend, [this](QByteArray data) {
+			QString targetAddressString = ui->udpTargetBox->getAddress();
+			uint16_t targetPort = ui->udpTargetBox->getPortValue();
+			QHostAddress targetAddress(targetAddressString);
+			this->udpSocket_OnlySend->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
+			});
+
+		emit this->workingStateChanged(true);
+	}
+	else
+	{
+		//UDP 是无连接协议，没有“连接状态”，自然也没有“断开连接”或“解绑”操作。
+		this->udpSocket_OnlySend->deleteLater();
+		this->udpSocket_OnlySend = nullptr;
 		emit this->workingStateChanged(false);
 		this->notificationManager->newBubble("UDP 已关闭");
 		qDebug() << "UDP 已关闭";

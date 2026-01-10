@@ -79,6 +79,26 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 		}
 	}
 
+	//配置连接 打开文件保存目录
+	connect(ui->pushButton_Location, &QPushButton::clicked, [this]() {
+		QString location = QCoreApplication::applicationDirPath() + "/multiple_data_files";
+		QDir locationDir(location);
+		if (!locationDir.exists())
+		{
+			if (!QDir().mkpath(location))
+			{
+				qDebug() << "创建失败 " << __FILE__ << __LINE__;
+			}
+		}
+
+		bool result = QDesktopServices::openUrl(location); // 在资源管理器中打开
+		if (!result)
+		{
+			qDebug() << "无法打开文件夹";
+			emit this->requestToNotification("找不到默认保存位置，请检查");
+		}
+		});
+
 	/*加载记录文件*/
 	this->loadInstructionData(dataDirPath);
 
@@ -96,8 +116,17 @@ MultipleSendWidget::~MultipleSendWidget()
 	/*保存当前数据到记录文件*/
 	QString appDirPath = QCoreApplication::applicationDirPath(); // 获取 .exe 所在的目录
 	QString dataDirPath = appDirPath + "/multiple_data_files"; // 构造目标文件夹路径
-	this->saveInstructionData(dataDirPath);
+	QDir dataDir(dataDirPath);
+	bool result = false;
+	if (!dataDir.exists())//文件夹不存在
+	{
+		result = QDir().mkpath(dataDirPath);//创建文件夹
+	}
+	else result = true;
+	if (result)
+		this->saveInstructionData(dataDirPath);//保存数据
 
+	//删除 UI
 	delete ui;
 }
 void MultipleSendWidget::setText(bool t)
@@ -184,7 +213,7 @@ QByteArray MultipleSendWidget::getSentContent(QString& dataString)
 	return dataSend;
 }
 
-ScrollableListWidget* MultipleSendWidget::addTabPage(void)
+ScrollableListWidget* MultipleSendWidget::addTabPage(QString tabText)
 {
 	ScrollableListWidget* scrollWidget = new ScrollableListWidget(this->ui->tabWidget);
 	TitleWidget* title = new TitleWidget(scrollWidget);
@@ -194,9 +223,10 @@ ScrollableListWidget* MultipleSendWidget::addTabPage(void)
 	tail->setRemoveEnable(false);//开始没有，因此删除不可用
 	scrollWidget->setTailWidget(tail);
 
-	//加入到 tabWidget 中
+	//加入到 tabWidget 中	
 	int pageCount = ui->tabWidget->count();
-	ui->tabWidget->addTab(scrollWidget, QString::number(pageCount));
+	if (tabText == "") tabText = QString::number(pageCount);//传入空，就用索引的数字
+	ui->tabWidget->addTab(scrollWidget, tabText);
 
 	//配置连接 添加一行
 	connect(tail, &TailWidget::signalAdd, [scrollWidget, this]() {
@@ -277,15 +307,15 @@ void MultipleSendWidget::loadInstructionData(const QString& dirPath)
 	for (const QFileInfo& fileInfo : fileInfoList)
 	{
 		QString filePath = fileInfo.absoluteFilePath();// 完整路径
-
+		QString baseName = fileInfo.baseName();//文件名主体
 		//加载文件
 		QStringList stringList = loadQStringList(filePath);
 		if (stringList.empty()) continue;
-		ScrollableListWidget* scroll = this->addTabPage();
-		
+		ScrollableListWidget* scroll = this->addTabPage(baseName);
+
 		ALineWidget* line = nullptr;
 		for (int i = 0; i < stringList.size(); i++)//添加行
-		{			
+		{
 			if (i % 2 == 0)//偶数索引
 			{
 				line = this->addALine(scroll);//添加新行

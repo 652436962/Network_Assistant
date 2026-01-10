@@ -12,6 +12,7 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 	this->comboBox_WorkMode->addItem("TCP 客户端", QVariant::fromValue(WorkMode::TCP_Client));
 	this->comboBox_WorkMode->addItem("TCP 服务器", QVariant::fromValue(WorkMode::TCP_Server));	
 	this->comboBox_WorkMode->addItem("UDP", QVariant::fromValue(WorkMode::UDP));
+	this->comboBox_WorkMode->addItem("UDP 只发送", QVariant::fromValue(WorkMode::UDP_Send_Only));
 	//配置连接 选项变化
 	connect(this->comboBox_WorkMode, &QComboBox::currentIndexChanged, [this]() {
 		if (this->networkActive == true)

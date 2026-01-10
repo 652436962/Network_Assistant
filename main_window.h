@@ -48,7 +48,7 @@ private:
 
 
 	/**
-	* 作为 TCP 客户端时的相关功能
+	* 工作模式 TCP 客户端 的相关功能
 	*/
 private:
 	/**
@@ -63,7 +63,7 @@ private:
 
 
 	/**
-	 * 作为 TCP 服务器时的相关功能
+	 * 工作模式 TCP 服务器 的相关功能
 	 */
 private:
 	/**
@@ -89,7 +89,7 @@ private:
 
 
 	/**
-	 * 作为 UDP 时的相关功能
+	 * 工作模式 UDP 的相关功能
 	 */
 private:
 	/**
@@ -100,6 +100,16 @@ private:
 	 * @brief 作为 UDP 工作
 	 */
 	void asUdpOperation(void);
+
+/**
+ * 工作模式 UDP 只发送 的相关功能 
+ */
+private:
+	QUdpSocket* udpSocket_OnlySend = nullptr;
+	/**
+	 * @brief 作为 只发送的UDP 工作
+	 */
+	void asUdpOnlySendOperation(void);
 
 signals:
 	/**

@@ -8,6 +8,7 @@
 #include <QLabel>
 #include <QHBoxLayout>
 #include <QPushButton>
+#include <QCloseEvent>
 
 #include "global.h"
 #include "sundry_qt.h"
@@ -44,6 +45,7 @@ private:
 	QTimer* timer;//自动发送定时器
 	int rowIndex = 0;//自动发送的当前行号
 	bool allowSending = false;//是否允许发送
+
 private:
 	/**
 	 * @brief 根据选项获取要发送的内容
@@ -53,9 +55,10 @@ private:
 	QByteArray getSentContent(QString& dataString);
 	/**
 	 * @brief 在TabWidget中添加一页
+	 * @param tabText 这页标题
 	 * @return 添加的 滚动链表窗口
 	 */
-	ScrollableListWidget* addTabPage(void);
+	ScrollableListWidget* addTabPage(QString tabText = "");
 	/**
 	 * @brief 在某页中添加一行
 	 * @param scroll 对应页的滚动窗口
