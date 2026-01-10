@@ -18,12 +18,21 @@ namespace Ui {
 class MultipleSendWidget;
 }
 
+class ALineWidget;
+
 class MultipleSendWidget : public QWidget
 {
     Q_OBJECT
 
 public:
+    /**
+     * @brief 构造函数
+     * @param parent 父对象
+     */
     explicit MultipleSendWidget(QWidget *parent = nullptr);
+    /**
+     * @brief 析构函数
+     */
     ~MultipleSendWidget();
 
 private:
@@ -50,8 +59,9 @@ private:
 	/**
 	 * @brief 在某页中添加一行
 	 * @param scroll 对应页的滚动窗口
+	 * @return 添加的行
 	 */
-	void addALine(ScrollableListWidget* scroll);
+	ALineWidget* addALine(ScrollableListWidget* scroll);
 	/**
 	 * @brief 在某页中删除最后一行
 	 * @param scroll 对应页的滚动窗口
@@ -61,6 +71,16 @@ private:
 	 * @brief 在TabWidget中移除当前页
 	 */
 	void removeCurrentTabPage(void);
+	/**
+	 * @brief 加载所有指令数据文件
+	 * @param dirPath 文件夹路径
+	 */
+	void loadInstructionData(const QString& dirPath);
+	/**
+	 * @brief 保存所有指令数据到对应文件
+	 * @param dirPath 文件夹路径 
+	 */
+	void saveInstructionData(const QString& dirPath);
 
 public:
 	/**

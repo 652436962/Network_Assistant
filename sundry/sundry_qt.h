@@ -66,18 +66,18 @@ QVector<QVector<QByteArray>> readCsvFile_Qt(const QString& filePath);
 */
 
 /**
- * @brief 将 QVector<QString> 以二进制格式写入文件
- * @param filename 文件路径
- * @param strings 字符串向量
+ * @brief 将 QStringList 以二进制格式写入文件
+ * @param filePath 文件完整路径
+ * @param strings 字符串列表
  * @return true 成功
  * @return false 失败
  */
-bool saveQStrings(const QString& filename, const QVector<QString>& strings);
+bool saveQStringList(const QString& filePath, const QStringList& strings);
 
-/**
- * @brief 从二进制文件读取 QVector<QString>
- * @param filename 文件路径
- * @return 成功 字符串向量
- * @return 失败 返回空
+/** 
+ * @brief 从二进制文件读取 QStringList
+ * @param filePath 文件完整路径
+ * @return 成功：字符串列表
+ * @return 失败：空列表
  */
-QVector<QString> loadQStrings(const QString& filename);
+QStringList loadQStringList(const QString& filePath);

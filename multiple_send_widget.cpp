@@ -39,7 +39,7 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 		ALineWidget* aLine = qobject_cast<ALineWidget*>(scroll->at(this->rowIndex));
 		if (!aLine) return;
 
-		
+		aLine->setInstructionEditFocus();
 		QString command = aLine->getInstruction();
 		QByteArray sendData = this->getSentContent(command);
 		emit this->requestToSend(sendData);//请求发送
@@ -50,6 +50,16 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 		});
 	//切换页后 自动发送当前行归0
 	connect(this->ui->tabWidget, &QTabWidget::currentChanged, [this]() {this->rowIndex = 0; });
+
+	// 配置连接 添加一页
+	connect(ui->pushButton_Add, &QPushButton::clicked, [this]() {
+		ScrollableListWidget* scroll = this->addTabPage();
+		// 开始就有 5 行
+		for (int i = 0; i < 5; i++) this->addALine(scroll);
+		});
+
+	// 配置连接 移除当前页
+	connect(ui->pushButton_Delete, &QPushButton::clicked, this, &MultipleSendWidget::removeCurrentTabPage);
 
 	/*创建保存发送数据的文件夹*/
 	QString appDirPath = QCoreApplication::applicationDirPath(); // 获取 .exe 所在的目录
@@ -69,15 +79,8 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 		}
 	}
 
-	// 配置连接 添加一页
-	connect(ui->pushButton_Add, &QPushButton::clicked, [this]() {
-		ScrollableListWidget* scroll = this->addTabPage();
-		// 开始就有 5 行
-		for (int i = 0; i < 5; i++) this->addALine(scroll);
-		});
-
-	// 配置连接 移除当前页
-	connect(ui->pushButton_Delete, &QPushButton::clicked, this, &MultipleSendWidget::removeCurrentTabPage);
+	/*加载记录文件*/
+	this->loadInstructionData(dataDirPath);
 
 	//开始没有就来一页
 	if (ui->tabWidget->count() == 0)
@@ -90,6 +93,11 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 
 MultipleSendWidget::~MultipleSendWidget()
 {
+	/*保存当前数据到记录文件*/
+	QString appDirPath = QCoreApplication::applicationDirPath(); // 获取 .exe 所在的目录
+	QString dataDirPath = appDirPath + "/multiple_data_files"; // 构造目标文件夹路径
+	this->saveInstructionData(dataDirPath);
+
 	delete ui;
 }
 void MultipleSendWidget::setText(bool t)
@@ -144,7 +152,6 @@ void MultipleSendWidget::setAllowSending(bool checked)
 			aLine->setButtonEnable(checked);
 		}
 	}
-
 }
 
 QByteArray MultipleSendWidget::getSentContent(QString& dataString)
@@ -203,7 +210,7 @@ ScrollableListWidget* MultipleSendWidget::addTabPage(void)
 	return scrollWidget;
 }
 
-void MultipleSendWidget::addALine(ScrollableListWidget* scroll)
+ALineWidget* MultipleSendWidget::addALine(ScrollableListWidget* scroll)
 {
 	int index = scroll->count();
 	ALineWidget* line = new ALineWidget(scroll, QString::number(index));
@@ -219,9 +226,10 @@ void MultipleSendWidget::addALine(ScrollableListWidget* scroll)
 	if (!(scroll->empty()))
 	{
 		TailWidget* tail = qobject_cast<TailWidget*>(scroll->getTailWidget());
-		if (!tail) return;
+		if (!tail) return nullptr;
 		tail->setRemoveEnable(true);//启用删除按钮
 	}
+	return line;
 }
 
 void MultipleSendWidget::removeLastLine(ScrollableListWidget* scroll)
@@ -253,6 +261,78 @@ void MultipleSendWidget::removeCurrentTabPage(void)
 	}
 }
 
+void MultipleSendWidget::loadInstructionData(const QString& dirPath)
+{
+	QDir dir(dirPath);
+	if (!dir.exists()) return;
+
+	//设置过滤器：只列出文件（不含子目录），且以 .bin 结尾（不区分大小写）
+	dir.setFilter(QDir::Files);
+	dir.setNameFilters(QStringList() << "*.bin");
+
+	//获取所有匹配的文件名（仅文件名，不含路径）
+	QFileInfoList fileInfoList = dir.entryInfoList();
+
+	//遍历所有 .bin 文件
+	for (const QFileInfo& fileInfo : fileInfoList)
+	{
+		QString filePath = fileInfo.absoluteFilePath();// 完整路径
+
+		//加载文件
+		QStringList stringList = loadQStringList(filePath);
+		if (stringList.empty()) continue;
+		ScrollableListWidget* scroll = this->addTabPage();
+		
+		ALineWidget* line = nullptr;
+		for (int i = 0; i < stringList.size(); i++)//添加行
+		{			
+			if (i % 2 == 0)//偶数索引
+			{
+				line = this->addALine(scroll);//添加新行
+				line->setComment(stringList.at(i));//设置备注字符串
+			}
+			else// 奇数索引
+			{
+				if (!line) continue;
+				line->setInstruction(stringList.at(i));
+			}
+
+		}
+	}
+}
+
+void MultipleSendWidget::saveInstructionData(const QString& dirPath)
+{
+	QDir dataDir(dirPath);
+	if (!dataDir.exists()) return;
+
+	int scrollCount = ui->tabWidget->count();//窗口总数
+	if (scrollCount <= 0) return;
+
+	//遍历所有窗口
+	for (int i = 0; i < scrollCount; i++)
+	{
+		ScrollableListWidget* scroll = qobject_cast<ScrollableListWidget*>(ui->tabWidget->widget(i));
+		if (!scroll) continue;
+		int lineCount = scroll->count();
+		if (lineCount <= 0) continue;
+		QString fileName = ui->tabWidget->tabText(i) + ".bin";//文件名为对应页标签+".bin"
+		QStringList stringList;//保存本页所有指令
+		for (int j = 0; j < lineCount; j++)
+		{
+			ALineWidget* line = qobject_cast<ALineWidget*>(scroll->at(j));
+			if (!line) continue;
+			stringList.append(line->getComment());//备注
+			stringList.append(line->getInstruction());//指令
+		}
+		QString filePath = dirPath + "/" + fileName;
+		qDebug() << "保存" << ui->tabWidget->tabText(i) << "数据到 " << filePath;
+		bool saveResult = saveQStringList(filePath, stringList);
+		qDebug() << (saveResult ? "成功" : "失败");
+	}
+
+}
+
 ALineWidget::ALineWidget(QWidget* parent, const QString& text, const QString& comment, const QString& instruction) : QWidget(parent)
 {
 	this->setupUi();
@@ -260,7 +340,7 @@ ALineWidget::ALineWidget(QWidget* parent, const QString& text, const QString& co
 	this->label->setText(text);
 	this->commentEdit->setText(comment);
 	this->instructionEdit->setText(instruction);
-	
+
 	connect(sendButton, &QPushButton::clicked, [this]() {
 		emit signalSend(instructionEdit->text());
 		});
