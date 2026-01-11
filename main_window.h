@@ -11,8 +11,9 @@
 #include "multiple_send_widget.h"
 #include "notification_manager.h"
 #include "target_box.h"
+#include "scrollable_list_widget.h"
 
-#include <list>
+
 #include "global.h"
 
 QT_BEGIN_NAMESPACE
@@ -75,11 +76,7 @@ private:
 	 * @brief 所有连接到的客户端
 	 * @note TCP 通信的 socket 负责“实际通信”
 	 */
-	std::list<QTcpSocket*> tcpSocketsList;
-	/**
-	 * @brief 展示所有连接到的客户端的表格
-	 */
-	QTableWidget* clientTable = nullptr;
+	QList<QTcpSocket*> tcpClientesList;
 
 	/**
 	 * @brief 作为 TCP 服务器 工作
@@ -109,7 +106,7 @@ private:
 	/**
 	 * @brief 作为 只发送的UDP 工作
 	 */
-	void asUdpOnlySendOperation(void);
+	void asUdpSendOnlyOperation(void);
 
 signals:
 	/**
@@ -118,4 +115,43 @@ signals:
 	 * @note Qt 信号
 	 */
 	void workingStateChanged(bool state);
+};
+
+
+class ClientesTitle :public QWidget
+{
+	Q_OBJECT
+private:
+	QVBoxLayout* verticalLayout;
+	QWidget* widget_2;
+	QHBoxLayout* horizontalLayout_2;
+	QSpacerItem* horizontalSpacer_00;
+	QLabel* label_Title;
+	QSpacerItem* horizontalSpacer_01;
+	QWidget* widget;
+	QHBoxLayout* horizontalLayout;
+	QSpacerItem* horizontalSpacer_10;
+	QLabel* label_IP;
+	QSpacerItem* horizontalSpacer_11;
+	QLabel* label_Port;
+	QSpacerItem* horizontalSpacer_12;
+	QLabel* label_Disconnect;
+
+	void setupUi(void);
+public:
+	ClientesTitle(QWidget* parent);
+};
+
+class ClientWidget :public QWidget
+{
+	Q_OBJECT
+private:
+	QHBoxLayout* horizontalLayout;
+	QLineEdit* lineEdit_IP;
+	QLineEdit* lineEdit_Port;
+	QPushButton* pushButton;
+
+	void setupUi();
+public:
+	ClientWidget(QWidget* parent);
 };

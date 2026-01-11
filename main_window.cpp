@@ -28,6 +28,8 @@ MainWindow::MainWindow(QWidget* parent)
 {
 	ui->setupUi(this);//配置UI
 
+
+
 	this->notificationManager = new NotificationManager(this, this);//通知气泡管理
 	this->notificationManager->newBubble("欢迎使用");
 
@@ -67,20 +69,11 @@ MainWindow::MainWindow(QWidget* parent)
 
 
 	//左侧窗口相关配置
+	ui->udpTargetBox->hide();// UDP 发送目标窗口开始隐藏
+	//创建 TCP 服务器 需要的 连接到本服务器的客户端展示表格	
+	ui->clientTable->setHorizontalHeaderLabels({ "客户端","断开" });
+	ui->clientTable->hide();//默认隐藏
 
-	//创建 TCP 服务器 需要的 连接到本服务器的客户端展示表格
-	{
-		this->clientTable = new QTableWidget(this);//创建表格
-		QVBoxLayout* layout = static_cast<QVBoxLayout*>(ui->widget_Left->layout());
-		layout->insertWidget(1, this->clientTable);
-		clientTable->setColumnCount(2);
-		clientTable->setHorizontalHeaderLabels({ "客户端","断开" });
-		clientTable->hide();//默认隐藏
-	}
-
-
-	// UDP 发送目标窗口开始隐藏
-	ui->udpTargetBox->hide();
 
 	//配置连接 请求工作
 	connect(ui->network_settings, &NetworkSettingsBox::requestWork, [this](WorkMode mode) {
@@ -99,30 +92,47 @@ MainWindow::MainWindow(QWidget* parent)
 		{
 			this->asUdpOperation();
 		}
+		//工作模式 UDP 只发送
+		else if (mode == WorkMode::UDP_Send_Only)
+		{
+			this->asUdpSendOnlyOperation();
+		}
 		});
 	//配置连接 工作模式选项切换
 	connect(ui->network_settings, &NetworkSettingsBox::modeOptionChanged, [this](WorkMode mode) {
 		//作为 TCP 客户端工作
 		if (mode == WorkMode::TCP_Client)
 		{
-			this->clientTable->hide();
+			ui->clientTable->hide();
 			ui->udpTargetBox->hide();
-			this->adjustSize();//让窗口自动缩放到刚好容纳所有内容
+			ui->groupBox_Receive->show();
+			ui->receive_settings->show();
 		}
 		//作为 TCP 服务器工作
 		else if (mode == WorkMode::TCP_Server)
 		{
-			this->clientTable->show();
+			ui->clientTable->show();
 			ui->udpTargetBox->hide();
-			this->adjustSize();//让窗口自动缩放到刚好容纳所有内容
+			ui->groupBox_Receive->show();
+			ui->receive_settings->show();
 		}
 		//作为 UDP 工作
 		else if (mode == WorkMode::UDP)
 		{
-			this->clientTable->hide();
+			ui->clientTable->hide();
 			ui->udpTargetBox->show();
-			this->adjustSize();//让窗口自动缩放到刚好容纳所有内容
+			ui->groupBox_Receive->show();
+			ui->receive_settings->show();
 		}
+		//工作模式 UDP 只发送
+		else if (mode == WorkMode::UDP_Send_Only)
+		{
+			ui->clientTable->hide();
+			ui->udpTargetBox->show();
+			ui->groupBox_Receive->hide();//隐藏接收区
+			ui->receive_settings->hide();//隐藏接收设置
+		}
+		this->adjustSize();//让窗口自动缩放到刚好容纳所有内容
 		});
 
 	//配置连接 网络设置改变 UI
@@ -174,7 +184,7 @@ MainWindow::MainWindow(QWidget* parent)
 		});
 
 	QVBoxLayout* verticalLayout = qobject_cast<QVBoxLayout*>(ui->widget_Right->layout());
-	if (verticalLayout == nullptr)	{
+	if (verticalLayout == nullptr) {
 		qDebug() << "错误 空指针" << __FILE__ << __LINE__;
 	}
 	//配置连接 工作中 允许发送
@@ -226,7 +236,7 @@ MainWindow::MainWindow(QWidget* parent)
 			});
 	}
 
-
+	this->adjustSize();
 	qDebug() << "主窗口建立";
 }
 
@@ -234,7 +244,7 @@ MainWindow::~MainWindow()
 {
 	//关闭 Tcp 服务器	
 	//断开所有客户端连接
-	std::list<QTcpSocket*> socketsList = this->tcpSocketsList;// 复制一份指针列表（浅拷贝，安全）
+	QList<QTcpSocket*> socketsList = this->tcpClientesList;// 复制一份指针列表（浅拷贝，安全）
 	for (auto it = socketsList.begin(); it != socketsList.end(); it++)//遍历指针列表
 	{
 		QTcpSocket* tcpSocket = *it;
@@ -517,7 +527,7 @@ void MainWindow::asTcpServerOperation(void)
 	//服务器还没有创建
 	if (this->tcpServer == nullptr)
 	{
-		if (this->tcpSocketsList.empty() != true)
+		if (this->tcpClientesList.empty() != true)
 		{
 			qDebug() << "错误 服务器创建前客户端链表非空" << __FILE__ << __LINE__;
 			return;
@@ -551,7 +561,7 @@ void MainWindow::asTcpServerOperation(void)
 			qDebug() << "错误码 " << error << " 错误信息 " << errorMsg;
 			this->tcpServer->deleteLater();
 			this->tcpServer = nullptr;
-			
+
 		}
 
 		//配置连接 有新的客户端连接
@@ -565,22 +575,22 @@ void MainWindow::asTcpServerOperation(void)
 			QString address = tcpSocket->peerAddress().toString();
 			uint16_t port = tcpSocket->peerPort();
 
-			this->tcpSocketsList.push_back(tcpSocket);//加入到队列末尾
+			this->tcpClientesList.push_back(tcpSocket);//加入到队列末尾
 
 			//在表格中展示
 			{
 				// 插入新行
-				int row = clientTable->rowCount();
-				clientTable->insertRow(row);
+				int row = ui->clientTable->rowCount();
+				ui->clientTable->insertRow(row);
 				// 0列：地址文本
 				QTableWidgetItem* item_info = new QTableWidgetItem(address + " " + QString::number(port));
 				item_info->setData(Qt::UserRole, QVariant::fromValue(tcpSocket));//在 item_info 中保存 tcpSocket 
-				clientTable->setItem(row, 0, item_info);
+				ui->clientTable->setItem(row, 0, item_info);
 
 				// 1列：“断开”按钮
-				QPushButton* pushButton_disconnect = new QPushButton(this->clientTable);
+				QPushButton* pushButton_disconnect = new QPushButton(ui->clientTable);
 				pushButton_disconnect->setIcon(QIcon(":/icon/image/disconnect.png"));
-				clientTable->setCellWidget(row, 1, pushButton_disconnect);
+				ui->clientTable->setCellWidget(row, 1, pushButton_disconnect);
 				connect(pushButton_disconnect, &QPushButton::clicked, this, [tcpSocket]() {
 					if (tcpSocket == nullptr)
 					{
@@ -610,52 +620,13 @@ void MainWindow::asTcpServerOperation(void)
 					qDebug() << "错误 空指针" << __FILE__ << __LINE__;
 					return;
 				}
-				//在链表中查找
-				std::list<QTcpSocket*>::iterator it = std::find(this->tcpSocketsList.begin(), this->tcpSocketsList.end(), tcpSocket);
-				if (it == this->tcpSocketsList.end())
-				{
-					qDebug() << "错误 在链表中找不到目标" << __FILE__ << __LINE__;
-					return;
-				}
-
-				//在表格中删除
-				{
-					if (this->clientTable == nullptr)
-					{
-						qDebug() << "错误 空指针" << __FILE__ << __LINE__;
-						return;
-					}
-					int row = -1;
-					//查找
-					for (int i = 0; i < this->clientTable->rowCount(); i++)
-					{
-						QTableWidgetItem* item = this->clientTable->item(i, 0);
-						if (!item) continue;
-						if (tcpSocket == item->data(Qt::UserRole).value<QTcpSocket*>())
-						{
-							row = i;
-							break;
-						}
-					}
-					//没有找到
-					if (row == -1)
-					{
-						qDebug() << "错误 在表格中找不到目标" << __FILE__ << __LINE__;
-						return;
-					}
-					else
-					{
-						this->clientTable->removeRow(row);
-					}
-				}
 
 				QString disconnectString = "";
 				QTextStream stream(&disconnectString);
 				stream << "客户端  " << tcpSocket->peerAddress().toString() << " " << tcpSocket->peerPort() << "  已断开";
 
+				this->tcpClientesList.removeOne(tcpSocket);//移除链表中对应节点
 				tcpSocket->deleteLater();
-				this->tcpSocketsList.erase(it);//移除链表中对应节点
-
 				this->notificationManager->newBubble(disconnectString);
 				qDebug() << disconnectString;
 				});
@@ -688,7 +659,7 @@ void MainWindow::asTcpServerOperation(void)
 	else
 	{
 		//断开所有客户端连接
-		std::list<QTcpSocket*> socketsList = this->tcpSocketsList;// 复制一份指针列表（浅拷贝，安全）
+		QList<QTcpSocket*> socketsList = this->tcpClientesList;// 复制一份指针列表（浅拷贝，安全）
 		for (auto it = socketsList.begin(); it != socketsList.end(); it++)//遍历指针列表
 		{
 			QTcpSocket* tcpSocket = *it;
@@ -706,13 +677,13 @@ void MainWindow::asTcpServerOperation(void)
 		//注意，在清理时会删除链表节点，因此，如果遍历原本的链表会错！！
 
 		//清空客户端表格
-		if (this->clientTable == nullptr)
+		if (ui->clientTable == nullptr)
 		{
 			qDebug() << "错误 空指针" << __FILE__ << __LINE__;
 		}
 		else
 		{
-			this->clientTable->clearContents();//只清除单元格内容，保留行列结构和表头
+			ui->clientTable->clearContents();//只清除单元格内容，保留行列结构和表头
 		}
 
 
@@ -813,10 +784,10 @@ void MainWindow::asUdpOperation(void)
 	}
 }
 
-void MainWindow::asUdpOnlySendOperation(void)
+void MainWindow::asUdpSendOnlyOperation(void)
 {
 	if (this->udpSocket_OnlySend == nullptr)
-	{	
+	{
 		this->udpSocket_OnlySend = new QUdpSocket(this);//创建UDP套接字
 
 		QString message = "";
@@ -852,3 +823,108 @@ void MainWindow::asUdpOnlySendOperation(void)
 	}
 }
 
+ClientesTitle::ClientesTitle(QWidget* parent) :QWidget(parent)
+{
+	this->setupUi();
+	this->adjustSize();
+}
+void ClientesTitle::setupUi()
+{
+	this->resize(270, 32);
+	this->setMinimumSize(QSize(128, 32));
+	this->setMaximumSize(QSize(16777215, 64));
+	QFont font;
+	font.setPointSize(10);
+	this->setFont(font);
+	verticalLayout = new QVBoxLayout(this);
+	verticalLayout->setSpacing(0);
+	verticalLayout->setContentsMargins(0, 0, 0, 0);
+	widget_2 = new QWidget(this);
+	horizontalLayout_2 = new QHBoxLayout(widget_2);
+	horizontalLayout_2->setSpacing(2);
+	horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
+	horizontalSpacer_00 = new QSpacerItem(46, 13, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+	horizontalLayout_2->addItem(horizontalSpacer_00);
+
+	label_Title = new QLabel(widget_2);
+	label_Title->setText("连接到本服务器的所有客户端");
+
+	horizontalLayout_2->addWidget(label_Title);
+
+	horizontalSpacer_01 = new QSpacerItem(45, 13, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+	horizontalLayout_2->addItem(horizontalSpacer_01);
+
+
+	verticalLayout->addWidget(widget_2);
+
+	widget = new QWidget(this);
+	horizontalLayout = new QHBoxLayout(widget);
+	horizontalLayout->setSpacing(2);
+	horizontalLayout->setContentsMargins(0, 0, 0, 0);
+	horizontalSpacer_10 = new QSpacerItem(62, 13, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+	horizontalLayout->addItem(horizontalSpacer_10);
+
+	label_IP = new QLabel(widget);
+	label_IP->setText("IP");
+
+	horizontalLayout->addWidget(label_IP);
+
+	horizontalSpacer_11 = new QSpacerItem(63, 13, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+	horizontalLayout->addItem(horizontalSpacer_11);
+
+	label_Port = new QLabel(widget);
+	label_Port->setText("端口");
+
+	horizontalLayout->addWidget(label_Port);
+
+	horizontalSpacer_12 = new QSpacerItem(62, 13, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+	horizontalLayout->addItem(horizontalSpacer_12);
+
+	label_Disconnect = new QLabel(widget);
+	label_Disconnect->setText("断开");
+
+	horizontalLayout->addWidget(label_Disconnect);
+
+
+	verticalLayout->addWidget(widget);
+}
+
+ClientWidget::ClientWidget(QWidget* parent) :QWidget(parent)
+{
+	this->setupUi();
+	this->adjustSize();
+}
+void ClientWidget::setupUi()
+{
+	this->resize(346, 32);
+	this->setMinimumSize(QSize(0, 32));
+	this->setMaximumSize(QSize(16777215, 48));
+	QFont font;
+	font.setPointSize(10);
+	this->setFont(font);
+	horizontalLayout = new QHBoxLayout(this);
+	horizontalLayout->setSpacing(8);
+	horizontalLayout->setContentsMargins(0, 0, 0, 0);
+	lineEdit_IP = new QLineEdit(this);
+	lineEdit_IP->setReadOnly(true);
+
+	horizontalLayout->addWidget(lineEdit_IP);
+
+	lineEdit_Port = new QLineEdit(this);
+	lineEdit_Port->setReadOnly(true);
+
+	horizontalLayout->addWidget(lineEdit_Port);
+
+	pushButton = new QPushButton(this);
+	pushButton->setMinimumSize(QSize(32, 32));
+	pushButton->setMaximumSize(QSize(48, 48));
+
+	horizontalLayout->addWidget(pushButton);
+
+	pushButton->setText(QString());
+}

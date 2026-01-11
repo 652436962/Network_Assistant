@@ -48,7 +48,6 @@ private:
      */
     void setupUi(void);
 
-
 public:
     /**
      * @brief 获取选择的网络协议类型

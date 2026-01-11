@@ -47,7 +47,7 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 void NetworkSettingsBox::setupUi(void)
 {
 	this->resize(175, 225);
-	this->setMinimumSize(QSize(175, 225));
+	this->setMinimumSize(QSize(128, 64));
 	QFont font;
 	font.setPointSize(10);
 	this->setFont(font);
@@ -166,33 +166,54 @@ void NetworkSettingsBox::changeUiAccordingOption(void)
 	//如果是 TCP 客户端
 	if (mode == WorkMode::TCP_Client)
 	{
+		this->label_Address->show();
 		this->label_Address->setText("服务器 IP 地址");
+		this->label_Port->show();
 		this->label_Port->setText("服务器端口");
 		this->lineEdit_Address->show();
 		this->comboBox_Address->hide();
 		this->toggleButton->setTexts("建立连接","断开连接");
 		this->pushButton_Refresh->hide();
+		this->spinBox_Port->show();
 	}
 	//如果是 TCP 服务器
 	else if (mode == WorkMode::TCP_Server)
 	{
+		this->label_Address->show();
 		this->label_Address->setText("本地 IP 地址");
+		this->label_Port->show();
 		this->label_Port->setText("本地端口");
 		this->lineEdit_Address->hide();
 		this->comboBox_Address->show();
 		this->toggleButton->setTexts("启动监听","停止监听");
 		this->pushButton_Refresh->show();
+		this->spinBox_Port->show();
 	}
 	//如果是 UDP
 	else if (mode == WorkMode::UDP)
 	{
+		this->label_Address->show();
 		this->label_Address->setText("本地 IP 地址");
+		this->label_Port->show();
 		this->label_Port->setText("本地端口");
 		this->lineEdit_Address->hide();
 		this->comboBox_Address->show();
 		this->toggleButton->setTexts("绑定","关闭");
 		this->pushButton_Refresh->show();
+		this->spinBox_Port->show();
 	}
+	//如果是 UDP只发送
+	else if (mode == WorkMode::UDP_Send_Only)
+	{
+		this->label_Address->hide();
+		this->label_Port->hide();
+		this->lineEdit_Address->hide();
+		this->comboBox_Address->hide();
+		this->toggleButton->setTexts("开始工作", "停止工作");
+		this->pushButton_Refresh->hide();
+		this->spinBox_Port->hide();
+	}
+	this->adjustSize();
 }
 
 void NetworkSettingsBox::refreshAddress(void)
