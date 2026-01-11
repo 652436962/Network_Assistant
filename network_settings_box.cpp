@@ -40,13 +40,15 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 	this->changeUiAccordingOption();
 	this->refreshAddress();
 	
+	QSize min_size = this->gridLayout->totalMinimumSize();
+	this->setMinimumSize(min_size);
 
+	this->adjustSize();
 	qDebug() << "网络设置窗口建立";
 }
 
 void NetworkSettingsBox::setupUi(void)
 {
-	this->resize(175, 225);
 	this->setMinimumSize(QSize(128, 64));
 	QFont font;
 	font.setPointSize(10);
@@ -213,6 +215,8 @@ void NetworkSettingsBox::changeUiAccordingOption(void)
 		this->pushButton_Refresh->hide();
 		this->spinBox_Port->hide();
 	}
+	QSize min_size = this->gridLayout->totalMinimumSize();
+	this->setMinimumSize(min_size);
 	this->adjustSize();
 }
 

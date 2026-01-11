@@ -139,7 +139,7 @@ private:
 
 	void setupUi(void);
 public:
-	ClientesTitle(QWidget* parent);
+	ClientesTitle(QWidget* parent = nullptr);
 };
 
 class ClientWidget :public QWidget
@@ -153,5 +153,16 @@ private:
 
 	void setupUi();
 public:
-	ClientWidget(QWidget* parent);
+	/**
+	 * @brief 构造函数
+	 * @param parent 父对象
+	 * @param ip IP字符串
+	 * @param port 端口字符串
+	 */
+	ClientWidget(QWidget* parent = nullptr,QString ip ="",QString port="");
+
+	void setIP(const QString& ip);
+	void setPort(const QString& port);
+signals:
+	void signal_Disconnect(void);
 };
