@@ -750,13 +750,13 @@ void MainWindow::asUdpOperation(void)
 
 		//配置连接 请求发送 通过 UDP 发送数据
 		connect(ui->singleSend, &SingleSendWidget::requestToSend, this->udpSocket, [this](QByteArray data) {
-			QString targetAddressString = ui->udpTargetBox->getAddress();
+			QString targetAddressString = ui->udpTargetBox->getTargetAddress();
 			uint16_t targetPort = ui->udpTargetBox->getPortValue();
 			QHostAddress targetAddress(targetAddressString);
 			this->udpSocket->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
 			});
 		connect(ui->multipleSend, &MultipleSendWidget::requestToSend, this->udpSocket, [this](QByteArray data) {
-			QString targetAddressString = ui->udpTargetBox->getAddress();
+			QString targetAddressString = ui->udpTargetBox->getTargetAddress();
 			uint16_t targetPort = ui->udpTargetBox->getPortValue();
 			QHostAddress targetAddress(targetAddressString);
 			this->udpSocket->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
@@ -786,13 +786,13 @@ void MainWindow::asUdpSendOnlyOperation(void)
 
 		//配置连接 请求发送 通过 UDP 发送数据
 		connect(ui->singleSend, &SingleSendWidget::requestToSend, this->udpSocket_OnlySend, [this](QByteArray data) {
-			QString targetAddressString = ui->udpTargetBox->getAddress();
+			QString targetAddressString = ui->udpTargetBox->getTargetAddress();
 			uint16_t targetPort = ui->udpTargetBox->getPortValue();
 			QHostAddress targetAddress(targetAddressString);
 			this->udpSocket_OnlySend->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
 			});
 		connect(ui->multipleSend, &MultipleSendWidget::requestToSend, this->udpSocket_OnlySend, [this](QByteArray data) {
-			QString targetAddressString = ui->udpTargetBox->getAddress();
+			QString targetAddressString = ui->udpTargetBox->getTargetAddress();
 			uint16_t targetPort = ui->udpTargetBox->getPortValue();
 			QHostAddress targetAddress(targetAddressString);
 			this->udpSocket_OnlySend->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
@@ -809,125 +809,4 @@ void MainWindow::asUdpSendOnlyOperation(void)
 		this->notificationManager->newBubble("UDP 只发送 停止工作");
 		qDebug() << "UDP 只发送 停止工作";
 	}
-}
-
-ClientesTitle::ClientesTitle(QWidget* parent) :QWidget(parent)
-{
-	this->setupUi();
-	this->adjustSize();
-}
-void ClientesTitle::setupUi()
-{
-	this->resize(270, 32);
-	this->setMinimumSize(QSize(128, 32));
-	this->setMaximumSize(QSize(16777215, 64));
-	QFont font;
-	font.setPointSize(10);
-	this->setFont(font);
-	verticalLayout = new QVBoxLayout(this);
-	verticalLayout->setSpacing(0);
-	verticalLayout->setContentsMargins(0, 0, 0, 0);
-	widget_2 = new QWidget(this);
-	horizontalLayout_2 = new QHBoxLayout(widget_2);
-	horizontalLayout_2->setSpacing(2);
-	horizontalLayout_2->setContentsMargins(0, 0, 0, 0);
-	horizontalSpacer_00 = new QSpacerItem(46, 13, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
-
-	horizontalLayout_2->addItem(horizontalSpacer_00);
-
-	label_Title = new QLabel(widget_2);
-	label_Title->setText("连接到本服务器的所有客户端");
-
-	horizontalLayout_2->addWidget(label_Title);
-
-	horizontalSpacer_01 = new QSpacerItem(45, 13, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
-
-	horizontalLayout_2->addItem(horizontalSpacer_01);
-
-
-	verticalLayout->addWidget(widget_2);
-
-	widget = new QWidget(this);
-	horizontalLayout = new QHBoxLayout(widget);
-	horizontalLayout->setSpacing(2);
-	horizontalLayout->setContentsMargins(0, 0, 0, 0);
-	horizontalSpacer_10 = new QSpacerItem(62, 13, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
-
-	horizontalLayout->addItem(horizontalSpacer_10);
-
-	label_IP = new QLabel(widget);
-	label_IP->setText("IP");
-
-	horizontalLayout->addWidget(label_IP);
-
-	horizontalSpacer_11 = new QSpacerItem(63, 13, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
-
-	horizontalLayout->addItem(horizontalSpacer_11);
-
-	label_Port = new QLabel(widget);
-	label_Port->setText("端口");
-
-	horizontalLayout->addWidget(label_Port);
-
-	horizontalSpacer_12 = new QSpacerItem(62, 13, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
-
-	horizontalLayout->addItem(horizontalSpacer_12);
-
-	label_Disconnect = new QLabel(widget);
-	label_Disconnect->setText("断开");
-
-	horizontalLayout->addWidget(label_Disconnect);
-
-
-	verticalLayout->addWidget(widget);
-}
-
-ClientWidget::ClientWidget(QWidget* parent, QString ip, QString port) :QWidget(parent)
-{
-	this->setupUi();
-	this->lineEdit_IP->setText(ip);
-	this->lineEdit_Port->setText(port);
-	this->adjustSize();
-
-	//配置连接 断开客户端连接
-	connect(this->pushButton, &QPushButton::clicked, [this]() {
-		emit this->signal_Disconnect();
-		});
-}
-void ClientWidget::setIP(const QString& ip)
-{
-	this->lineEdit_IP->setText(ip);
-}
-void ClientWidget::setPort(const QString& port)
-{
-	this->lineEdit_Port->setText(port);
-}
-void ClientWidget::setupUi()
-{
-	this->resize(346, 32);
-	this->setMinimumSize(QSize(0, 32));
-	this->setMaximumSize(QSize(16777215, 48));
-	QFont font;
-	font.setPointSize(10);
-	this->setFont(font);
-	horizontalLayout = new QHBoxLayout(this);
-	horizontalLayout->setSpacing(8);
-	horizontalLayout->setContentsMargins(0, 0, 0, 0);
-	lineEdit_IP = new QLineEdit(this);
-	lineEdit_IP->setReadOnly(true);
-
-	horizontalLayout->addWidget(lineEdit_IP);
-
-	lineEdit_Port = new QLineEdit(this);
-	lineEdit_Port->setReadOnly(true);
-
-	horizontalLayout->addWidget(lineEdit_Port);
-
-	pushButton = new QPushButton(this);
-	pushButton->setMinimumSize(QSize(32, 32));
-	pushButton->setMaximumSize(QSize(48, 48));
-	pushButton->setIcon(QIcon(":/icon/image/disconnect.png"));
-	horizontalLayout->addWidget(pushButton);
-
-	pushButton->setText(QString());
 }

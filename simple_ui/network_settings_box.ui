@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>200</width>
-    <height>216</height>
+    <width>190</width>
+    <height>309</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>200</width>
-    <height>216</height>
+    <width>128</width>
+    <height>128</height>
    </size>
   </property>
   <property name="font">
@@ -24,21 +24,36 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0" colspan="2">
-    <widget class="QLabel" name="label_ProtocolType">
+  <layout class="QVBoxLayout" name="verticalLayout">
+   <property name="spacing">
+    <number>4</number>
+   </property>
+   <property name="leftMargin">
+    <number>2</number>
+   </property>
+   <property name="topMargin">
+    <number>2</number>
+   </property>
+   <property name="rightMargin">
+    <number>2</number>
+   </property>
+   <property name="bottomMargin">
+    <number>2</number>
+   </property>
+   <item>
+    <widget class="QLabel" name="label_WorkMode">
      <property name="font">
       <font>
        <pointsize>10</pointsize>
       </font>
      </property>
      <property name="text">
-      <string>协议类型</string>
+      <string>工作模式</string>
      </property>
     </widget>
    </item>
-   <item row="1" column="0" colspan="3">
-    <widget class="QComboBox" name="comboBox_ProtocolType">
+   <item>
+    <widget class="AutoWidthCombobox" name="comboBox_WorkMode">
      <property name="font">
       <font>
        <pointsize>10</pointsize>
@@ -46,41 +61,35 @@
      </property>
     </widget>
    </item>
-   <item row="2" column="0">
-    <widget class="QLabel" name="label_Address">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>地址</string>
-     </property>
-    </widget>
-   </item>
-   <item row="3" column="0" colspan="3">
-    <widget class="QLineEdit" name="lineEdit_Address">
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QLabel" name="label_Port">
+   <item>
+    <widget class="QLabel" name="label_LocalAddress">
      <property name="font">
       <font>
        <pointsize>10</pointsize>
       </font>
      </property>
      <property name="text">
-      <string>端口</string>
+      <string>本地地址</string>
      </property>
     </widget>
    </item>
-   <item row="5" column="0" colspan="3">
-    <widget class="QSpinBox" name="spinBox_Port">
+   <item>
+    <widget class="AutoWidthCombobox" name="comboBox_LocalAddress"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_LocalPort">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>本地端口</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QSpinBox" name="spinBox_LocalPort">
      <property name="layoutDirection">
       <enum>Qt::LayoutDirection::LeftToRight</enum>
      </property>
@@ -92,55 +101,144 @@
      </property>
     </widget>
    </item>
-   <item row="6" column="0">
-    <widget class="LED_Widget" name="led" native="true">
+   <item>
+    <widget class="QLabel" name="label_TargetAddress">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>目标地址</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLineEdit" name="lineEdit_TargetAddress">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_TargetPort">
+     <property name="font">
+      <font>
+       <pointsize>10</pointsize>
+      </font>
+     </property>
+     <property name="text">
+      <string>目标端口</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QSpinBox" name="spinBox_TargetPort">
+     <property name="layoutDirection">
+      <enum>Qt::LayoutDirection::LeftToRight</enum>
+     </property>
+     <property name="maximum">
+      <number>65535</number>
+     </property>
+     <property name="value">
+      <number>8080</number>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="widget" native="true">
      <property name="minimumSize">
       <size>
-       <width>24</width>
-       <height>24</height>
+       <width>0</width>
+       <height>32</height>
       </size>
      </property>
      <property name="maximumSize">
       <size>
-       <width>24</width>
-       <height>24</height>
+       <width>16777215</width>
+       <height>48</height>
       </size>
      </property>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="spacing">
+       <number>4</number>
+      </property>
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
+       <number>0</number>
+      </property>
+      <item>
+       <widget class="LED_Widget" name="led" native="true">
+        <property name="minimumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>24</width>
+          <height>24</height>
+         </size>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="button_Refresh">
+        <property name="minimumSize">
+         <size>
+          <width>32</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>刷新</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="ToggleButton" name="button_Switch">
+        <property name="minimumSize">
+         <size>
+          <width>32</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>10</pointsize>
+         </font>
+        </property>
+        <property name="text">
+         <string>启动</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </widget>
    </item>
-   <item row="6" column="1">
-    <widget class="QPushButton" name="pushButton_Other">
+   <item>
+    <widget class="ScrollableListWidget" name="clientListWidget" native="true">
      <property name="minimumSize">
       <size>
-       <width>40</width>
-       <height>0</height>
+       <width>64</width>
+       <height>32</height>
       </size>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>其它</string>
-     </property>
-    </widget>
-   </item>
-   <item row="6" column="2">
-    <widget class="QPushButton" name="pushButton_Switch">
-     <property name="minimumSize">
-      <size>
-       <width>80</width>
-       <height>0</height>
-      </size>
-     </property>
-     <property name="font">
-      <font>
-       <pointsize>10</pointsize>
-      </font>
-     </property>
-     <property name="text">
-      <string>启动</string>
      </property>
     </widget>
    </item>
@@ -152,6 +250,22 @@
    <extends>QWidget</extends>
    <header>led_widget.h</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ScrollableListWidget</class>
+   <extends>QWidget</extends>
+   <header>scrollable_list_widget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ToggleButton</class>
+   <extends>QPushButton</extends>
+   <header>toggle_button.h</header>
+  </customwidget>
+  <customwidget>
+   <class>AutoWidthCombobox</class>
+   <extends>QComboBox</extends>
+   <header>auto_width_combobox.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

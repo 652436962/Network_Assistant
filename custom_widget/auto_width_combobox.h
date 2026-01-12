@@ -2,6 +2,9 @@
 
 #include <QCombobox.h>
 
+/**
+ * @brief 自动调节下拉列表框宽度的下拉列表框
+ */
 class AutoWidthCombobox : public QComboBox
 {
 	Q_OBJECT

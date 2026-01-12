@@ -14,15 +14,15 @@ class TargetBox: public QGroupBox
     Q_OBJECT
 private:
     QVBoxLayout* verticalLayout;
-    QLabel* label_Address;
-    QLineEdit* lineEdit_Address;
-    QLabel* label_Port;
-    QSpinBox* spinBox_Port;
+    QLabel* label_LocalAddress;
+    QLineEdit* lineEdit_TargetAddress;
+    QLabel* label_LocalPort;
+    QSpinBox* spinBox_LocalPort;
 
     void setupUi(void);
 
 public:
     TargetBox(QWidget* parent);
-    QString getAddress(void);
+    QString getTargetAddress(void);
     uint16_t getPortValue(void);
 };

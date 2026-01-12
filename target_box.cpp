@@ -15,33 +15,33 @@ void TargetBox::setupUi(void)
     this->setFont(font);
     verticalLayout = new QVBoxLayout(this);
 
-    label_Address = new QLabel(this);
-    label_Address->setText(u8"目标IP地址");
+    label_LocalAddress = new QLabel(this);
+    label_LocalAddress->setText(u8"目标IP地址");
 
-    verticalLayout->addWidget(label_Address);
+    verticalLayout->addWidget(label_LocalAddress);
 
-    lineEdit_Address = new QLineEdit(this);
+    lineEdit_TargetAddress = new QLineEdit(this);
 
-    verticalLayout->addWidget(lineEdit_Address);
+    verticalLayout->addWidget(lineEdit_TargetAddress);
 
-    label_Port = new QLabel(this);
-    label_Port->setText(u8"目标端口");
+    label_LocalPort = new QLabel(this);
+    label_LocalPort->setText(u8"目标端口");
 
-    verticalLayout->addWidget(label_Port);
+    verticalLayout->addWidget(label_LocalPort);
 
-    spinBox_Port = new QSpinBox(this);
-    spinBox_Port->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
-    spinBox_Port->setMaximum(65535);
+    spinBox_LocalPort = new QSpinBox(this);
+    spinBox_LocalPort->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
+    spinBox_LocalPort->setMaximum(65535);
 
-    verticalLayout->addWidget(spinBox_Port);
+    verticalLayout->addWidget(spinBox_LocalPort);
 }
 
 uint16_t TargetBox::getPortValue(void)
 {
-    return this->spinBox_Port->value();
+    return this->spinBox_LocalPort->value();
 }
 
-QString TargetBox::getAddress(void)
+QString TargetBox::getTargetAddress(void)
 {
-    return this->lineEdit_Address->text();
+    return this->lineEdit_TargetAddress->text();
 }
