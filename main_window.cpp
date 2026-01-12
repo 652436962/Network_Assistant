@@ -28,8 +28,6 @@ MainWindow::MainWindow(QWidget* parent)
 {
 	ui->setupUi(this);//配置UI
 
-
-
 	this->notificationManager = new NotificationManager(this, this);//通知气泡管理
 	this->notificationManager->newBubble("欢迎使用");
 
@@ -68,14 +66,6 @@ MainWindow::MainWindow(QWidget* parent)
 	}
 
 
-	//左侧窗口相关配置
-	ui->udpTargetBox->hide();// UDP 发送目标窗口开始隐藏
-	//创建 TCP 服务器 需要的 连接到本服务器的客户端展示表格
-	ClientesTitle* title = new ClientesTitle(this);
-	ui->clientListWidget->setTitleWidget(title);
-	ui->clientListWidget->hide();//默认隐藏
-
-
 	//配置连接 请求工作
 	connect(ui->network_settings, &NetworkSettingsBox::requestWork, [this](WorkMode mode) {
 		//作为 TCP 客户端工作
@@ -104,35 +94,30 @@ MainWindow::MainWindow(QWidget* parent)
 		//作为 TCP 客户端工作
 		if (mode == WorkMode::TCP_Client)
 		{
-			ui->clientListWidget->hide();
-			ui->udpTargetBox->hide();
 			ui->groupBox_Receive->show();
 			ui->receive_settings->show();
 		}
 		//作为 TCP 服务器工作
 		else if (mode == WorkMode::TCP_Server)
 		{
-			ui->clientListWidget->show();
-			ui->udpTargetBox->hide();
 			ui->groupBox_Receive->show();
 			ui->receive_settings->show();
 		}
 		//作为 UDP 工作
 		else if (mode == WorkMode::UDP)
 		{
-			ui->clientListWidget->hide();
-			ui->udpTargetBox->show();
 			ui->groupBox_Receive->show();
 			ui->receive_settings->show();
 		}
 		//工作模式 UDP 只发送
 		else if (mode == WorkMode::UDP_Send_Only)
 		{
-			ui->clientListWidget->hide();
-			ui->udpTargetBox->show();
 			ui->groupBox_Receive->hide();//隐藏接收区
 			ui->receive_settings->hide();//隐藏接收设置
 		}
+		
+		
+		//this->setMinimumSize(this->sizeHint());// 锁定最小尺寸（防止被压缩）
 		this->adjustSize();//让窗口自动缩放到刚好容纳所有内容
 		});
 
@@ -237,7 +222,8 @@ MainWindow::MainWindow(QWidget* parent)
 			});
 	}
 
-	this->adjustSize();
+	this->adjustSize();// 让窗口自己计算合适尺寸
+	//this->setMinimumSize(this->sizeHint());// 锁定最小尺寸（防止被压缩）
 	qDebug() << "主窗口建立";
 }
 
@@ -400,8 +386,8 @@ void MainWindow::asTcpClientOperation(void)
 {
 	if (this->clientTcpSocket == nullptr)//客户端 TcpSocket 未创建
 	{
-		uint16_t port = ui->network_settings->getPortValue();//获取端口
-		QHostAddress address = ui->network_settings->getAddress();//获取 IP 地址
+		uint16_t port = ui->network_settings->getTargetPort();//获取端口
+		QHostAddress address = ui->network_settings->getTargetAddress();//获取 IP 地址
 		if (address.isNull())
 		{
 			this->notificationManager->newBubble("地址无效");
@@ -533,8 +519,8 @@ void MainWindow::asTcpServerOperation(void)
 			qDebug() << "错误 服务器创建前客户端链表非空" << __FILE__ << __LINE__;
 			return;
 		}
-		uint16_t port = ui->network_settings->getPortValue();//获取端口
-		QHostAddress address = ui->network_settings->getAddress();//获取地址
+		uint16_t port = ui->network_settings->getLocalPort();//获取端口
+		QHostAddress address = ui->network_settings->getLocalAddress();//获取地址
 		if (address.isNull())
 		{
 			this->notificationManager->newBubble("地址无效");
@@ -562,7 +548,6 @@ void MainWindow::asTcpServerOperation(void)
 			qDebug() << "错误码 " << error << " 错误信息 " << errorMsg;
 			this->tcpServer->deleteLater();
 			this->tcpServer = nullptr;
-
 		}
 
 		//配置连接 有新的客户端连接
@@ -578,25 +563,21 @@ void MainWindow::asTcpServerOperation(void)
 
 			this->tcpClientesList.push_back(tcpSocket);//加入到队列末尾
 
-			//在表格中展示
-			{
-				// 插入新行
-				ClientWidget* clientLine = new ClientWidget(this, address, QString::number(port));
-				ui->clientListWidget->push_back(clientLine);
-				connect(clientLine, &ClientWidget::signal_Disconnect, this, [tcpSocket]() {
-					if (tcpSocket == nullptr)
-					{
-						qDebug() << "错误 空指针" << __FILE__ << __LINE__;
-						return;
-					}
-					if (tcpSocket->state() != QAbstractSocket::ConnectedState)
-					{
-						qDebug() << "错误 socket 没有连接" << __FILE__ << __LINE__;
-						return;
-					}
-					tcpSocket->disconnectFromHost();//开始四次挥手断开连接
-					});
-			}
+			//在表格中插入
+			ClientWidget* clientLine = ui->network_settings->push_backClientLine(address, port);
+			connect(clientLine, &ClientWidget::signal_Disconnect, this, [tcpSocket]() {
+				if (tcpSocket == nullptr)
+				{
+					qDebug() << "错误 空指针" << __FILE__ << __LINE__;
+					return;
+				}
+				if (tcpSocket->state() != QAbstractSocket::ConnectedState)
+				{
+					qDebug() << "错误 socket 没有连接" << __FILE__ << __LINE__;
+					return;
+				}
+				tcpSocket->disconnectFromHost();//开始四次挥手断开连接
+				});
 
 			QString connectString = "";
 			QTextStream text(&connectString);
@@ -619,7 +600,7 @@ void MainWindow::asTcpServerOperation(void)
 					return;
 				}
 				this->tcpClientesList.removeOne(tcpSocket);//移除链表中对应节点
-				ui->clientListWidget->erase(index);//在链表窗口中移除对应窗口
+				ui->network_settings->eraseClientLine(index);//在链表窗口中移除对应窗口
 				tcpSocket->deleteLater();//删除
 
 				QString disconnectString = "";
@@ -675,7 +656,7 @@ void MainWindow::asTcpServerOperation(void)
 		//注意，在清理时会删除链表节点，因此，如果遍历原本的链表会错！！
 
 		//清空客户端表格
-		ui->clientListWidget->clear();		
+		ui->network_settings->clearClientLines();
 
 
 		//服务器正在监听
@@ -703,14 +684,14 @@ void MainWindow::asUdpOperation(void)
 {
 	if (this->udpSocket == nullptr)
 	{
-		QHostAddress address = ui->network_settings->getAddress();
+		QHostAddress address = ui->network_settings->getLocalAddress();
 		if (address.isNull())
 		{
 			this->notificationManager->newBubble("地址无效");
 			qDebug() << "地址无效" << __FILE__ << __LINE__;
 			return;
 		}
-		uint16_t port = ui->network_settings->getPortValue();
+		uint16_t port = ui->network_settings->getLocalPort();
 		this->udpSocket = new QUdpSocket(this);//创建UDP套接字
 		bool result = this->udpSocket->bind(address, port);//UDP 绑定
 		if (!result)
@@ -750,15 +731,15 @@ void MainWindow::asUdpOperation(void)
 
 		//配置连接 请求发送 通过 UDP 发送数据
 		connect(ui->singleSend, &SingleSendWidget::requestToSend, this->udpSocket, [this](QByteArray data) {
-			QString targetAddressString = ui->udpTargetBox->getTargetAddress();
-			uint16_t targetPort = ui->udpTargetBox->getPortValue();
-			QHostAddress targetAddress(targetAddressString);
+			uint16_t targetPort = ui->network_settings->getTargetPort();
+			QHostAddress targetAddress = ui->network_settings->getTargetAddress();
+			if (targetAddress.isNull()) return;
 			this->udpSocket->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
 			});
 		connect(ui->multipleSend, &MultipleSendWidget::requestToSend, this->udpSocket, [this](QByteArray data) {
-			QString targetAddressString = ui->udpTargetBox->getTargetAddress();
-			uint16_t targetPort = ui->udpTargetBox->getPortValue();
-			QHostAddress targetAddress(targetAddressString);
+			uint16_t targetPort = ui->network_settings->getTargetPort();
+			QHostAddress targetAddress = ui->network_settings->getTargetAddress();
+			if (targetAddress.isNull()) return;
 			this->udpSocket->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
 			});
 
@@ -786,15 +767,15 @@ void MainWindow::asUdpSendOnlyOperation(void)
 
 		//配置连接 请求发送 通过 UDP 发送数据
 		connect(ui->singleSend, &SingleSendWidget::requestToSend, this->udpSocket_OnlySend, [this](QByteArray data) {
-			QString targetAddressString = ui->udpTargetBox->getTargetAddress();
-			uint16_t targetPort = ui->udpTargetBox->getPortValue();
-			QHostAddress targetAddress(targetAddressString);
+			uint16_t targetPort = ui->network_settings->getTargetPort();
+			QHostAddress targetAddress = ui->network_settings->getTargetAddress();
+			if (targetAddress.isNull()) return;
 			this->udpSocket_OnlySend->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
 			});
 		connect(ui->multipleSend, &MultipleSendWidget::requestToSend, this->udpSocket_OnlySend, [this](QByteArray data) {
-			QString targetAddressString = ui->udpTargetBox->getTargetAddress();
-			uint16_t targetPort = ui->udpTargetBox->getPortValue();
-			QHostAddress targetAddress(targetAddressString);
+			uint16_t targetPort = ui->network_settings->getTargetPort();
+			QHostAddress targetAddress =ui->network_settings->getTargetAddress();
+			if (targetAddress.isNull()) return;
 			this->udpSocket_OnlySend->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
 			});
 

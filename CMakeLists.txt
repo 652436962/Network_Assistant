@@ -54,7 +54,7 @@ add_executable (Network_Assistant
  "send_settings_box.h" "send_settings_box.cpp"
  "single_send_widget.ui" "single_send_widget.h" "single_send_widget.cpp"
  "multiple_send_widget.ui" "multiple_send_widget.h" "multiple_send_widget.cpp"
- "target_box.h" "target_box.cpp" 
+   
  "global.h" "global.cpp"
  "app.rc"
  "icon.qrc"

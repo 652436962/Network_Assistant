@@ -8,9 +8,13 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 {
 	this->setupUi();
 
+	//创建 TCP 服务器 需要的 连接到本服务器的客户端展示表格
+	ClientesTitle* title = new ClientesTitle(this);
+	this->clientListWidget->setTitleWidget(title);
+
 	//添加相关选项
 	this->comboBox_WorkMode->addItem("TCP 客户端", QVariant::fromValue(WorkMode::TCP_Client));
-	this->comboBox_WorkMode->addItem("TCP 服务器", QVariant::fromValue(WorkMode::TCP_Server));	
+	this->comboBox_WorkMode->addItem("TCP 服务器", QVariant::fromValue(WorkMode::TCP_Server));
 	this->comboBox_WorkMode->addItem("UDP", QVariant::fromValue(WorkMode::UDP));
 	this->comboBox_WorkMode->addItem("UDP 只发送", QVariant::fromValue(WorkMode::UDP_Send_Only));
 	//配置连接 选项变化
@@ -20,7 +24,7 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 			qDebug() << "错误，网络正在活动时文本不应当变化" << __FILE__ << __LINE__;
 			return;
 		}
-		
+
 		this->changeUiAccordingOption();
 
 		emit this->modeOptionChanged(this->getSelectedMode());
@@ -35,15 +39,16 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 	connect(this->button_Refresh, &QPushButton::clicked, [this]() {
 		this->refreshLocalAddress();
 		});
-	
+
 	this->changeUiAccordingState(false);
 	this->changeUiAccordingOption();
 	this->refreshLocalAddress();
-	
+
 	/*QSize min_size = this->gridLayout->totalMinimumSize();
 	this->setMinimumSize(min_size);*/
 
-	this->adjustSize();
+	this->adjustSize();// 让窗口自己计算合适尺寸
+	this->setMinimumSize(this->sizeHint());// 锁定最小尺寸（防止被压缩）
 	qDebug() << "网络设置窗口建立";
 }
 
@@ -138,7 +143,7 @@ void NetworkSettingsBox::setupUi(void)
 	verticalLayout->addWidget(widget);
 
 	clientListWidget = new ScrollableListWidget(this);
-	clientListWidget->setMinimumSize(QSize(64, 32));
+	clientListWidget->setMinimumSize(QSize(64, 128));
 
 	verticalLayout->addWidget(clientListWidget);
 
@@ -153,39 +158,46 @@ void NetworkSettingsBox::setupUi(void)
 }
 
 
-WorkMode NetworkSettingsBox::getSelectedMode(void)
+WorkMode NetworkSettingsBox::getSelectedMode(void) const
 {
 	return this->comboBox_WorkMode->currentData().value<WorkMode>();
 }
 
 
-QHostAddress NetworkSettingsBox::getAddress(void)
+QHostAddress NetworkSettingsBox::getLocalAddress(void) const
 {
-	WorkMode mode = this->getSelectedMode();
 	QHostAddress address;
-	// TCP 客户端应当从地址编辑行中得到地址
-	if (mode == WorkMode::TCP_Client)
-	{
-		QString text = this->lineEdit_TargetAddress->text();
-		address.setAddress(text);
-	}
+
 	// TCP 服务器 或 UDP 应当从地址下拉框中得到地址
-	else if (mode == WorkMode::TCP_Server || mode==WorkMode::UDP)
+	// 从下拉框的用户数据中取
+	QVariant data = this->comboBox_LocalAddress->currentData();
+	if (data.isValid())
 	{
-		// 从下拉框的用户数据中取
-		QVariant data = this->comboBox_LocalAddress->currentData();
-		if (data.isValid())
-		{
-			address = data.value<QHostAddress>();//预设项
-		}
+		address = data.value<QHostAddress>();//预设项
 	}
-	qDebug()<<"选择的 IP 地址为： " << address;
+
+	//qDebug()<<"选择的 本地 IP 地址为： " << address;
 	return address;
 }
 
-uint16_t NetworkSettingsBox::getPortValue(void)
+uint16_t NetworkSettingsBox::getLocalPort(void) const
 {
 	return this->spinBox_LocalPort->value();
+}
+
+QHostAddress NetworkSettingsBox::getTargetAddress(void) const
+{
+	// 从编辑框得到ip地址字符串
+	QString ip_str = this->lineEdit_TargetAddress->text();
+	QHostAddress address(ip_str);
+
+	//qDebug() << "选择的 目标 IP 地址为： " << address;
+	return address;
+}
+
+uint16_t NetworkSettingsBox::getTargetPort(void) const
+{
+	return this->spinBox_TargetPort->value();
 }
 
 void NetworkSettingsBox::changeUiAccordingState(bool state)
@@ -199,62 +211,110 @@ void NetworkSettingsBox::changeUiAccordingState(bool state)
 	this->button_Switch->setCheckedState(state);
 }
 
+ClientWidget* NetworkSettingsBox::push_backClientLine(QString ip, uint16_t port)
+{
+	ClientWidget* clientLine = new ClientWidget(this, ip, QString::number(port));
+	this->clientListWidget->push_back(clientLine);
+	return clientLine;
+}
+
+void NetworkSettingsBox::eraseClientLine(int pos)
+{
+	this->clientListWidget->erase(pos);
+}
+
+void NetworkSettingsBox::clearClientLines()
+{
+	this->clientListWidget->clear();
+}
+
+
+
 void NetworkSettingsBox::changeUiAccordingOption(void)
 {
 	WorkMode mode = this->getSelectedMode();
 	//如果是 TCP 客户端
 	if (mode == WorkMode::TCP_Client)
 	{
-		this->label_LocalAddress->show();
-		this->label_LocalAddress->setText("服务器 IP 地址");
-		this->label_LocalPort->show();
-		this->label_LocalPort->setText("服务器端口");
-		this->lineEdit_TargetAddress->show();
+		// 隐藏本地地址、端口这些
+		this->label_LocalAddress->hide();
 		this->comboBox_LocalAddress->hide();
-		this->button_Switch->setTexts("建立连接","断开连接");
-		this->button_Refresh->hide();
-		this->spinBox_LocalPort->show();
+		this->label_LocalPort->hide();
+		this->spinBox_LocalPort->hide();
+
+		//展示目标地址、端口这些
+		this->label_TargetAddress->show();
+		this->lineEdit_TargetAddress->show();
+		this->label_TargetPort->show();
+		this->spinBox_TargetPort->show();
+
+		this->button_Switch->setTexts("建立连接", "断开连接");//调整按钮文字
+		this->button_Refresh->hide();//隐藏刷新按钮
+
+		this->clientListWidget->hide();//隐藏tcp客户端展示窗口
 	}
 	//如果是 TCP 服务器
 	else if (mode == WorkMode::TCP_Server)
 	{
+		// 展示本地地址、端口这些
 		this->label_LocalAddress->show();
-		this->label_LocalAddress->setText("本地 IP 地址");
-		this->label_LocalPort->show();
-		this->label_LocalPort->setText("本地端口");
-		this->lineEdit_TargetAddress->hide();
 		this->comboBox_LocalAddress->show();
-		this->button_Switch->setTexts("启动监听","停止监听");
-		this->button_Refresh->show();
+		this->label_LocalPort->show();
 		this->spinBox_LocalPort->show();
+
+		//隐藏目标地址、端口这些
+		this->label_TargetAddress->hide();
+		this->lineEdit_TargetAddress->hide();
+		this->label_TargetPort->hide();
+		this->spinBox_TargetPort->hide();
+
+		this->button_Switch->setTexts("启动监听", "停止监听");//调整按钮文字
+		this->button_Refresh->show();//展示刷新按钮
+
+		this->clientListWidget->show();//展示tcp客户端展示窗口
 	}
 	//如果是 UDP
 	else if (mode == WorkMode::UDP)
 	{
+		// 展示本地地址、端口这些
 		this->label_LocalAddress->show();
-		this->label_LocalAddress->setText("本地 IP 地址");
-		this->label_LocalPort->show();
-		this->label_LocalPort->setText("本地端口");
-		this->lineEdit_TargetAddress->hide();
 		this->comboBox_LocalAddress->show();
-		this->button_Switch->setTexts("绑定","关闭");
-		this->button_Refresh->show();
+		this->label_LocalPort->show();
 		this->spinBox_LocalPort->show();
+
+		//展示目标地址、端口这些
+		this->label_TargetAddress->show();
+		this->lineEdit_TargetAddress->show();
+		this->label_TargetPort->show();
+		this->spinBox_TargetPort->show();
+
+		this->button_Switch->setTexts("绑定", "关闭");//调整按钮文字
+		this->button_Refresh->show();//展示刷新按钮
+
+		this->clientListWidget->hide();//展示tcp客户端展示窗口
 	}
 	//如果是 UDP只发送
 	else if (mode == WorkMode::UDP_Send_Only)
 	{
+		// 隐藏本地地址、端口这些
 		this->label_LocalAddress->hide();
-		this->label_LocalPort->hide();
-		this->lineEdit_TargetAddress->hide();
 		this->comboBox_LocalAddress->hide();
-		this->button_Switch->setTexts("开始工作", "停止工作");
-		this->button_Refresh->hide();
+		this->label_LocalPort->hide();
 		this->spinBox_LocalPort->hide();
+
+		//展示目标地址、端口这些
+		this->label_TargetAddress->show();
+		this->lineEdit_TargetAddress->show();
+		this->label_TargetPort->show();
+		this->spinBox_TargetPort->show();
+
+		this->button_Switch->setTexts("开始工作", "停止工作");//调整按钮文字
+		this->button_Refresh->hide();//隐藏刷新按钮
+
+		this->clientListWidget->hide();//隐藏tcp客户端展示窗口
 	}
-	/*QSize min_size = this->gridLayout->totalMinimumSize();
-	this->setMinimumSize(min_size);
-	this->adjustSize();*/
+	this->adjustSize();// 让窗口自己计算合适尺寸
+	//this->setMinimumHeight(this->sizeHint().height());// 锁定最小高度（防止被压缩）
 }
 
 void NetworkSettingsBox::refreshLocalAddress(void)
@@ -274,13 +334,13 @@ void NetworkSettingsBox::refreshLocalAddress(void)
 		"::1    (IPv6 回环地址)", QVariant::fromValue(QHostAddress(QHostAddress::LocalHostIPv6)));
 
 	// 获取本机所有 IPv4/IPv6 地址
-	QList<QHostAddress> addresses = QNetworkInterface::allAddresses();	
+	QList<QHostAddress> addresses = QNetworkInterface::allAddresses();
 	//添加选项
 	for (const QHostAddress& addr : addresses)
 	{
 		//跳过已经添加的
 		if (addr == QHostAddress::LocalHost || addr == QHostAddress::LocalHostIPv6) continue;
-		
+
 		// 添加 IP 地址
 		this->comboBox_LocalAddress->addItem(addr.toString(), QVariant::fromValue(addr));
 	}

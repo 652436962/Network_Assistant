@@ -21,7 +21,9 @@
 #include "scrollable_list_widget.h"
 
 #include "global.h"
-#include "sundry.h"
+#include "sundry_qt.h"
+
+class ClientWidget;
 
 class NetworkSettingsBox : public QGroupBox
 {
@@ -48,6 +50,9 @@ private:
 	LED_Widget* led;
 	QPushButton* button_Refresh;
 	ToggleButton* button_Switch;//开关
+	/**
+	 * @brief TCP服务器工作模式下的 连接到本服务器的TCP客户端展示窗口
+	 */
 	ScrollableListWidget* clientListWidget;
 		
 
@@ -58,23 +63,34 @@ private:
 
 public:
 	/**
-	 * @brief 获取选择的网络协议类型
-	 * @param
-	 * @return 选择的网络协议类型
+	 * @brief 获取选择的工作模式
+	 * @return 选择的工作模式
 	 */
-	WorkMode getSelectedMode(void);
+	WorkMode getSelectedMode(void) const;
 
 	/**
-	 * @brief 获取IP地址
-	 * @return 选择或输入的IP地址
+	 * @brief 获取本地IP地址
+	 * @return 选择的本地IP地址
+	 * @note 用于 TCP 服务器 和 UDP 收发
 	 */
-	QHostAddress getAddress(void);
+	QHostAddress getLocalAddress(void) const;
 
 	/**
-	 * @brief 获取端口号
-	 * @return 选择的端口号
+	 * @brief 获取本地端口号
+	 * @return 选择的本地端口号
 	 */
-	uint16_t getPortValue(void);
+	uint16_t getLocalPort(void) const;
+
+	/**
+	 * @brief 获取目标IP地址
+	 * @return 目标IP地址
+	 */
+	QHostAddress getTargetAddress(void) const;
+	/**
+	 * @brief 获取目标端口号
+	 * @return 目标端口号
+	 */
+	uint16_t getTargetPort(void) const;
 
 private:
 	bool networkActive = false;//是否正在进行网络活动
@@ -94,6 +110,25 @@ public:
 	 * @param state 是否正在进行网络活动
 	 */
 	void changeUiAccordingState(bool state);
+
+	/**
+	 * @brief 在TCP客户端展示窗口中添加
+	 * @param ip IP地址
+	 * @param port 端口
+	 * @return 对应窗口
+	 * @note 用于TCP服务器
+	 */
+	ClientWidget* push_backClientLine(QString ip, uint16_t port);
+	/**
+	 * @brief 在TCP客户端展示窗口中移除
+	 * @param pos 索引
+	 * @note 用于TCP服务器
+	 */
+	void eraseClientLine(int pos);
+	/**
+	 * @brief 清除所有客户端行窗口
+	 */
+	void clearClientLines();
 signals:
 	/**
 	 * @brief 请求工作
