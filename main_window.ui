@@ -70,6 +70,12 @@
            <height>128</height>
           </size>
          </property>
+         <property name="maximumSize">
+          <size>
+           <width>16777215</width>
+           <height>384</height>
+          </size>
+         </property>
          <property name="title">
           <string>网络设置</string>
          </property>
@@ -167,7 +173,7 @@
         <number>2</number>
        </property>
        <item>
-        <widget class="QGroupBox" name="groupBox_Receive">
+        <widget class="ReceiveAreaBox" name="receive_area">
          <property name="minimumSize">
           <size>
            <width>128</width>
@@ -193,16 +199,6 @@
           <property name="bottomMargin">
            <number>2</number>
           </property>
-          <item>
-           <widget class="ReceiveWidget" name="receive_area">
-            <property name="minimumSize">
-             <size>
-              <width>300</width>
-              <height>250</height>
-             </size>
-            </property>
-           </widget>
-          </item>
          </layout>
         </widget>
        </item>
@@ -215,7 +211,7 @@
           </size>
          </property>
          <property name="title">
-          <string>发送区</string>
+          <string>发送区（单项发送）</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_4">
           <property name="spacing">
@@ -335,11 +331,6 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
-   <class>ReceiveWidget</class>
-   <extends>QPlainTextEdit</extends>
-   <header>receive_widget.h</header>
-  </customwidget>
-  <customwidget>
    <class>NetworkSettingsBox</class>
    <extends>QGroupBox</extends>
    <header>network_settings_box.h</header>
@@ -367,6 +358,12 @@
    <class>MultipleSendWidget</class>
    <extends>QWidget</extends>
    <header>multiple_send_widget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>ReceiveAreaBox</class>
+   <extends>QGroupBox</extends>
+   <header>receive_area_box.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

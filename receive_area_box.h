@@ -2,18 +2,25 @@
 
 #include <QObject>
 #include <QWidget>
-
+#include <QGroupBox>
 #include <QPlainTextEdit>
+#include <QLayout>
+#include <QTextCodec>
+#include <QFileDialog>
 
 #include "sundry.h"
 #include "sundry_qt.h"
 
-class ReceiveWidget : public QPlainTextEdit
+class ReceiveAreaBox : public QGroupBox
 {
     Q_OBJECT
+private:
+    QVBoxLayout* verticalLayout;
+    QPlainTextEdit* plainTextEdit;
+    void setupUi();
 public:
-    explicit ReceiveWidget(QWidget* parent = nullptr);
-    ~ReceiveWidget();
+    explicit ReceiveAreaBox(QWidget* parent = nullptr);
+    ~ReceiveAreaBox();
 private:
     bool stopDisplaying = false;//停止显示
     bool timestamp = false;//显示时间戳
@@ -56,6 +63,10 @@ public:
      * @brief 保存到文件
      */
     void receiveToFile(void);
+    /**
+     * @brief 清空接收区
+     */
+    void clear(void);
 
 signals:
     /**

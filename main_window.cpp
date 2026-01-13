@@ -94,25 +94,25 @@ MainWindow::MainWindow(QWidget* parent)
 		//作为 TCP 客户端工作
 		if (mode == WorkMode::TCP_Client)
 		{
-			ui->groupBox_Receive->show();
+			ui->receive_area->show();
 			ui->receive_settings->show();
 		}
 		//作为 TCP 服务器工作
 		else if (mode == WorkMode::TCP_Server)
 		{
-			ui->groupBox_Receive->show();
+			ui->receive_area->show();
 			ui->receive_settings->show();
 		}
 		//作为 UDP 工作
 		else if (mode == WorkMode::UDP)
 		{
-			ui->groupBox_Receive->show();
+			ui->receive_area->show();
 			ui->receive_settings->show();
 		}
 		//工作模式 UDP 只发送
 		else if (mode == WorkMode::UDP_Send_Only)
 		{
-			ui->groupBox_Receive->hide();//隐藏接收区
+			ui->receive_area->hide();//隐藏接收区
 			ui->receive_settings->hide();//隐藏接收设置
 		}
 		
@@ -153,19 +153,19 @@ MainWindow::MainWindow(QWidget* parent)
 
 	//配置连接 接收设置 发出
 	{
-		connect(ui->receive_settings, &ReceiveSettingsBox::receiveAreaClear, ui->receive_area, &ReceiveWidget::clear);
-		connect(ui->receive_settings, &ReceiveSettingsBox::setText, ui->receive_area, &ReceiveWidget::setText);
-		connect(ui->receive_settings, &ReceiveSettingsBox::setStopDispalying, ui->receive_area, &ReceiveWidget::setStopDisplaying);
-		connect(ui->receive_settings, &ReceiveSettingsBox::setTimestamp, ui->receive_area, &ReceiveWidget::setTimestamp);
+		connect(ui->receive_settings, &ReceiveSettingsBox::receiveAreaClear, ui->receive_area, &ReceiveAreaBox::clear);
+		connect(ui->receive_settings, &ReceiveSettingsBox::setText, ui->receive_area, &ReceiveAreaBox::setText);
+		connect(ui->receive_settings, &ReceiveSettingsBox::setStopDispalying, ui->receive_area, &ReceiveAreaBox::setStopDisplaying);
+		connect(ui->receive_settings, &ReceiveSettingsBox::setTimestamp, ui->receive_area, &ReceiveAreaBox::setTimestamp);
 		//配置连接 保存到文本文件
-		connect(ui->receive_settings, &ReceiveSettingsBox::receiveToFile, ui->receive_area, &ReceiveWidget::receiveToFile);
+		connect(ui->receive_settings, &ReceiveSettingsBox::receiveToFile, ui->receive_area, &ReceiveAreaBox::receiveToFile);
 	}
 
 
 	//右侧窗口相关配置
 
 	//配置连接 接收区请求通知
-	connect(ui->receive_area, &ReceiveWidget::requestToNotification, [this](QString notification) {
+	connect(ui->receive_area, &ReceiveAreaBox::requestToNotification, [this](QString notification) {
 		this->notificationManager->newBubble(notification);
 		});
 

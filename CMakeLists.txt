@@ -46,19 +46,20 @@ add_executable (Network_Assistant
  "custom_widget/notification_bubble.h" "custom_widget/notification_bubble.cpp"
  "custom_widget/notification_manager.h" "custom_widget/notification_manager.cpp"
  "custom_widget/auto_width_combobox.h" "custom_widget/auto_width_combobox.cpp"
+ "custom_widget/scrollable_list_widget.h" "custom_widget/scrollable_list_widget.cpp" 
+ "custom_widget/editable_tabwidget.h" "custom_widget/editable_tabwidget.cpp"
  "sundry/sundry.h" "sundry/sundry.cpp" 
  "sundry/sundry_qt.h" "sundry/sundry_qt.cpp"
  "network_settings_box.h" "network_settings_box.cpp"
  "receive_settings_box.h" "receive_settings_box.cpp"
- "receive_widget.h" "receive_widget.cpp"
+ "receive_area_box.h" "receive_area_box.cpp"
  "send_settings_box.h" "send_settings_box.cpp"
- "single_send_widget.ui" "single_send_widget.h" "single_send_widget.cpp"
- "multiple_send_widget.ui" "multiple_send_widget.h" "multiple_send_widget.cpp"
-   
+ "single_send_widget.h" "single_send_widget.cpp"
+ "multiple_send_widget.h" "multiple_send_widget.cpp"
  "global.h" "global.cpp"
  "app.rc"
  "icon.qrc"
-     "custom_widget/scrollable_list_widget.cpp" "custom_widget/scrollable_list_widget.h" "custom_widget/editable_tabwidget.h" "custom_widget/editable_tabwidget.cpp")
+ "send_area_box.h" "send_area_box.cpp")
 
 # 显式将 CMake 自动生成文件的输出目录添加到包含路径
 # 这有助于 IDE (如 VS) 的 IntelliSense 找到 ui_*.h 和 moc_*.cpp

@@ -10,21 +10,35 @@
 #include <QPushButton>
 #include <QCloseEvent>
 
+#include <QtCore/QVariant>
+#include <QtWidgets/QApplication>
+
+#include "editable_tabwidget.h"
+
+
 #include "global.h"
 #include "sundry_qt.h"
 #include "scrollable_list_widget.h"
 
 
-namespace Ui {
-class MultipleSendWidget;
-}
 
 class ALineWidget;
 
 class MultipleSendWidget : public QWidget
 {
     Q_OBJECT
+private:
+	QVBoxLayout* verticalLayout;
+	EditableTabWidget* tabWidget;
+	QWidget* widget_Button;
+	QHBoxLayout* horizontalLayout;
+	QSpacerItem* horizontalSpacer_2;
+	QPushButton* pushButton_Location;
+	QSpacerItem* horizontalSpacer;
+	QPushButton* pushButton_Add;
+	QPushButton* pushButton_Delete;
 
+	void setupUi();
 public:
     /**
      * @brief 构造函数
@@ -36,8 +50,7 @@ public:
      */
     ~MultipleSendWidget();
 
-private:
-    Ui::MultipleSendWidget *ui;
+
 private:
 	bool text = true;//要发送的是否是文本字符串
 	bool append = true;//是否追加内容

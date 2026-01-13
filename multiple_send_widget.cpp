@@ -1,5 +1,4 @@
 #include "multiple_send_widget.h"
-#include "ui_multiple_send_widget.h"
 
 #include <QFile>
 #include <QMessageBox>
@@ -13,13 +12,12 @@
 
 MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 	: QWidget(parent)
-	, ui(new Ui::MultipleSendWidget)
 {
-	ui->setupUi(this);
+	this->setupUi();
 
-	while (ui->tabWidget->count() > 0) // 开始清空tabWidget
+	while (this->tabWidget->count() > 0) // 开始清空tabWidget
 	{
-		ui->tabWidget->removeTab(0); // 索引会变更
+		this->tabWidget->removeTab(0); // 索引会变更
 	}
 
 	this->timer = new QTimer(this);
@@ -29,10 +27,10 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 	this->timer->setInterval(500);
 	//定时到了
 	connect(this->timer, &QTimer::timeout, [this]() {
-		if (ui->tabWidget->count() <= 0) return;
+		if (this->tabWidget->count() <= 0) return;
 
 		// 获取当前窗口
-		ScrollableListWidget* scroll = qobject_cast<ScrollableListWidget*>(ui->tabWidget->currentWidget());
+		ScrollableListWidget* scroll = qobject_cast<ScrollableListWidget*>(this->tabWidget->currentWidget());
 		if (!scroll) return;
 
 		// 获取当前行的指令
@@ -49,17 +47,17 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 		if (this->rowIndex >= scroll->count()) this->rowIndex = 0; // 回到第一行，实现循环
 		});
 	//切换页后 自动发送当前行归0
-	connect(this->ui->tabWidget, &QTabWidget::currentChanged, [this]() {this->rowIndex = 0; });
+	connect(this->tabWidget, &QTabWidget::currentChanged, [this]() {this->rowIndex = 0; });
 
 	// 配置连接 添加一页
-	connect(ui->pushButton_Add, &QPushButton::clicked, [this]() {
+	connect(this->pushButton_Add, &QPushButton::clicked, [this]() {
 		ScrollableListWidget* scroll = this->addTabPage();
 		// 开始就有 5 行
 		for (int i = 0; i < 5; i++) this->addALine(scroll);
 		});
 
 	// 配置连接 移除当前页
-	connect(ui->pushButton_Delete, &QPushButton::clicked, this, &MultipleSendWidget::removeCurrentTabPage);
+	connect(this->pushButton_Delete, &QPushButton::clicked, this, &MultipleSendWidget::removeCurrentTabPage);
 
 	/*创建保存发送数据的文件夹*/
 	QString appDirPath = QCoreApplication::applicationDirPath(); // 获取 .exe 所在的目录
@@ -80,7 +78,7 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 	}
 
 	//配置连接 打开文件保存目录
-	connect(ui->pushButton_Location, &QPushButton::clicked, [this]() {
+	connect(this->pushButton_Location, &QPushButton::clicked, [this]() {
 		QString location = QCoreApplication::applicationDirPath() + "/multiple_data_files";
 		QDir locationDir(location);
 		if (!locationDir.exists())
@@ -103,12 +101,64 @@ MultipleSendWidget::MultipleSendWidget(QWidget* parent)
 	this->loadInstructionData(dataDirPath);
 
 	//开始没有就来一页
-	if (ui->tabWidget->count() == 0)
+	if (this->tabWidget->count() == 0)
 	{
 		ScrollableListWidget* scroll = this->addTabPage();
 		// 开始就有 5 行
 		for (int i = 0; i < 5; i++) this->addALine(scroll);
 	}
+}
+
+void MultipleSendWidget::setupUi()
+{
+	QFont font;
+	font.setPointSize(10);
+	this->setFont(font);
+	verticalLayout = new QVBoxLayout(this);
+	verticalLayout->setSpacing(2);
+	verticalLayout->setContentsMargins(2, 2, 2, 2);
+	tabWidget = new EditableTabWidget(this);
+	tabWidget->setTabPosition(QTabWidget::TabPosition::South);
+	tabWidget->setTabBarAutoHide(false);
+
+	verticalLayout->addWidget(tabWidget);
+
+	widget_Button = new QWidget(this);
+	widget_Button->setMinimumSize(QSize(0, 32));
+	widget_Button->setMaximumSize(QSize(16777215, 64));
+	horizontalLayout = new QHBoxLayout(widget_Button);
+	horizontalLayout->setSpacing(8);
+	horizontalLayout->setContentsMargins(0, 0, 0, 0);
+	horizontalSpacer_2 = new QSpacerItem(37, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+	horizontalLayout->addItem(horizontalSpacer_2);
+
+	pushButton_Location = new QPushButton(widget_Button);
+
+	horizontalLayout->addWidget(pushButton_Location);
+
+	horizontalSpacer = new QSpacerItem(40, 20, QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Minimum);
+
+	horizontalLayout->addItem(horizontalSpacer);
+
+	pushButton_Add = new QPushButton(widget_Button);
+
+	horizontalLayout->addWidget(pushButton_Add);
+
+	pushButton_Delete = new QPushButton(widget_Button);
+
+	horizontalLayout->addWidget(pushButton_Delete);
+
+
+	verticalLayout->addWidget(widget_Button);
+
+
+
+	tabWidget->setCurrentIndex(0);
+
+	pushButton_Location->setText("保存位置");
+	pushButton_Add->setText("添加一页");
+	pushButton_Delete->setText("删除此页");
 }
 
 MultipleSendWidget::~MultipleSendWidget()
@@ -126,8 +176,6 @@ MultipleSendWidget::~MultipleSendWidget()
 	if (result)
 		this->saveInstructionData(dataDirPath);//保存数据
 
-	//删除 UI
-	delete ui;
 }
 void MultipleSendWidget::setText(bool t)
 {
@@ -170,9 +218,9 @@ void MultipleSendWidget::setAllowSending(bool checked)
 	if (this->allowSending == checked) return;
 	this->allowSending = checked;
 	//遍历切换选项窗口
-	for (int i = 0; i < this->ui->tabWidget->count(); i++)
+	for (int i = 0; i < this->tabWidget->count(); i++)
 	{
-		ScrollableListWidget* scroll = qobject_cast<ScrollableListWidget*>(ui->tabWidget->currentWidget());
+		ScrollableListWidget* scroll = qobject_cast<ScrollableListWidget*>(this->tabWidget->currentWidget());
 		if (!scroll) continue;
 		for (int j = 0; j < scroll->count(); j++)
 		{
@@ -215,7 +263,7 @@ QByteArray MultipleSendWidget::getSentContent(QString& dataString)
 
 ScrollableListWidget* MultipleSendWidget::addTabPage(QString tabText)
 {
-	ScrollableListWidget* scrollWidget = new ScrollableListWidget(this->ui->tabWidget);
+	ScrollableListWidget* scrollWidget = new ScrollableListWidget(this->tabWidget);
 	TitleWidget* title = new TitleWidget(scrollWidget);
 	scrollWidget->setTitleWidget(title);
 
@@ -224,9 +272,9 @@ ScrollableListWidget* MultipleSendWidget::addTabPage(QString tabText)
 	scrollWidget->setTailWidget(tail);
 
 	//加入到 tabWidget 中	
-	int pageCount = ui->tabWidget->count();
+	int pageCount = this->tabWidget->count();
 	if (tabText == "") tabText = QString::number(pageCount);//传入空，就用索引的数字
-	ui->tabWidget->addTab(scrollWidget, tabText);
+	this->tabWidget->addTab(scrollWidget, tabText);
 
 	//配置连接 添加一行
 	connect(tail, &TailWidget::signalAdd, [scrollWidget, this]() {
@@ -276,13 +324,13 @@ void MultipleSendWidget::removeLastLine(ScrollableListWidget* scroll)
 
 void MultipleSendWidget::removeCurrentTabPage(void)
 {
-	if (ui->tabWidget->count() <= 0) return;
+	if (this->tabWidget->count() <= 0) return;
 
-	int index = ui->tabWidget->currentIndex();
-	QWidget* widget = ui->tabWidget->widget(index);
+	int index = this->tabWidget->currentIndex();
+	QWidget* widget = this->tabWidget->widget(index);
 	if (widget)
 	{
-		ui->tabWidget->removeTab(index);
+		this->tabWidget->removeTab(index);
 		delete widget;
 	}
 	else
@@ -336,17 +384,17 @@ void MultipleSendWidget::saveInstructionData(const QString& dirPath)
 	QDir dataDir(dirPath);
 	if (!dataDir.exists()) return;
 
-	int scrollCount = ui->tabWidget->count();//窗口总数
+	int scrollCount = this->tabWidget->count();//窗口总数
 	if (scrollCount <= 0) return;
 
 	//遍历所有窗口
 	for (int i = 0; i < scrollCount; i++)
 	{
-		ScrollableListWidget* scroll = qobject_cast<ScrollableListWidget*>(ui->tabWidget->widget(i));
+		ScrollableListWidget* scroll = qobject_cast<ScrollableListWidget*>(this->tabWidget->widget(i));
 		if (!scroll) continue;
 		int lineCount = scroll->count();
 		if (lineCount <= 0) continue;
-		QString fileName = ui->tabWidget->tabText(i) + ".bin";//文件名为对应页标签+".bin"
+		QString fileName = this->tabWidget->tabText(i) + ".bin";//文件名为对应页标签+".bin"
 		QStringList stringList;//保存本页所有指令
 		for (int j = 0; j < lineCount; j++)
 		{
@@ -356,7 +404,7 @@ void MultipleSendWidget::saveInstructionData(const QString& dirPath)
 			stringList.append(line->getInstruction());//指令
 		}
 		QString filePath = dirPath + "/" + fileName;
-		qDebug() << "保存" << ui->tabWidget->tabText(i) << "数据到 " << filePath;
+		qDebug() << "保存" << this->tabWidget->tabText(i) << "数据到 " << filePath;
 		bool saveResult = saveQStringList(filePath, stringList);
 		qDebug() << (saveResult ? "成功" : "失败");
 	}

@@ -1,27 +1,31 @@
 #pragma once
 
 #include <QWidget>
-
+#include <QPlainTextEdit>
+#include <QPushButton>
+#include <QSpacerItem>
+#include <QGridLayout>
 #include <QTimer>
 #include <QByteArray>
 
 #include "sundry.h"
 
 
-namespace Ui {
-	class SingleSendWidget;
-}
-
 class SingleSendWidget : public QWidget
 {
 	Q_OBJECT
+private:
+	QGridLayout* gridLayout;
+	QPlainTextEdit* plainTextEdit;
+	QSpacerItem* horizontalSpacer;
+	QPushButton* pushButton_Send;
+	QPushButton* pushButton_Clear;
 
+	void setupUi();
 public:
 	explicit SingleSendWidget(QWidget* parent = nullptr);
 	~SingleSendWidget();
 
-private:
-	Ui::SingleSendWidget* ui;
 private:
 	bool text = true;//要发送的是否是文本字符串
 	bool append = true;//是否追加内容

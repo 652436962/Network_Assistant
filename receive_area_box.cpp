@@ -1,43 +1,56 @@
-#include "receive_widget.h"
+#include "receive_area_box.h"
 
-#include <QLayout>
-#include <QTextCodec>
-#include <QFileDialog>
 
-ReceiveWidget::ReceiveWidget(QWidget* parent)
-	: QPlainTextEdit{ parent }
+
+
+ReceiveAreaBox::ReceiveAreaBox(QWidget* parent)
+	: QGroupBox(parent)
 {
-	this->setReadOnly(true);
+	this->setupUi();
 
 	qDebug() << "接收窗口建立";
 }
 
-ReceiveWidget::~ReceiveWidget()
+void ReceiveAreaBox::setupUi()
+{
+	QFont font;
+	font.setPointSize(10);
+	this->setFont(font);
+	verticalLayout = new QVBoxLayout(this);
+	verticalLayout->setSpacing(0);
+	verticalLayout->setContentsMargins(2, 2, 2, 2);
+	plainTextEdit = new QPlainTextEdit(this);
+	plainTextEdit->setReadOnly(true);
+
+	verticalLayout->addWidget(plainTextEdit);
+}
+
+ReceiveAreaBox::~ReceiveAreaBox()
 {
 	qDebug() << "接收窗口关闭";
 }
 
-void ReceiveWidget::setStopDisplaying(bool state)
+void ReceiveAreaBox::setStopDisplaying(bool state)
 {
 	this->stopDisplaying = state;
 }
 
-void ReceiveWidget::setTimestamp(bool state)
+void ReceiveAreaBox::setTimestamp(bool state)
 {
 	this->timestamp = state;
 }
 
-void ReceiveWidget::setText(bool state)
+void ReceiveAreaBox::setText(bool state)
 {
 	this->text = state;
 }
 
-void ReceiveWidget::setEncoding(EncodingEnum theEncoding)
+void ReceiveAreaBox::setEncoding(EncodingEnum theEncoding)
 {
 	this->encoding = theEncoding;
 }
 
-void ReceiveWidget::showData(QByteArray data)
+void ReceiveAreaBox::showData(QByteArray data)
 {
 	// 如果停止显示
 	if (this->stopDisplaying)        return;
@@ -66,18 +79,18 @@ void ReceiveWidget::showData(QByteArray data)
 		stringShow += hexString;
 	}
 
-	this->QPlainTextEdit::appendPlainText(stringShow);
+	this->plainTextEdit->appendPlainText(stringShow);
 }
 
-void ReceiveWidget::appendPlainText(const QString& text)
+void ReceiveAreaBox::appendPlainText(const QString& text)
 {
 	if (this->stopDisplaying) return;
-	this->QPlainTextEdit::appendPlainText(text);
+	this->plainTextEdit->appendPlainText(text);
 }
 
-void ReceiveWidget::receiveToFile(void)
+void ReceiveAreaBox::receiveToFile(void)
 {
-	QString text = this->toPlainText();
+	QString text = this->plainTextEdit->toPlainText();
 	QString fileName = QFileDialog::getSaveFileName(this, "保存文本文件", "", "文本文件(*.txt);;所有文件(*)");
 	if (fileName.isEmpty()) return;// 用户取消了？直接返回
 	QFile file(fileName);
@@ -92,4 +105,9 @@ void ReceiveWidget::receiveToFile(void)
 	file.close();
 	this->requestToNotification("保存成功");
 	qDebug() << "保存成功" << fileName;
+}
+
+void ReceiveAreaBox::clear(void)
+{
+	this->plainTextEdit->clear();
 }
