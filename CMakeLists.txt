@@ -96,5 +96,5 @@ endif()
 
 
 set_target_properties(Network_Assistant PROPERTIES
-    WIN32_EXECUTABLE OFF   # 是否隐藏控制台窗口
+    WIN32_EXECUTABLE ON   # 是否隐藏控制台窗口
 )
