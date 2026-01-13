@@ -59,7 +59,7 @@ public:
      * @brief 获取发送选项
      * @return 发送选项
      */
-    SendOptions getSendOption(void) const;
+    SendMode getSendOption(void) const;
 
     /**
      * @brief 根据网络的连接情况改变
@@ -72,7 +72,7 @@ signals:
      * @param option 发送区选项
      * @note Qt 信号
      */
-    void changeSendArray(SendOptions option);
+    void changeSendArray(SendMode option);
 
 signals:
     /**
@@ -87,7 +87,7 @@ signals:
      * @param open 是否开启
      * @note Qt 信号
      */
-    void requestAutoSend(bool open);
+    void signal_AutoSend(bool open);
 signals:
     /**
      * @brief 请求设置自动发送周期

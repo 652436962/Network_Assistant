@@ -16,7 +16,7 @@ SendSettingsBox::SendSettingsBox(QWidget* parent)
 
 	//自动发送
 	connect(checkBox_AutoSend, &QCheckBox::toggled, [this](bool checked) {
-		emit this->requestAutoSend(checked);
+		emit this->signal_AutoSend(checked);
 		});
 
 	//配置连接 自动发送周期改变
@@ -25,12 +25,12 @@ SendSettingsBox::SendSettingsBox(QWidget* parent)
 		});
 
 	// 添加发送区选项
-	comboBox_Option->addItem("单项发送", QVariant::fromValue<SendOptions>(SendOptions::single));
-	comboBox_Option->addItem("多项发送", QVariant::fromValue<SendOptions>(SendOptions::multiple));
-	//int optionIndex = this->comboBox_Option->findData(QVariant::fromValue<SendOptions>(SendOptions::single)); // 默认单项发送
+	comboBox_Option->addItem("单项发送", QVariant::fromValue<SendMode>(SendMode::Single));
+	comboBox_Option->addItem("多项发送", QVariant::fromValue<SendMode>(SendMode::Multiple));
+	//int optionIndex = this->comboBox_Option->findData(QVariant::fromValue<SendMode>(SendMode::single)); // 默认单项发送
 	//this->comboBox_Option->setCurrentIndex(optionIndex);
 	connect(comboBox_Option, &QComboBox::currentIndexChanged, [this]() {
-		SendOptions option = comboBox_Option->currentData().value<SendOptions>();
+		SendMode option = comboBox_Option->currentData().value<SendMode>();
 		emit this->changeSendArray(option);
 		});
 
@@ -65,9 +65,9 @@ int SendSettingsBox::getAutoSendCycle(void) const
 	return this->spinBox_AutoSendCycle->value();
 }
 
-SendOptions SendSettingsBox::getSendOption(void) const
+SendMode SendSettingsBox::getSendOption(void) const
 {
-	SendOptions option = this->comboBox_Option->currentData().value<SendOptions>();
+	SendMode option = this->comboBox_Option->currentData().value<SendMode>();
 	return option;
 }
 
@@ -82,7 +82,7 @@ void SendSettingsBox::changeAccordingState(bool checked)
 		if (this->checkBox_AutoSend->isChecked())
 		{
 			this->checkBox_AutoSend->setChecked(false);//取消自动发送的选择
-			emit this->requestAutoSend(false);
+			emit this->signal_AutoSend(false);
 		}
 		this->checkBox_AutoSend->setEnabled(false);//禁用自动发送复选框
 	}

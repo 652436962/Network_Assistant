@@ -54,12 +54,11 @@ add_executable (Network_Assistant
  "receive_settings_box.h" "receive_settings_box.cpp"
  "receive_area_box.h" "receive_area_box.cpp"
  "send_settings_box.h" "send_settings_box.cpp"
- "single_send_widget.h" "single_send_widget.cpp"
- "multiple_send_widget.h" "multiple_send_widget.cpp"
+ "send_area_box.h" "send_area_box.cpp"
  "global.h" "global.cpp"
  "app.rc"
  "icon.qrc"
- "send_area_box.h" "send_area_box.cpp")
+ )
 
 # 显式将 CMake 自动生成文件的输出目录添加到包含路径
 # 这有助于 IDE (如 VS) 的 IntelliSense 找到 ui_*.h 和 moc_*.cpp

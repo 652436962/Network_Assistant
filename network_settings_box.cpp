@@ -202,12 +202,19 @@ uint16_t NetworkSettingsBox::getTargetPort(void) const
 
 void NetworkSettingsBox::changeUiAccordingState(bool state)
 {
-	this->networkActive = state;
-	this->led->setState(state);
-	this->spinBox_LocalPort->setReadOnly(state);
-	this->lineEdit_TargetAddress->setReadOnly(state);
+	this->networkActive = state;//更新网络状态
+
 	this->comboBox_WorkMode->setEnabled(!state);
 	this->comboBox_LocalAddress->setEnabled(!state);
+	this->spinBox_LocalPort->setReadOnly(state);
+	//TCP 客户端工作模式下，开始工作后，目标地址端口只读，停止工作后恢复
+	if (this->getSelectedMode() == WorkMode::TCP_Client)
+	{
+		this->lineEdit_TargetAddress->setReadOnly(state);
+		this->spinBox_TargetPort->setReadOnly(state);
+	}
+
+	this->led->setState(state);
 	this->button_Switch->setCheckedState(state);
 }
 

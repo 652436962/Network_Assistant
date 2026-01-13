@@ -4,12 +4,12 @@
 #include "sundry.h"
 
 /**
- * @brief 支持的发送区类型
+ * @brief 发送模式
  */
-enum class SendOptions
+enum SendMode
 {
-    single,//单项发送
-    multiple//多项发送
+	Single = 0,
+	Multiple = 1
 };
 
 /**

@@ -90,32 +90,19 @@ MainWindow::MainWindow(QWidget* parent)
 		}
 		});
 	//配置连接 工作模式选项切换
-	connect(ui->network_settings, &NetworkSettingsBox::modeOptionChanged, [this](WorkMode mode) {
-		//作为 TCP 客户端工作
-		if (mode == WorkMode::TCP_Client)
-		{
-			ui->receive_area->show();
-			ui->receive_settings->show();
-		}
-		//作为 TCP 服务器工作
-		else if (mode == WorkMode::TCP_Server)
-		{
-			ui->receive_area->show();
-			ui->receive_settings->show();
-		}
-		//作为 UDP 工作
-		else if (mode == WorkMode::UDP)
-		{
-			ui->receive_area->show();
-			ui->receive_settings->show();
-		}
-		//工作模式 UDP 只发送
-		else if (mode == WorkMode::UDP_Send_Only)
+	connect(ui->network_settings, &NetworkSettingsBox::modeOptionChanged, [this](WorkMode mode) {		
+		//工作模式 UDP 只发送 不需要接收区
+		if (mode == WorkMode::UDP_Send_Only)
 		{
 			ui->receive_area->hide();//隐藏接收区
 			ui->receive_settings->hide();//隐藏接收设置
 		}
-		
+		//其它模式 接收区发送区都需要
+		else
+		{
+			ui->receive_area->show();
+			ui->receive_settings->show();
+		}
 		
 		//this->setMinimumSize(this->sizeHint());// 锁定最小尺寸（防止被压缩）
 		this->adjustSize();//让窗口自动缩放到刚好容纳所有内容
@@ -126,30 +113,7 @@ MainWindow::MainWindow(QWidget* parent)
 	connect(this, &MainWindow::workingStateChanged, ui->send_settings, &SendSettingsBox::changeAccordingState);
 
 	//配置连接 切换发送区
-	connect(ui->send_settings, &SendSettingsBox::changeSendArray, [this](SendOptions option) {
-		if (option == SendOptions::single)
-		{
-			ui->singleSend->show();//展示单项发送区
-			ui->multipleSend->hide();//隐藏多项发送区
-
-			if (ui->send_settings->getAutoSend())//如果设置了自动发送
-			{
-				ui->singleSend->setAutoSend(true);//开启单项发送区自动发送
-				ui->multipleSend->setAutoSend(false);//取消多项发送区自动发送
-			}
-		}
-		else if (option == SendOptions::multiple)
-		{
-			ui->singleSend->hide();//隐藏单项发送区
-			ui->multipleSend->show();//展示多项发送区
-
-			if (ui->send_settings->getAutoSend())//如果设置了自动发送
-			{
-				ui->singleSend->setAutoSend(false);//取消单项发送区自动发送
-				ui->multipleSend->setAutoSend(true);//开启多项发送区自动发送
-			}
-		}
-		});
+	connect(ui->send_settings, &SendSettingsBox::changeSendArray, ui->send_area,&SendAreaBox::switchMode);
 
 	//配置连接 接收设置 发出
 	{
@@ -174,53 +138,24 @@ MainWindow::MainWindow(QWidget* parent)
 		qDebug() << "错误 空指针" << __FILE__ << __LINE__;
 	}
 	//配置连接 工作中 允许发送
-	connect(this, &MainWindow::workingStateChanged, ui->singleSend, &SingleSendWidget::setAllowSending);
+	connect(this, &MainWindow::workingStateChanged, ui->send_area, &SendAreaBox::setAllowSending);
+
 	//配置连接 请求通知
-	connect(ui->singleSend, &SingleSendWidget::requestToNotification, [this](QString notification) {
+	connect(ui->send_area, &SendAreaBox::requestToNotification, [this](QString notification) {
 		this->notificationManager->newBubble(notification);
 		});
 
-	// 开始隐藏多项发送区
-	ui->multipleSend->hide();
-	//配置连接 工作中 允许发送
-	connect(this, &MainWindow::workingStateChanged, ui->multipleSend, &MultipleSendWidget::setAllowSending);
-	//配置连接 请求通知
-	connect(ui->multipleSend, &MultipleSendWidget::requestToNotification, [this](QString notification) {
-		this->notificationManager->newBubble(notification);
-		});
 
-	//配置连接 发送设置 -> 单项发送区 和 多项发送区
-	{
-		connect(ui->send_settings, &SendSettingsBox::setText, ui->singleSend, &SingleSendWidget::setText);
-		connect(ui->send_settings, &SendSettingsBox::setAppend, ui->singleSend, &SingleSendWidget::setAppend);
+	//配置连接 发送设置 -> 发送区
+	//配置连接 设置发送的是否为文本
+	connect(ui->send_settings, &SendSettingsBox::setText, ui->send_area, &SendAreaBox::setText);
+	//配置连接 设置追加内容
+	connect(ui->send_settings, &SendSettingsBox::setAppend, ui->send_area, &SendAreaBox::setAppend);
+	//配置连接 发送区自动发送
+	connect(ui->send_settings, &SendSettingsBox::signal_AutoSend, ui->send_area, &SendAreaBox::setAutoSend);
+	//配置连接 改变自动发送周期
+	connect(ui->send_settings, &SendSettingsBox::requestChangeCycle, ui->send_area,&SendAreaBox::setSendCycle);
 
-		connect(ui->send_settings, &SendSettingsBox::setText, ui->multipleSend, &MultipleSendWidget::setText);
-		connect(ui->send_settings, &SendSettingsBox::setAppend, ui->multipleSend, &MultipleSendWidget::setAppend);
-
-		//自动发送
-		connect(ui->send_settings, &SendSettingsBox::requestAutoSend, [this](bool open) {
-			SendOptions option = ui->send_settings->getSendOption();
-			if (option == SendOptions::single)
-			{
-				ui->singleSend->setAutoSend(open);
-			}
-			else if (option == SendOptions::multiple)
-			{
-				ui->multipleSend->setAutoSend(open);
-			}
-			});
-		connect(ui->send_settings, &SendSettingsBox::requestChangeCycle, [this](int msec) {
-			SendOptions option = ui->send_settings->getSendOption();
-			if (option == SendOptions::single)
-			{
-				ui->singleSend->setSendCycle(msec);
-			}
-			else if (option == SendOptions::multiple)
-			{
-				ui->multipleSend->setSendCycle(msec);
-			}
-			});
-	}
 
 	this->adjustSize();// 让窗口自己计算合适尺寸
 	//this->setMinimumSize(this->sizeHint());// 锁定最小尺寸（防止被压缩）
@@ -487,11 +422,10 @@ void MainWindow::asTcpClientOperation(void)
 			ui->receive_area->showData(byteArray);//在接收区中展示数据
 			});
 
-		//配置连接 请求发送
-		connect(ui->singleSend, &SingleSendWidget::requestToSend, this->clientTcpSocket,
+		//配置连接 请求发送 -> 发送数据
+		connect(ui->send_area, &SendAreaBox::requestToSend, this->clientTcpSocket,
 			static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
-		connect(ui->multipleSend, &MultipleSendWidget::requestToSend, this->clientTcpSocket,
-			static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
+
 	}
 	//客户端 TcpSocket 已创建
 	else
@@ -626,11 +560,10 @@ void MainWindow::asTcpServerOperation(void)
 				ui->receive_area->showData(byteArray);
 				});
 
-			//配置连接 请求发送
-			connect(ui->singleSend, &SingleSendWidget::requestToSend, tcpSocket,
+			//配置连接 请求发送 -> 发送数据
+			connect(ui->send_area, &SendAreaBox::requestToSend, tcpSocket,
 				static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
-			connect(ui->multipleSend, &MultipleSendWidget::requestToSend, tcpSocket,
-				static_cast<qint64(QTcpSocket::*)(const QByteArray & data)>(&QTcpSocket::write));
+
 			});
 
 	}
@@ -730,18 +663,13 @@ void MainWindow::asUdpOperation(void)
 			});
 
 		//配置连接 请求发送 通过 UDP 发送数据
-		connect(ui->singleSend, &SingleSendWidget::requestToSend, this->udpSocket, [this](QByteArray data) {
+		connect(ui->send_area, &SendAreaBox::requestToSend, this->udpSocket, [this](QByteArray data) {
 			uint16_t targetPort = ui->network_settings->getTargetPort();
 			QHostAddress targetAddress = ui->network_settings->getTargetAddress();
 			if (targetAddress.isNull()) return;
 			this->udpSocket->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
 			});
-		connect(ui->multipleSend, &MultipleSendWidget::requestToSend, this->udpSocket, [this](QByteArray data) {
-			uint16_t targetPort = ui->network_settings->getTargetPort();
-			QHostAddress targetAddress = ui->network_settings->getTargetAddress();
-			if (targetAddress.isNull()) return;
-			this->udpSocket->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
-			});
+
 
 		emit this->workingStateChanged(true);
 	}
@@ -766,15 +694,9 @@ void MainWindow::asUdpSendOnlyOperation(void)
 		qDebug() << "UDP 只发送 开始工作";
 
 		//配置连接 请求发送 通过 UDP 发送数据
-		connect(ui->singleSend, &SingleSendWidget::requestToSend, this->udpSocket_OnlySend, [this](QByteArray data) {
+		connect(ui->send_area, &SendAreaBox::requestToSend, this->udpSocket_OnlySend, [this](QByteArray data) {
 			uint16_t targetPort = ui->network_settings->getTargetPort();
 			QHostAddress targetAddress = ui->network_settings->getTargetAddress();
-			if (targetAddress.isNull()) return;
-			this->udpSocket_OnlySend->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
-			});
-		connect(ui->multipleSend, &MultipleSendWidget::requestToSend, this->udpSocket_OnlySend, [this](QByteArray data) {
-			uint16_t targetPort = ui->network_settings->getTargetPort();
-			QHostAddress targetAddress =ui->network_settings->getTargetAddress();
 			if (targetAddress.isNull()) return;
 			this->udpSocket_OnlySend->writeDatagram(data, targetAddress, targetPort);//UDP 发送数据包
 			});

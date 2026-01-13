@@ -7,8 +7,6 @@
 #include <QTcpSocket>
 #include <QUdpSocket>
 
-#include "single_send_widget.h"
-#include "multiple_send_widget.h"
 #include "notification_manager.h"
 #include "scrollable_list_widget.h"
 
