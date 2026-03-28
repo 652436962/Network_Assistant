@@ -50,11 +50,16 @@ add_executable (Network_Assistant
  "custom_widget/editable_tabwidget.h" "custom_widget/editable_tabwidget.cpp"
  "sundry/sundry.h" "sundry/sundry.cpp" 
  "sundry/sundry_qt.h" "sundry/sundry_qt.cpp"
- "network_settings_box.h" "network_settings_box.cpp"
- "receive_settings_box.h" "receive_settings_box.cpp"
- "receive_area_box.h" "receive_area_box.cpp"
- "send_settings_box.h" "send_settings_box.cpp"
- "send_area_box.h" "send_area_box.cpp"
+ "network_settings_box.ui" "network_settings_box.h" "network_settings_box.cpp"
+
+ "receive_send_widget/receive_settings_box.ui" "receive_send_widget/receive_settings_box.h" "receive_send_widget/receive_settings_box.cpp"
+ "receive_send_widget/receive_area_box.ui" "receive_send_widget/receive_area_box.h" "receive_send_widget/receive_area_box.cpp"
+ "receive_send_widget/send_settings_box.ui" "receive_send_widget/send_settings_box.h" "receive_send_widget/send_settings_box.cpp"
+ "receive_send_widget/send_area_box.ui" "receive_send_widget/send_area_box.h" "receive_send_widget/send_area_box.cpp"
+ "receive_send_widget/single_send_widget.ui" "receive_send_widget/single_send_widget.h" "receive_send_widget/single_send_widget.cpp"
+ "receive_send_widget/multiple_send_widget.ui" "receive_send_widget/multiple_send_widget.h" "receive_send_widget/multiple_send_widget.cpp"
+ 
+
  "global.h" "global.cpp"
  "app.rc"
  "icon.qrc"
@@ -63,9 +68,12 @@ add_executable (Network_Assistant
 # 显式将 CMake 自动生成文件的输出目录添加到包含路径
 # 这有助于 IDE (如 VS) 的 IntelliSense 找到 ui_*.h 和 moc_*.cpp
 target_include_directories(Network_Assistant PRIVATE
+    "${CMAKE_CURRENT_BINARY_DIR}/Network_Assistant_autogen/include"
     "${CMAKE_CURRENT_BINARY_DIR}"
     "${CMAKE_BINARY_DIR}"
+
     "${CMAKE_CURRENT_SOURCE_DIR}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/receive_send_widget"
     "${CMAKE_CURRENT_SOURCE_DIR}/custom_widget"
     "${CMAKE_CURRENT_SOURCE_DIR}/sundry"
 )

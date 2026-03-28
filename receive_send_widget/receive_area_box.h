@@ -1,23 +1,24 @@
 #pragma once
 
-#include <QObject>
-#include <QWidget>
 #include <QGroupBox>
-#include <QPlainTextEdit>
-#include <QLayout>
-#include <QTextCodec>
-#include <QFileDialog>
+
 
 #include "sundry.h"
 #include "sundry_qt.h"
+
+namespace Ui {
+    class ReceiveAreaBox;
+}
 
 class ReceiveAreaBox : public QGroupBox
 {
     Q_OBJECT
 private:
-    QVBoxLayout* verticalLayout;
-    QPlainTextEdit* plainTextEdit;
-    void setupUi();
+    Ui::ReceiveAreaBox* ui;
+//private:
+//    QVBoxLayout* verticalLayout;
+//    QPlainTextEdit* plainTextEdit;
+//    void setupUi();
 public:
     explicit ReceiveAreaBox(QWidget* parent = nullptr);
     ~ReceiveAreaBox();

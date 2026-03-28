@@ -1,24 +1,25 @@
 #include "network_settings_box.h"
-
+#include "ui_network_settings_box.h"
 
 #include <QNetworkInterface>
 
 NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 	: QGroupBox(parent)
+	, ui(new Ui::NetworkSettingsBox)
 {
-	this->setupUi();
+	ui->setupUi(this);
 
 	//创建 TCP 服务器 需要的 连接到本服务器的客户端展示表格
 	ClientesTitle* title = new ClientesTitle(this);
-	this->clientListWidget->setTitleWidget(title);
+	ui->clientListWidget->setTitleWidget(title);
 
 	//添加相关选项
-	this->comboBox_WorkMode->addItem("TCP 客户端", QVariant::fromValue(WorkMode::TCP_Client));
-	this->comboBox_WorkMode->addItem("TCP 服务器", QVariant::fromValue(WorkMode::TCP_Server));
-	this->comboBox_WorkMode->addItem("UDP", QVariant::fromValue(WorkMode::UDP));
-	this->comboBox_WorkMode->addItem("UDP 只发送", QVariant::fromValue(WorkMode::UDP_Send_Only));
+	ui->comboBox_WorkMode->addItem("TCP 客户端", QVariant::fromValue(WorkMode::TCP_Client));
+	ui->comboBox_WorkMode->addItem("TCP 服务器", QVariant::fromValue(WorkMode::TCP_Server));
+	ui->comboBox_WorkMode->addItem("UDP", QVariant::fromValue(WorkMode::UDP));
+	ui->comboBox_WorkMode->addItem("UDP 只发送", QVariant::fromValue(WorkMode::UDP_Send_Only));
 	//配置连接 选项变化
-	connect(this->comboBox_WorkMode, &QComboBox::currentIndexChanged, [this]() {
+	connect(ui->comboBox_WorkMode, &QComboBox::currentIndexChanged, [this]() {
 		if (this->networkActive == true)
 		{
 			qDebug() << "错误，网络正在活动时文本不应当变化" << __FILE__ << __LINE__;
@@ -31,12 +32,12 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 		});
 
 	//按钮按下
-	connect(this->button_Switch, &QPushButton::clicked, [this]() {
+	connect(ui->button_Switch, &QPushButton::clicked, [this]() {
 		emit this->requestWork(this->getSelectedMode());
 		});
 
 	//配置连接 刷新
-	connect(this->button_Refresh, &QPushButton::clicked, [this]() {
+	connect(ui->button_Refresh, &QPushButton::clicked, [this]() {
 		this->refreshLocalAddress();
 		});
 
@@ -52,115 +53,10 @@ NetworkSettingsBox::NetworkSettingsBox(QWidget* parent)
 	qDebug() << "网络设置窗口建立";
 }
 
-void NetworkSettingsBox::setupUi(void)
-{
-	this->resize(190, 309);
-	this->setMinimumSize(QSize(128, 128));
-	QFont font;
-	font.setPointSize(10);
-	this->setFont(font);
-	verticalLayout = new QVBoxLayout(this);
-	verticalLayout->setSpacing(4);
-	verticalLayout->setContentsMargins(2, 2, 2, 2);
-	label_WorkMode = new QLabel(this);
-	label_WorkMode->setFont(font);
-
-	verticalLayout->addWidget(label_WorkMode);
-
-	comboBox_WorkMode = new AutoWidthCombobox(this);
-	comboBox_WorkMode->setFont(font);
-
-	verticalLayout->addWidget(comboBox_WorkMode);
-
-	label_LocalAddress = new QLabel(this);
-	label_LocalAddress->setFont(font);
-
-	verticalLayout->addWidget(label_LocalAddress);
-
-	comboBox_LocalAddress = new AutoWidthCombobox(this);
-
-	verticalLayout->addWidget(comboBox_LocalAddress);
-
-	label_LocalPort = new QLabel(this);
-	label_LocalPort->setFont(font);
-
-	verticalLayout->addWidget(label_LocalPort);
-
-	spinBox_LocalPort = new QSpinBox(this);
-	spinBox_LocalPort->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
-	spinBox_LocalPort->setMaximum(65535);
-	spinBox_LocalPort->setValue(8080);
-
-	verticalLayout->addWidget(spinBox_LocalPort);
-
-	label_TargetAddress = new QLabel(this);
-	label_TargetAddress->setFont(font);
-
-	verticalLayout->addWidget(label_TargetAddress);
-
-	lineEdit_TargetAddress = new QLineEdit(this);
-	lineEdit_TargetAddress->setFont(font);
-
-	verticalLayout->addWidget(lineEdit_TargetAddress);
-
-	label_TargetPort = new QLabel(this);
-	label_TargetPort->setFont(font);
-
-	verticalLayout->addWidget(label_TargetPort);
-
-	spinBox_TargetPort = new QSpinBox(this);
-	spinBox_TargetPort->setLayoutDirection(Qt::LayoutDirection::LeftToRight);
-	spinBox_TargetPort->setMaximum(65535);
-	spinBox_TargetPort->setValue(8080);
-
-	verticalLayout->addWidget(spinBox_TargetPort);
-
-	widget = new QWidget(this);
-	widget->setMinimumSize(QSize(0, 32));
-	widget->setMaximumSize(QSize(16777215, 48));
-	horizontalLayout = new QHBoxLayout(widget);
-	horizontalLayout->setSpacing(4);
-	horizontalLayout->setContentsMargins(0, 0, 0, 0);
-	led = new LED_Widget(widget);
-	led->setMinimumSize(QSize(24, 24));
-	led->setMaximumSize(QSize(24, 24));
-
-	horizontalLayout->addWidget(led);
-
-	button_Refresh = new QPushButton(widget);
-	button_Refresh->setMinimumSize(QSize(32, 0));
-	button_Refresh->setFont(font);
-
-	horizontalLayout->addWidget(button_Refresh);
-
-	button_Switch = new ToggleButton(widget);
-	button_Switch->setMinimumSize(QSize(32, 0));
-	button_Switch->setFont(font);
-
-	horizontalLayout->addWidget(button_Switch);
-
-
-	verticalLayout->addWidget(widget);
-
-	clientListWidget = new ScrollableListWidget(this);
-	clientListWidget->setMinimumSize(QSize(64, 128));
-
-	verticalLayout->addWidget(clientListWidget);
-
-
-	label_WorkMode->setText("工作模式");
-	label_LocalAddress->setText("本地IP地址");
-	label_LocalPort->setText("本地端口");
-	label_TargetAddress->setText("目标IP地址");
-	label_TargetPort->setText("目标端口");
-	button_Refresh->setText("刷新");
-	button_Switch->setText("启动");
-}
-
 
 WorkMode NetworkSettingsBox::getSelectedMode(void) const
 {
-	return this->comboBox_WorkMode->currentData().value<WorkMode>();
+	return ui->comboBox_WorkMode->currentData().value<WorkMode>();
 }
 
 
@@ -170,7 +66,7 @@ QHostAddress NetworkSettingsBox::getLocalAddress(void) const
 
 	// TCP 服务器 或 UDP 应当从地址下拉框中得到地址
 	// 从下拉框的用户数据中取
-	QVariant data = this->comboBox_LocalAddress->currentData();
+	QVariant data = ui->comboBox_LocalAddress->currentData();
 	if (data.isValid())
 	{
 		address = data.value<QHostAddress>();//预设项
@@ -182,13 +78,13 @@ QHostAddress NetworkSettingsBox::getLocalAddress(void) const
 
 uint16_t NetworkSettingsBox::getLocalPort(void) const
 {
-	return this->spinBox_LocalPort->value();
+	return ui->spinBox_LocalPort->value();
 }
 
 QHostAddress NetworkSettingsBox::getTargetAddress(void) const
 {
 	// 从编辑框得到ip地址字符串
-	QString ip_str = this->lineEdit_TargetAddress->text();
+	QString ip_str = ui->lineEdit_TargetAddress->text();
 	QHostAddress address(ip_str);
 
 	//qDebug() << "选择的 目标 IP 地址为： " << address;
@@ -197,42 +93,42 @@ QHostAddress NetworkSettingsBox::getTargetAddress(void) const
 
 uint16_t NetworkSettingsBox::getTargetPort(void) const
 {
-	return this->spinBox_TargetPort->value();
+	return ui->spinBox_TargetPort->value();
 }
 
 void NetworkSettingsBox::changeUiAccordingState(bool state)
 {
 	this->networkActive = state;//更新网络状态
 
-	this->comboBox_WorkMode->setEnabled(!state);
-	this->comboBox_LocalAddress->setEnabled(!state);
-	this->spinBox_LocalPort->setReadOnly(state);
+	ui->comboBox_WorkMode->setEnabled(!state);
+	ui->comboBox_LocalAddress->setEnabled(!state);
+	ui->spinBox_LocalPort->setReadOnly(state);
 	//TCP 客户端工作模式下，开始工作后，目标地址端口只读，停止工作后恢复
 	if (this->getSelectedMode() == WorkMode::TCP_Client)
 	{
-		this->lineEdit_TargetAddress->setReadOnly(state);
-		this->spinBox_TargetPort->setReadOnly(state);
+		ui->lineEdit_TargetAddress->setReadOnly(state);
+		ui->spinBox_TargetPort->setReadOnly(state);
 	}
 
-	this->led->setState(state);
-	this->button_Switch->setCheckedState(state);
+	ui->led->setState(state);
+	ui->button_Switch->setCheckedState(state);
 }
 
 ClientWidget* NetworkSettingsBox::push_backClientLine(QString ip, uint16_t port)
 {
 	ClientWidget* clientLine = new ClientWidget(this, ip, QString::number(port));
-	this->clientListWidget->push_back(clientLine);
+	ui->clientListWidget->push_back(clientLine);
 	return clientLine;
 }
 
 void NetworkSettingsBox::eraseClientLine(int pos)
 {
-	this->clientListWidget->erase(pos);
+	ui->clientListWidget->erase(pos);
 }
 
 void NetworkSettingsBox::clearClientLines()
 {
-	this->clientListWidget->clear();
+	ui->clientListWidget->clear();
 }
 
 
@@ -244,81 +140,81 @@ void NetworkSettingsBox::changeUiAccordingOption(void)
 	if (mode == WorkMode::TCP_Client)
 	{
 		// 隐藏本地地址、端口这些
-		this->label_LocalAddress->hide();
-		this->comboBox_LocalAddress->hide();
-		this->label_LocalPort->hide();
-		this->spinBox_LocalPort->hide();
+		ui->label_LocalAddress->hide();
+		ui->comboBox_LocalAddress->hide();
+		ui->label_LocalPort->hide();
+		ui->spinBox_LocalPort->hide();
 
 		//展示目标地址、端口这些
-		this->label_TargetAddress->show();
-		this->lineEdit_TargetAddress->show();
-		this->label_TargetPort->show();
-		this->spinBox_TargetPort->show();
+		ui->label_TargetAddress->show();
+		ui->lineEdit_TargetAddress->show();
+		ui->label_TargetPort->show();
+		ui->spinBox_TargetPort->show();
 
-		this->button_Switch->setTexts("建立连接", "断开连接");//调整按钮文字
-		this->button_Refresh->hide();//隐藏刷新按钮
+		ui->button_Switch->setTexts("建立连接", "断开连接");//调整按钮文字
+		ui->button_Refresh->hide();//隐藏刷新按钮
 
-		this->clientListWidget->hide();//隐藏tcp客户端展示窗口
+		ui->clientListWidget->hide();//隐藏tcp客户端展示窗口
 	}
 	//如果是 TCP 服务器
 	else if (mode == WorkMode::TCP_Server)
 	{
 		// 展示本地地址、端口这些
-		this->label_LocalAddress->show();
-		this->comboBox_LocalAddress->show();
-		this->label_LocalPort->show();
-		this->spinBox_LocalPort->show();
+		ui->label_LocalAddress->show();
+		ui->comboBox_LocalAddress->show();
+		ui->label_LocalPort->show();
+		ui->spinBox_LocalPort->show();
 
 		//隐藏目标地址、端口这些
-		this->label_TargetAddress->hide();
-		this->lineEdit_TargetAddress->hide();
-		this->label_TargetPort->hide();
-		this->spinBox_TargetPort->hide();
+		ui->label_TargetAddress->hide();
+		ui->lineEdit_TargetAddress->hide();
+		ui->label_TargetPort->hide();
+		ui->spinBox_TargetPort->hide();
 
-		this->button_Switch->setTexts("启动监听", "停止监听");//调整按钮文字
-		this->button_Refresh->show();//展示刷新按钮
+		ui->button_Switch->setTexts("启动监听", "停止监听");//调整按钮文字
+		ui->button_Refresh->show();//展示刷新按钮
 
-		this->clientListWidget->show();//展示tcp客户端展示窗口
+		ui->clientListWidget->show();//展示tcp客户端展示窗口
 	}
 	//如果是 UDP
 	else if (mode == WorkMode::UDP)
 	{
 		// 展示本地地址、端口这些
-		this->label_LocalAddress->show();
-		this->comboBox_LocalAddress->show();
-		this->label_LocalPort->show();
-		this->spinBox_LocalPort->show();
+		ui->label_LocalAddress->show();
+		ui->comboBox_LocalAddress->show();
+		ui->label_LocalPort->show();
+		ui->spinBox_LocalPort->show();
 
 		//展示目标地址、端口这些
-		this->label_TargetAddress->show();
-		this->lineEdit_TargetAddress->show();
-		this->label_TargetPort->show();
-		this->spinBox_TargetPort->show();
+		ui->label_TargetAddress->show();
+		ui->lineEdit_TargetAddress->show();
+		ui->label_TargetPort->show();
+		ui->spinBox_TargetPort->show();
 
-		this->button_Switch->setTexts("绑定", "关闭");//调整按钮文字
-		this->button_Refresh->show();//展示刷新按钮
+		ui->button_Switch->setTexts("绑定", "关闭");//调整按钮文字
+		ui->button_Refresh->show();//展示刷新按钮
 
-		this->clientListWidget->hide();//展示tcp客户端展示窗口
+		ui->clientListWidget->hide();//展示tcp客户端展示窗口
 	}
 	//如果是 UDP只发送
 	else if (mode == WorkMode::UDP_Send_Only)
 	{
 		// 隐藏本地地址、端口这些
-		this->label_LocalAddress->hide();
-		this->comboBox_LocalAddress->hide();
-		this->label_LocalPort->hide();
-		this->spinBox_LocalPort->hide();
+		ui->label_LocalAddress->hide();
+		ui->comboBox_LocalAddress->hide();
+		ui->label_LocalPort->hide();
+		ui->spinBox_LocalPort->hide();
 
 		//展示目标地址、端口这些
-		this->label_TargetAddress->show();
-		this->lineEdit_TargetAddress->show();
-		this->label_TargetPort->show();
-		this->spinBox_TargetPort->show();
+		ui->label_TargetAddress->show();
+		ui->lineEdit_TargetAddress->show();
+		ui->label_TargetPort->show();
+		ui->spinBox_TargetPort->show();
 
-		this->button_Switch->setTexts("开始工作", "停止工作");//调整按钮文字
-		this->button_Refresh->hide();//隐藏刷新按钮
+		ui->button_Switch->setTexts("开始工作", "停止工作");//调整按钮文字
+		ui->button_Refresh->hide();//隐藏刷新按钮
 
-		this->clientListWidget->hide();//隐藏tcp客户端展示窗口
+		ui->clientListWidget->hide();//隐藏tcp客户端展示窗口
 	}
 	this->adjustSize();// 让窗口自己计算合适尺寸
 	//this->setMinimumHeight(this->sizeHint().height());// 锁定最小高度（防止被压缩）
@@ -326,18 +222,18 @@ void NetworkSettingsBox::changeUiAccordingOption(void)
 
 void NetworkSettingsBox::refreshLocalAddress(void)
 {
-	this->comboBox_LocalAddress->clear();//清空下拉框
+	ui->comboBox_LocalAddress->clear();//清空下拉框
 
 	// === 添加特殊通配符地址（用于监听所有接口）===
-	this->comboBox_LocalAddress->addItem(
+	ui->comboBox_LocalAddress->addItem(
 		"0.0.0.0    (IPv4 任意地址)", QVariant::fromValue(QHostAddress(QHostAddress::Any)));
-	this->comboBox_LocalAddress->addItem(
+	ui->comboBox_LocalAddress->addItem(
 		"::    (IPv6 任意地址)", QVariant::fromValue(QHostAddress(QHostAddress::AnyIPv6)));
 
 	// === 添加回环地址 ===
-	this->comboBox_LocalAddress->addItem(
+	ui->comboBox_LocalAddress->addItem(
 		"127.0.0.1    (IPv4 回环地址)", QVariant::fromValue(QHostAddress(QHostAddress::LocalHost)));
-	this->comboBox_LocalAddress->addItem(
+	ui->comboBox_LocalAddress->addItem(
 		"::1    (IPv6 回环地址)", QVariant::fromValue(QHostAddress(QHostAddress::LocalHostIPv6)));
 
 	// 获取本机所有 IPv4/IPv6 地址
@@ -349,7 +245,7 @@ void NetworkSettingsBox::refreshLocalAddress(void)
 		if (addr == QHostAddress::LocalHost || addr == QHostAddress::LocalHostIPv6) continue;
 
 		// 添加 IP 地址
-		this->comboBox_LocalAddress->addItem(addr.toString(), QVariant::fromValue(addr));
+		ui->comboBox_LocalAddress->addItem(addr.toString(), QVariant::fromValue(addr));
 	}
 }
 

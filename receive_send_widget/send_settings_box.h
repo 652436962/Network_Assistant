@@ -17,6 +17,10 @@
 #include "global.h"
 #include "sundry.h"
 
+namespace Ui {
+    class SendSettingsBox;
+}
+
 class SendSettingsBox : public QGroupBox
 {
     Q_OBJECT
@@ -25,24 +29,25 @@ public:
     explicit SendSettingsBox(QWidget *parent = nullptr);
     ~SendSettingsBox();
 private:
-    QGridLayout* gridLayout;
-    QLabel* label_Option;
-    QComboBox* comboBox_Option;
-    QRadioButton* radioButton_Text;
-    QRadioButton* radioButton_HEX;
-    QCheckBox* checkBox_Append;
-    QComboBox* comboBox_Append;
-    QCheckBox* checkBox_AutoSend;
-    QSpacerItem* horizontalSpacer;
-    QLabel* label_AutoSendCycle;
-    DebouncedSpinBox* spinBox_AutoSendCycle;
-    QLabel* label_MS;
+    //QGridLayout* gridLayout;
+    //QLabel* label_Option;
+    //QComboBox* comboBox_Option;
+    //QRadioButton* radioButton_Text;
+    //QRadioButton* radioButton_HEX;
+    //QCheckBox* checkBox_Append;
+    //QComboBox* comboBox_Append;
+    //QCheckBox* checkBox_AutoSend;
+    //QSpacerItem* horizontalSpacer;
+    //QLabel* label_AutoSendCycle;
+    //DebouncedSpinBox* spinBox_AutoSendCycle;
+    //QLabel* label_MS;
 
-    /**
-     * @brief 设置 UI
-     * @param  
-     */
-    void setupUi(void);
+    ///**
+    // * @brief 设置 UI
+    // * @param  
+    // */
+    //void setupUi(void);
+    Ui::SendSettingsBox* ui;
 public:
     /**
      * @brief 是否开启了自动发送

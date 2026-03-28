@@ -1,29 +1,18 @@
 #include "receive_area_box.h"
+#include "ui_receive_area_box.h"
 
-
-
+#include <QTextCodec>
+#include <QFileDialog>
 
 ReceiveAreaBox::ReceiveAreaBox(QWidget* parent)
 	: QGroupBox(parent)
+	, ui(new Ui::ReceiveAreaBox)
 {
-	this->setupUi();
+	ui->setupUi(this);
 
 	qDebug() << "接收窗口建立";
 }
 
-void ReceiveAreaBox::setupUi()
-{
-	QFont font;
-	font.setPointSize(10);
-	this->setFont(font);
-	verticalLayout = new QVBoxLayout(this);
-	verticalLayout->setSpacing(0);
-	verticalLayout->setContentsMargins(2, 2, 2, 2);
-	plainTextEdit = new QPlainTextEdit(this);
-	plainTextEdit->setReadOnly(true);
-
-	verticalLayout->addWidget(plainTextEdit);
-}
 
 ReceiveAreaBox::~ReceiveAreaBox()
 {
@@ -79,18 +68,18 @@ void ReceiveAreaBox::showData(QByteArray data)
 		stringShow += hexString;
 	}
 
-	this->plainTextEdit->appendPlainText(stringShow);
+	ui->plainTextEdit->appendPlainText(stringShow);
 }
 
 void ReceiveAreaBox::appendPlainText(const QString& text)
 {
 	if (this->stopDisplaying) return;
-	this->plainTextEdit->appendPlainText(text);
+	ui->plainTextEdit->appendPlainText(text);
 }
 
 void ReceiveAreaBox::receiveToFile(void)
 {
-	QString text = this->plainTextEdit->toPlainText();
+	QString text = ui->plainTextEdit->toPlainText();
 	QString fileName = QFileDialog::getSaveFileName(this, "保存文本文件", "", "文本文件(*.txt);;所有文件(*)");
 	if (fileName.isEmpty()) return;// 用户取消了？直接返回
 	QFile file(fileName);
@@ -109,5 +98,5 @@ void ReceiveAreaBox::receiveToFile(void)
 
 void ReceiveAreaBox::clear(void)
 {
-	this->plainTextEdit->clear();
+	ui->plainTextEdit->clear();
 }

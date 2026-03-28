@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>SendAreaBox</class>
+ <widget class="QGroupBox" name="SendAreaBox">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -30,13 +30,27 @@
     <number>2</number>
    </property>
    <item>
-    <widget class="QWidget" name="widget" native="true"/>
+    <widget class="SingleSendWidget" name="single" native="true"/>
    </item>
    <item>
-    <widget class="QWidget" name="widget_2" native="true"/>
+    <widget class="MultipleSendWidget" name="multiple" native="true"/>
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>SingleSendWidget</class>
+   <extends>QWidget</extends>
+   <header>single_send_widget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>MultipleSendWidget</class>
+   <extends>QWidget</extends>
+   <header>multiple_send_widget.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

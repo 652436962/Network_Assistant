@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QWidget>
+
 #include <QGroupBox>
 
 #include <QtCore/QVariant>
@@ -25,6 +25,10 @@
 
 class ClientWidget;
 
+namespace Ui {
+	class NetworkSettingsBox;
+}
+
 class NetworkSettingsBox : public QGroupBox
 {
 	Q_OBJECT
@@ -32,34 +36,9 @@ class NetworkSettingsBox : public QGroupBox
 public:
 	explicit NetworkSettingsBox(QWidget* parent = nullptr);
 	~NetworkSettingsBox();
+private:
+	Ui::NetworkSettingsBox* ui;
 
-private:	
-	QVBoxLayout* verticalLayout;
-	QLabel* label_WorkMode;
-	AutoWidthCombobox* comboBox_WorkMode;
-	QLabel* label_LocalAddress;
-	AutoWidthCombobox* comboBox_LocalAddress;
-	QLabel* label_LocalPort;
-	QSpinBox* spinBox_LocalPort;
-	QLabel* label_TargetAddress;
-	QLineEdit* lineEdit_TargetAddress;
-	QLabel* label_TargetPort;
-	QSpinBox* spinBox_TargetPort;
-	QWidget* widget;
-	QHBoxLayout* horizontalLayout;
-	LED_Widget* led;
-	QPushButton* button_Refresh;
-	ToggleButton* button_Switch;//开关
-	/**
-	 * @brief TCP服务器工作模式下的 连接到本服务器的TCP客户端展示窗口
-	 */
-	ScrollableListWidget* clientListWidget;
-		
-
-	/**
-	 * @brief 设置 UI
-	 */
-	void setupUi(void);
 
 public:
 	/**

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>ReceiveSettingsBox</class>
- <widget class="QWidget" name="ReceiveSettingsBox">
+ <widget class="QGroupBox" name="ReceiveSettingsBox">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -80,7 +80,7 @@
     </widget>
    </item>
    <item row="1" column="0">
-    <widget class="QCheckBox" name="checkBox_ReceiveStopDisplay">
+    <widget class="QCheckBox" name="checkBox_StopDisplay">
      <property name="layoutDirection">
       <enum>Qt::LayoutDirection::RightToLeft</enum>
      </property>

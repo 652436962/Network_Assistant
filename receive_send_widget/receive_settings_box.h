@@ -3,35 +3,19 @@
 #include <QWidget>
 #include <QGroupBox>
 
-#include <QtCore/QVariant>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QCheckBox>
-#include <QtWidgets/QGridLayout>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QRadioButton>
+
+namespace Ui {
+    class ReceiveSettingsBox;
+}
 
 class ReceiveSettingsBox : public QGroupBox
 {
     Q_OBJECT
+private:
+    Ui::ReceiveSettingsBox* ui;
 
 public:
     explicit ReceiveSettingsBox(QWidget *parent = nullptr);
-    /*~ReceiveSettingsWidget();*/
-
-private:
-    QGridLayout* gridLayout;
-    QRadioButton* radioButton_Text;
-    QRadioButton* radioButton_HEX;
-    QCheckBox* checkBox_StopDisplay;
-    QCheckBox* checkBox_Timestamp;
-    QPushButton* pushButton_Clear;
-    QPushButton* pushButton_Save;
-
-    /**
-     * @brief 设置 UI
-     * @param  
-     */
-    void setupUi(void);
 
 signals:
     /**
@@ -65,7 +49,6 @@ signals:
      * @note Qt 信号
      */
     void receiveToFile(void);
-
 };
 
 
