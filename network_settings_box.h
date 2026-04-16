@@ -1,24 +1,8 @@
 #pragma once
 
-
 #include <QGroupBox>
 
-#include <QtCore/QVariant>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QComboBox>
-#include <QtWidgets/QGridLayout>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QLineEdit>
-#include <QtWidgets/QPushButton>
-#include <QtWidgets/QSpacerItem>
-#include <QtWidgets/QSpinBox>
-
 #include <QHostAddress>
-
-#include "led_widget.h"
-#include "toggle_button.h"
-#include "auto_width_combobox.h"
-#include "scrollable_list_widget.h"
 
 #include "global.h"
 #include "sundry_qt.h"
@@ -124,7 +108,15 @@ signals:
 
 };
 
-
+#include <QtCore/QVariant>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QComboBox>
+#include <QtWidgets/QGridLayout>
+#include <QtWidgets/QLabel>
+#include <QtWidgets/QLineEdit>
+#include <QtWidgets/QPushButton>
+#include <QtWidgets/QSpacerItem>
+#include <QtWidgets/QSpinBox>
 
 class ClientesTitle :public QWidget
 {

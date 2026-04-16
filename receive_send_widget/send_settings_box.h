@@ -1,18 +1,8 @@
 #pragma once
 
 #include <QWidget>
-
 #include <QGroupBox>
-#include <QtCore/QVariant>
-#include <QtWidgets/QApplication>
-#include <QtWidgets/QCheckBox>
-#include <QtWidgets/QComboBox>
-#include <QtWidgets/QGridLayout>
-#include <QtWidgets/QLabel>
-#include <QtWidgets/QRadioButton>
-#include <QtWidgets/QSpacerItem>
-#include <QtWidgets/QSpinBox>
-#include "debounced_spin_box.h"
+
 
 #include "global.h"
 #include "sundry.h"
@@ -29,24 +19,7 @@ public:
     explicit SendSettingsBox(QWidget *parent = nullptr);
     ~SendSettingsBox();
 private:
-    //QGridLayout* gridLayout;
-    //QLabel* label_Option;
-    //QComboBox* comboBox_Option;
-    //QRadioButton* radioButton_Text;
-    //QRadioButton* radioButton_HEX;
-    //QCheckBox* checkBox_Append;
-    //QComboBox* comboBox_Append;
-    //QCheckBox* checkBox_AutoSend;
-    //QSpacerItem* horizontalSpacer;
-    //QLabel* label_AutoSendCycle;
-    //DebouncedSpinBox* spinBox_AutoSendCycle;
-    //QLabel* label_MS;
 
-    ///**
-    // * @brief 设置 UI
-    // * @param  
-    // */
-    //void setupUi(void);
     Ui::SendSettingsBox* ui;
 public:
     /**
@@ -109,7 +82,5 @@ signals:
      * @note Qt 信号
      */
     void setAppend(bool checked, QByteArray content);
-
-
 };
 

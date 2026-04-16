@@ -3,16 +3,9 @@
 #include <QGroupBox>
 #include <QTimer>
 
-
-#include "editable_tabwidget.h"
-#include "scrollable_list_widget.h"
-
 #include "global.h"
 #include "sundry_qt.h"
 
-
-#include "single_send_widget.h"
-#include "multiple_send_widget.h"
 
 namespace Ui {
 	class SendAreaBox;

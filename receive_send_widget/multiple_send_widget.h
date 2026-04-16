@@ -1,14 +1,7 @@
 #pragma once
 
 #include <QWidget>
-#include <QPushButton>
-#include <QLineEdit>
-#include <QLabel>
-
 #include "scrollable_list_widget.h"
-
-#include <sundry_qt.h>
-
 namespace Ui {
 	class MultipleSendWidget;
 }
@@ -23,18 +16,7 @@ class MultipleSendWidget : public QWidget
 	Q_OBJECT
 private:
 	Ui::MultipleSendWidget* ui;
-//private:
-//	QVBoxLayout* verticalLayout;
-//	EditableTabWidget* tabWidget;
-//	QWidget* widget_Button;
-//	QHBoxLayout* horizontalLayout;
-//	QSpacerItem* horizontalSpacer_2;
-//	QPushButton* pushButton_Location;
-//	QSpacerItem* horizontalSpacer;
-//	QPushButton* pushButton_Add;
-//	QPushButton* pushButton_Delete;
-//
-//	void setupUi();
+
 public:
 	/**
 	 * @brief 构造函数
@@ -112,7 +94,9 @@ signals:
 	void signal_Notification(QString notification);
 };
 
-
+#include <QPushButton>
+#include <QLineEdit>
+#include <QLabel>
 
 
 class TitleWidget : public QWidget

@@ -1,6 +1,9 @@
 #include "receive_area_box.h"
 #include "ui_receive_area_box.h"
 
+#include "sundry.h"
+#include "sundry_qt.h"
+
 #include <QTextCodec>
 #include <QFileDialog>
 

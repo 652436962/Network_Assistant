@@ -1,9 +1,6 @@
 #pragma once
 
 #include <QGroupBox>
-
-
-#include "sundry.h"
 #include "sundry_qt.h"
 
 namespace Ui {
@@ -15,10 +12,7 @@ class ReceiveAreaBox : public QGroupBox
     Q_OBJECT
 private:
     Ui::ReceiveAreaBox* ui;
-//private:
-//    QVBoxLayout* verticalLayout;
-//    QPlainTextEdit* plainTextEdit;
-//    void setupUi();
+
 public:
     explicit ReceiveAreaBox(QWidget* parent = nullptr);
     ~ReceiveAreaBox();

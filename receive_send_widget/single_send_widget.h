@@ -14,14 +14,7 @@ class SingleSendWidget : public QWidget
 	Q_OBJECT
 private:
 	Ui::SingleSendWidget* ui;
-//private:
-//	QGridLayout* gridLayout;
-//	QPlainTextEdit* plainTextEdit;
-//	QSpacerItem* horizontalSpacer;
-//	QPushButton* pushButton_Send;
-//	QPushButton* pushButton_Clear;
-//
-//	void setupUi();
+
 public:
 	explicit SingleSendWidget(QWidget* parent = nullptr);
 	~SingleSendWidget();

@@ -1,6 +1,7 @@
 #include "multiple_send_widget.h"
 
 #include "ui_multiple_send_widget.h"
+#include "sundry_qt.h"
 
 #include <QFile>
 #include <QDir>
