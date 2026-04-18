@@ -1,0 +1,16 @@
+{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "default",
+      "project": "CMakeLists.txt",
+      "projectTarget": "Network_Assistant.exe",
+      "name": "Network_Assistant.exe",
+      "args": [],
+      "env": {//启动时要求的环境路径
+        "PATH": "D:/Qt/6.9.3/msvc2022_64/bin;${env.PATH}"
+      }
+    }
+  ]
+}
