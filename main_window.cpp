@@ -19,7 +19,9 @@
 
 #include "sundry_qt.h"
 
+#ifdef _WIN32
 #include "Windows.h"
+#endif
 
 
 MainWindow::MainWindow(QWidget* parent)
@@ -38,13 +40,21 @@ MainWindow::MainWindow(QWidget* parent)
 	//菜单栏相关设置
 	{
 		connect(ui->action_Ncpa, &QAction::triggered, [this]() {
-			// 打开“网络连接”窗口
+			// 打开"网络连接"窗口
 			qDebug() << "打开Windows网络连接";
+#ifdef _WIN32
 			QProcess::startDetached("control.exe", { "ncpa.cpl" });
+#else
+			notificationManager->newBubble("此功能仅适用于 Windows");
+#endif
 			});
 		connect(ui->action_Control, &QAction::triggered, [this]() {
 			qDebug() << "打开Windows控制面板";
+#ifdef _WIN32
 			QProcess::startDetached("control.exe");//打开Windows控制面板
+#else
+			notificationManager->newBubble("此功能仅适用于 Windows");
+#endif
 			});
 		//配置连接 展示主机信息
 		connect(ui->action_Infomation, &QAction::triggered, this, &MainWindow::showLocalIPConfig);

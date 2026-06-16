@@ -17,11 +17,15 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # 启用 Windows 资源编译器（用于 .rc 文件）
-enable_language(RC)
+if (WIN32)
+    enable_language(RC)
+endif()
 
 # =============== Qt6 配置 ===============
-# 告诉 CMake 在 D:\Qt\6.9.3\msvc2022_64 下查找 Qt6
-set(CMAKE_PREFIX_PATH "D:/Qt/6.9.3/msvc2022_64" CACHE PATH "Qt6 安装路径")
+# 告诉 CMake 在系统路径中查找 Qt6
+if (WIN32)
+    set(CMAKE_PREFIX_PATH "D:/Qt/6.9.3/msvc2022_64" CACHE PATH "Qt6 安装路径")
+endif()
 
 # 查找 Qt6，需要 Core, Gui, Widgets 等模块
 find_package(Qt6 REQUIRED COMPONENTS
@@ -61,7 +65,7 @@ add_executable (Network_Assistant
  
 
  "global.h" "global.cpp"
- "app.rc"
+ $<$<BOOL:${WIN32}>:"app.rc">
  "icon.qrc"
  )
 
@@ -104,5 +108,5 @@ endif()
 
 
 set_target_properties(Network_Assistant PROPERTIES
-    WIN32_EXECUTABLE ON   # 是否隐藏控制台窗口
+    WIN32_EXECUTABLE $<BOOL:${WIN32}>   # 是否隐藏控制台窗口
 )

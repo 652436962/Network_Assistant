@@ -1,6 +1,8 @@
 #include "sundry.h"
 
+#ifdef _WIN32
 #include <Windows.h>
+#endif
 
 #include <iostream>
 #include <fstream>
@@ -17,6 +19,7 @@
 EncodingEnum getLocalEncoding()
 {
     EncodingEnum encoding = EncodingEnum::UTF8;
+#ifdef _WIN32
     UINT acp = GetACP(); // 返回 Windows 系统的 "ANSI Code Page"
     switch (acp)
     {
@@ -33,6 +36,10 @@ EncodingEnum getLocalEncoding()
         encoding = EncodingEnum::UTF8;
         break;
     }
+#else
+    // Linux 等平台默认使用 UTF-8
+    encoding = EncodingEnum::UTF8;
+#endif
     return encoding;
 }
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QCombobox.h>
+#include <QComboBox>
 
 /**
  * @brief 自动调节下拉列表框宽度的下拉列表框
